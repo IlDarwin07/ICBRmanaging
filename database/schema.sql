@@ -1,3 +1,8 @@
+CREATE DATABASE IF NOT EXISTS icbr_gestionale
+    CHARACTER SET utf8mb4
+    COLLATE utf8mb4_unicode_ci;
+
+USE icbr_gestionale;
 -- =====================================================================
 -- Schema database - Gestionale Web Inter Club Javier Zanetti Brindisi
 -- Basato su: 02-schema-database-inter-club.pdf
