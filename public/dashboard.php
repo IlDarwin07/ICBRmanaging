@@ -7,32 +7,60 @@ require_login();
 
 $pdo = get_db_connection();
 
-// Totale soci in anagrafica (record attivi)
+// 1. Soci registrati (tutti i record attivi in anagrafica)
 $totale_soci = (int)$pdo->query('SELECT COUNT(*) FROM soci WHERE attivo_record = 1')->fetchColumn();
 
-// Tesserati totali (tutte le stagioni, attivo_portale = 1)
-$tesserati_totali = (int)$pdo->query('SELECT COUNT(DISTINCT id_socio) FROM tesseramenti WHERE attivo_portale = 1')->fetchColumn();
+// Stagione attiva e stagione precedente
+$stagioni = $pdo->query(
+    "SELECT id_stagione, codice_stagione FROM stagioni ORDER BY codice_stagione DESC LIMIT 2"
+)->fetchAll();
 
-// Stagione attiva
-$stagione_attiva = $pdo->query(
-    "SELECT id_stagione, codice_stagione FROM stagioni WHERE attiva = 1 ORDER BY id_stagione DESC LIMIT 1"
-)->fetch();
+$stagione_attiva    = $stagioni[0] ?? null;
+$stagione_precedente = $stagioni[1] ?? null;
 
-$tesserati_stagione_corrente = 0;
-$soci_anagrafica_confermata  = 0;
+// 2. Soci attivi nella stagione corrente (attivo_portale = 1)
+$soci_attivi_corrente = 0;
+// 3. Anagrafica confermata nella stagione corrente
+$soci_anagrafica_confermata = 0;
+// 4. Attivi nell'ultima stagione ma NON rinnovati in quella corrente
+$non_rinnovati = 0;
 
 if ($stagione_attiva) {
+    $id_att = $stagione_attiva['id_stagione'];
+
     $stmt = $pdo->prepare(
-        'SELECT COUNT(*) FROM tesseramenti WHERE id_stagione = :id_stagione AND attivo_portale = 1'
+        'SELECT COUNT(*) FROM tesseramenti WHERE id_stagione = :id AND attivo_portale = 1'
     );
-    $stmt->execute(['id_stagione' => $stagione_attiva['id_stagione']]);
-    $tesserati_stagione_corrente = (int)$stmt->fetchColumn();
+    $stmt->execute(['id' => $id_att]);
+    $soci_attivi_corrente = (int)$stmt->fetchColumn();
 
     $stmt2 = $pdo->prepare(
-        'SELECT COUNT(*) FROM tesseramenti WHERE id_stagione = :id_stagione AND conferma_anagrafica = 1'
+        'SELECT COUNT(*) FROM tesseramenti WHERE id_stagione = :id AND conferma_anagrafica = 1'
     );
-    $stmt2->execute(['id_stagione' => $stagione_attiva['id_stagione']]);
+    $stmt2->execute(['id' => $id_att]);
     $soci_anagrafica_confermata = (int)$stmt2->fetchColumn();
+}
+
+if ($stagione_precedente) {
+    $id_prec = $stagione_precedente['id_stagione'];
+    $id_att  = $stagione_attiva['id_stagione'] ?? null;
+
+    // Soci attivi nella stagione precedente che NON hanno un tesseramento nella stagione corrente
+    if ($id_att) {
+        $stmt3 = $pdo->prepare(
+            'SELECT COUNT(DISTINCT t_prec.id_socio)
+             FROM tesseramenti t_prec
+             WHERE t_prec.id_stagione = :id_prec
+               AND t_prec.attivo_portale = 1
+               AND NOT EXISTS (
+                   SELECT 1 FROM tesseramenti t_att
+                   WHERE t_att.id_socio = t_prec.id_socio
+                     AND t_att.id_stagione = :id_att
+               )'
+        );
+        $stmt3->execute(['id_prec' => $id_prec, 'id_att' => $id_att]);
+        $non_rinnovati = (int)$stmt3->fetchColumn();
+    }
 }
 
 // Distribuzione soci per paese
@@ -54,23 +82,31 @@ require __DIR__ . '/../includes/layout_header.php';
 <div class="cards-grid">
     <div class="card">
         <span class="card-value"><?= $totale_soci ?></span>
-        <span class="card-label">Soci in anagrafica</span>
+        <span class="card-label">Soci registrati</span>
     </div>
     <div class="card">
-        <span class="card-value"><?= $tesserati_totali ?></span>
-        <span class="card-label">Tesserati totali</span>
+        <span class="card-value"><?= $soci_attivi_corrente ?></span>
+        <span class="card-label">
+            Soci attivi
+            <?= $stagione_attiva ? '(' . h($stagione_attiva['codice_stagione']) . ')' : '(nessuna stagione attiva)' ?>
+        </span>
     </div>
     <div class="card">
         <span class="card-value"><?= $soci_anagrafica_confermata ?></span>
         <span class="card-label">
             Anagrafica confermata
-            <?= $stagione_attiva ? '(' . h($stagione_attiva['codice_stagione']) . ')' : '(nessuna stagione attiva)' ?>
+            <?= $stagione_attiva ? '(' . h($stagione_attiva['codice_stagione']) . ')' : '' ?>
         </span>
     </div>
-    <div class="card">
-        <span class="card-value"><?= $tesserati_stagione_corrente ?></span>
+    <div class="card card-warning">
+        <span class="card-value"><?= $non_rinnovati ?></span>
         <span class="card-label">
-            Tesserati<?= $stagione_attiva ? ' (' . h($stagione_attiva['codice_stagione']) . ')' : '' ?>
+            Non rinnovati
+            <?php if ($stagione_precedente && $stagione_attiva): ?>
+                (attivi in <?= h($stagione_precedente['codice_stagione']) ?>, assenti in <?= h($stagione_attiva['codice_stagione']) ?>)
+            <?php elseif (!$stagione_precedente): ?>
+                (nessuna stagione precedente)
+            <?php endif; ?>
         </span>
     </div>
 </div>
