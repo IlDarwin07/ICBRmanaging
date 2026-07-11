@@ -30,7 +30,7 @@ require __DIR__ . '/../includes/layout_header.php';
 <div class="cards-grid">
     <div class="card">
         <span class="card-value"><?= $totale_soci ?></span>
-        <span class="card-label">Soci totali in anagrafica</span>
+        <span class="card-label">Soci in anagrafica</span>
     </div>
     <div class="card">
         <span class="card-value"><?= $tesserati_stagione_corrente ?></span>
@@ -42,13 +42,14 @@ require __DIR__ . '/../includes/layout_header.php';
 </div>
 
 <div class="quick-links">
-    <a class="btn" href="/soci/list.php">Vai all'anagrafica soci</a>
-    <a class="btn" href="/soci/create.php">Nuovo socio manuale</a>
+    <a class="btn" href="/soci/list.php">Anagrafica soci</a>
+    <a class="btn btn-secondary" href="/soci/create.php">+ Nuovo socio</a>
 </div>
 
 <p class="note">
-    Moduli import Excel, tesseramenti stagionali, pagamenti quote, prima nota e messaggi WhatsApp
-    sono pianificati nelle fasi successive della roadmap di sviluppo (Fase 3 in poi).
+    I tesseramenti di ogni socio sono consultabili dalla relativa scheda socio.
+    Moduli import Excel, gestione pagamenti, prima nota e messaggi WhatsApp
+    sono pianificati nelle fasi successive della roadmap (Fase 3 in poi).
 </p>
 
 <?php require __DIR__ . '/../includes/layout_footer.php'; ?>
