@@ -20,6 +20,9 @@ $flash = get_flash_message();
     <nav class="topbar-nav">
         <a href="/dashboard.php">Dashboard</a>
         <a href="/soci/list.php">Soci</a>
+        <a href="/tesseramenti/list.php">Tesseramenti</a>
+        <a href="/stagioni/list.php">Stagioni</a>
+        <a href="/tipologie/list.php">Tipologie</a>
     </nav>
     <div class="topbar-user">
         <?php if ($utente): ?>

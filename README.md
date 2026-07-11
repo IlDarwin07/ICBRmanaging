@@ -15,9 +15,13 @@ roadmap di sviluppo a fasi.
 - [x] **Fase 2 — Anagrafica soci**: CRUD soci, ricerca per nome/cognome/telefono/
       codice fiscale, scheda dettaglio, stato attivo/disattivo, validazioni
       server-side.
-- [ ] Fase 3 — Tesseramenti stagionali (schema DB già pronto, CRUD da sviluppare)
+- [x] **Fase 3 — Tesseramenti stagionali**: CRUD stagioni, tipologie tesseramento,
+      CRUD tesseramenti con tutti i campi del portale Inter Club (numero tessera,
+      ruolo, tipo, flag attivo/socio+, ecc.), scheda dettaglio tesseramento con
+      storico pagamenti, form registrazione pagamenti (acconto/saldo/integrazione/rimborso),
+      contatori rapidi per stagione, navigazione aggiornata.
 - [ ] Fase 4 — Import file Excel Inter Club
-- [ ] Fase 5 — Gestione quote e pagamenti
+- [ ] Fase 5 — Gestione quote e pagamenti (prima nota automatica)
 - [ ] Fase 6 — Prima nota
 - [ ] Fase 7 — Messaggi e WhatsApp assistito
 - [ ] Fase 8 — Integrazione WhatsApp Business API
@@ -37,7 +41,7 @@ ICBRmanaging/
 ├── includes/
 │   ├── auth.php               # login, sessioni, CSRF, controllo ruoli
 │   ├── functions.php          # normalizzazione dati (telefono, CF, date, ecc.)
-│   ├── layout_header.php
+│   ├── layout_header.php      # navbar aggiornata con Tesseramenti/Stagioni/Tipologie
 │   └── layout_footer.php
 ├── public/                    # <-- DOCUMENT ROOT del web server
 │   ├── index.php
@@ -49,6 +53,20 @@ ICBRmanaging/
 │   │   ├── create.php
 │   │   ├── edit.php
 │   │   └── view.php
+│   ├── tesseramenti/          # NUOVO — Fase 3
+│   │   ├── list.php
+│   │   ├── create.php
+│   │   ├── edit.php
+│   │   ├── view.php
+│   │   └── pagamento_add.php
+│   ├── stagioni/              # NUOVO — Fase 3
+│   │   ├── list.php
+│   │   ├── create.php
+│   │   └── edit.php
+│   ├── tipologie/             # NUOVO — Fase 3
+│   │   ├── list.php
+│   │   ├── create.php
+│   │   └── edit.php
 │   └── assets/css/style.css
 ├── bin/
 │   └── reset_admin_password.php   # crea/aggiorna l'utente admin da CLI
