@@ -1,105 +1,53 @@
 <?php
 /**
- * Funzioni di utilità generale - Gestionale Inter Club Brindisi
+ * Funzioni di utilita globali per Inter Club Brindisi Gestionale.
  */
 
-/**
- * Escape sicuro per output HTML.
- */
-function h(?string $value): string
+function get_db_connection(): PDO
 {
-    return htmlspecialchars($value ?? '', ENT_QUOTES, 'UTF-8');
+    static $pdo = null;
+    if ($pdo !== null) return $pdo;
+    $config = require __DIR__ . '/../config/database.php';
+    $dsn = "mysql:host={$config['host']};dbname={$config['dbname']};charset=utf8mb4";
+    $pdo = new PDO($dsn, $config['user'], $config['password'], [
+        PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,
+        PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+        PDO::ATTR_EMULATE_PREPARES   => false,
+    ]);
+    return $pdo;
 }
 
-/**
- * Trim + normalizzazione spazi multipli.
- */
-function clean_text(?string $value): ?string
+function start_secure_session(): void
 {
-    if ($value === null) {
-        return null;
+    if (session_status() === PHP_SESSION_NONE) session_start();
+    if (empty($_SESSION['csrf_token'])) {
+        $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
     }
-    $value = trim(preg_replace('/\s+/', ' ', $value));
-    return $value === '' ? null : $value;
 }
 
-/**
- * Normalizza un numero di telefono: rimuove spazi superflui ma conserva
- * il prefisso internazionale (+39, 0039, ecc.) come richiesto dalla
- * mappatura import (03-mappatura-import-file-inter-club).
- */
-function clean_phone(?string $value): ?string
+function require_login(): void
 {
-    if ($value === null) {
-        return null;
+    if (empty($_SESSION['id_utente'])) {
+        header('Location: /login.php'); exit;
     }
-    $value = trim($value);
-    if ($value === '') {
-        return null;
-    }
-    // Rimuove tutti gli spazi, mantenendo cifre, + e parentesi eventuali.
-    $value = preg_replace('/\s+/', '', $value);
-    return $value === '' ? null : $value;
 }
 
-function clean_email(?string $value): ?string
+function current_user(): ?array
 {
-    if ($value === null) {
-        return null;
-    }
-    $value = strtolower(trim($value));
-    return $value === '' ? null : $value;
+    if (empty($_SESSION['id_utente'])) return null;
+    static $utente = null;
+    if ($utente !== null) return $utente;
+    $pdo = get_db_connection();
+    $stmt = $pdo->prepare('SELECT * FROM utenti_admin WHERE id_utente = :id');
+    $stmt->execute(['id' => (int)$_SESSION['id_utente']]);
+    $utente = $stmt->fetch() ?: null;
+    return $utente;
 }
 
-function clean_codice_fiscale(?string $value): ?string
+function redirect_with_message(string $url, string $message, string $type = 'success'): never
 {
-    if ($value === null) {
-        return null;
-    }
-    $value = strtoupper(trim($value));
-    return $value === '' ? null : $value;
-}
-
-/**
- * Converte una data in formato gg-mm-aaaa (o simili) in formato SQL Y-m-d.
- * Restituisce null se il valore non è interpretabile.
- */
-function parse_date_to_sql(?string $value): ?string
-{
-    $value = trim((string)$value);
-    if ($value === '') {
-        return null;
-    }
-
-    $formats = ['d-m-Y', 'd/m/Y', 'Y-m-d', 'd.m.Y'];
-    foreach ($formats as $format) {
-        $date = DateTime::createFromFormat($format, $value);
-        if ($date instanceof DateTime) {
-            return $date->format('Y-m-d');
-        }
-    }
-
-    return null;
-}
-
-/**
- * Converte i valori SI/NO del portale in booleano (1/0), come da
- * regole di pulizia dati definite nella mappatura import.
- */
-function si_no_to_bool(?string $value): int
-{
-    $value = strtoupper(trim((string)$value));
-    return $value === 'SI' || $value === 'SÌ' || $value === 'S' || $value === '1' ? 1 : 0;
-}
-
-/**
- * Redirect helper con messaggio flash opzionale in sessione.
- */
-function redirect_with_message(string $url, string $message, string $type = 'success'): void
-{
-    $_SESSION['flash'] = ['type' => $type, 'message' => $message];
-    header('Location: ' . $url);
-    exit;
+    $_SESSION['flash'] = ['message' => $message, 'type' => $type];
+    header('Location: ' . $url); exit;
 }
 
 function get_flash_message(): ?array
@@ -110,4 +58,52 @@ function get_flash_message(): ?array
         return $flash;
     }
     return null;
+}
+
+function h(mixed $v): string
+{
+    return htmlspecialchars((string)($v ?? ''), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
+}
+
+function clean_text(?string $v): string
+{
+    return trim(strip_tags((string)($v ?? '')));
+}
+
+function clean_codice_fiscale(?string $v): string
+{
+    $cf = strtoupper(preg_replace('/[^A-Z0-9]/i', '', (string)($v ?? '')));
+    return (strlen($cf) === 16) ? $cf : '';
+}
+
+function clean_phone(?string $v): string
+{
+    return trim(preg_replace('/[^\d+\s\-().]/u', '', (string)($v ?? '')));
+}
+
+function clean_email(?string $v): string
+{
+    $e = strtolower(trim((string)($v ?? '')));
+    return filter_var($e, FILTER_VALIDATE_EMAIL) ? $e : '';
+}
+
+function parse_date_to_sql(?string $v): ?string
+{
+    $v = trim((string)($v ?? ''));
+    if ($v === '') return null;
+    if (preg_match('/^\d{4}-\d{2}-\d{2}/', $v)) return substr($v, 0, 10);
+    if (preg_match('#^(\d{1,2})[/\-.](\d{1,2})[/\-.](\d{4})$#', $v, $m)) {
+        return $m[3] . '-' . str_pad($m[2], 2, '0', STR_PAD_LEFT) . '-' . str_pad($m[1], 2, '0', STR_PAD_LEFT);
+    }
+    return null;
+}
+
+function si_no_to_bool(?string $v): bool
+{
+    return in_array(strtolower(trim((string)($v ?? ''))), ['si','s','yes','y','1','true','x','vero'], true);
+}
+
+function redirect(string $url): never
+{
+    header('Location: ' . $url); exit;
 }
