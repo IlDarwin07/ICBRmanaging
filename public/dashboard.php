@@ -10,8 +10,8 @@ $pdo = get_db_connection();
 // Totale soci in anagrafica (record attivi)
 $totale_soci = (int)$pdo->query('SELECT COUNT(*) FROM soci WHERE attivo_record = 1')->fetchColumn();
 
-// Soci attivi
-$soci_attivi = (int)$pdo->query('SELECT COUNT(*) FROM soci WHERE attivo_record = 1')->fetchColumn();
+// Tesserati totali (tutte le stagioni, attivo_portale = 1)
+$tesserati_totali = (int)$pdo->query('SELECT COUNT(DISTINCT id_socio) FROM tesseramenti WHERE attivo_portale = 1')->fetchColumn();
 
 // Stagione attiva
 $stagione_attiva = $pdo->query(
@@ -57,8 +57,8 @@ require __DIR__ . '/../includes/layout_header.php';
         <span class="card-label">Soci in anagrafica</span>
     </div>
     <div class="card">
-        <span class="card-value"><?= $soci_attivi ?></span>
-        <span class="card-label">Soci attivi</span>
+        <span class="card-value"><?= $tesserati_totali ?></span>
+        <span class="card-label">Tesserati totali</span>
     </div>
     <div class="card">
         <span class="card-value"><?= $soci_anagrafica_confermata ?></span>
