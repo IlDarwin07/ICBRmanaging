@@ -10,7 +10,7 @@ $pdo = get_db_connection();
 // Totale soci in anagrafica (record attivi)
 $totale_soci = (int)$pdo->query('SELECT COUNT(*) FROM soci WHERE attivo_record = 1')->fetchColumn();
 
-// Soci attivi (attivo_record = 1, già uguale a totale_soci, ma esplicitiamo il conteggio)
+// Soci attivi
 $soci_attivi = (int)$pdo->query('SELECT COUNT(*) FROM soci WHERE attivo_record = 1')->fetchColumn();
 
 // Stagione attiva
@@ -23,11 +23,7 @@ $soci_anagrafica_confermata  = 0;
 
 if ($stagione_attiva) {
     $stmt = $pdo->prepare(
-        'SELECT
-            COUNT(*) AS totale_tesserati,
-            SUM(conferma_anagrafica) AS confermati
-         FROM tesseramenti
-         WHERE id_stagione = :id_stagione AND attivo_portale = 1'
+        'SELECT COUNT(*) FROM tesseramenti WHERE id_stagione = :id_stagione AND attivo_portale = 1'
     );
     $stmt->execute(['id_stagione' => $stagione_attiva['id_stagione']]);
     $tesserati_stagione_corrente = (int)$stmt->fetchColumn();
@@ -39,17 +35,16 @@ if ($stagione_attiva) {
     $soci_anagrafica_confermata = (int)$stmt2->fetchColumn();
 }
 
-// Distribuzione soci per paese (nazionalita), solo soci con record attivo
-$soci_per_paese_stmt = $pdo->query(
-    "SELECT 
+// Distribuzione soci per paese
+$soci_per_paese = $pdo->query(
+    "SELECT
         COALESCE(NULLIF(TRIM(nazionalita), ''), 'Non specificata') AS paese,
         COUNT(*) AS totale
      FROM soci
      WHERE attivo_record = 1
      GROUP BY paese
      ORDER BY totale DESC, paese ASC"
-);
-$soci_per_paese = $soci_per_paese_stmt->fetchAll();
+)->fetchAll();
 
 $page_title = 'Dashboard';
 require __DIR__ . '/../includes/layout_header.php';
@@ -78,12 +73,6 @@ require __DIR__ . '/../includes/layout_header.php';
             Tesserati<?= $stagione_attiva ? ' (' . h($stagione_attiva['codice_stagione']) . ')' : '' ?>
         </span>
     </div>
-    <div class="card">
-        <span class="card-value"><?= $anagrafica_confermata ?></span>
-        <span class="card-label">
-            Anagrafica confermata<?= $stagione_attiva ? ' (' . h($stagione_attiva['codice_stagione']) . ')' : '' ?>
-        </span>
-    </div>
 </div>
 
 <div class="quick-links">
@@ -91,21 +80,21 @@ require __DIR__ . '/../includes/layout_header.php';
     <a class="btn btn-secondary" href="/soci/create.php">+ Nuovo socio</a>
 </div>
 
-<h2>Soci per nazionalità</h2>
-<?php if (empty($soci_per_nazione)): ?>
+<h2>Soci per nazionalit&agrave;</h2>
+<?php if (empty($soci_per_paese)): ?>
     <p class="note">Nessun dato disponibile.</p>
 <?php else: ?>
     <table class="data-table" style="max-width:420px">
         <thead>
             <tr>
-                <th>Nazionalità</th>
+                <th>Nazionalit&agrave;</th>
                 <th style="text-align:right">N. soci</th>
             </tr>
         </thead>
         <tbody>
-            <?php foreach ($soci_per_nazione as $row): ?>
+            <?php foreach ($soci_per_paese as $row): ?>
                 <tr>
-                    <td><?= h($row['nazione']) ?></td>
+                    <td><?= h($row['paese']) ?></td>
                     <td style="text-align:right"><?= (int)$row['totale'] ?></td>
                 </tr>
             <?php endforeach; ?>
@@ -114,29 +103,6 @@ require __DIR__ . '/../includes/layout_header.php';
 <?php endif; ?>
 
 <p class="note" style="margin-top:1.5rem">
-<?php if (!empty($soci_per_paese)): ?>
-<section class="dashboard-section">
-    <h2>Soci per paese</h2>
-    <table class="table">
-        <thead>
-            <tr>
-                <th>Paese / Nazionalità</th>
-                <th>Numero soci</th>
-            </tr>
-        </thead>
-        <tbody>
-            <?php foreach ($soci_per_paese as $riga): ?>
-            <tr>
-                <td><?= h($riga['paese']) ?></td>
-                <td><?= (int)$riga['totale'] ?></td>
-            </tr>
-            <?php endforeach; ?>
-        </tbody>
-    </table>
-</section>
-<?php endif; ?>
-
-<p class="note">
     I tesseramenti di ogni socio sono consultabili dalla relativa scheda socio.
     Moduli import Excel, gestione pagamenti, prima nota e messaggi WhatsApp
     sono pianificati nelle fasi successive della roadmap (Fase 3 in poi).
