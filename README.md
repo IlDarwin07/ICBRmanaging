@@ -1,124 +1,58 @@
-# ICBRmanaging — Gestionale Web Inter Club Javier Zanetti Brindisi
+# ICBRmanaging — Gestionale Inter Club Javier Zanetti Brindisi
 
-Gestionale amministrativo per l'Inter Club Javier Zanetti di Brindisi, sviluppato in
-PHP 8+ / MySQL, in sostituzione della gestione attuale basata su fogli Excel.
+Gestionale web per la gestione dei soci e dei tesseramenti dell'Inter Club Javier Zanetti di Brindisi.
 
-Il progetto segue la roadmap definita nei documenti di analisi (`docs/`):
-brief di progetto, schema database, mappatura import file portale Inter Club e
-roadmap di sviluppo a fasi.
+## Stack tecnico
 
-## Stato di avanzamento
+- **Frontend:** HTML5, CSS3 (no framework)
+- **Backend:** PHP 8+ (no framework)
+- **Database:** MySQL / MariaDB
+- **Server:** Apache (XAMPP / Raspberry Pi 5)
 
-- [x] **Fase 1 — Fondazione tecnica**: struttura cartelle, connessione database,
-      autenticazione admin con password hash sicuro (`password_hash`/`password_verify`),
-      sessioni protette, layout base pannello admin.
-- [x] **Fase 2 — Anagrafica soci**: CRUD soci, ricerca per nome/cognome/telefono/
-      codice fiscale, scheda dettaglio, stato attivo/disattivo, validazioni
-      server-side.
-- [x] **Fase 3 — Tesseramenti stagionali**: CRUD stagioni, tipologie tesseramento,
-      CRUD tesseramenti con tutti i campi del portale Inter Club (numero tessera,
-      ruolo, tipo, flag attivo/socio+, ecc.), scheda dettaglio tesseramento con
-      storico pagamenti, form registrazione pagamenti (acconto/saldo/integrazione/rimborso),
-      contatori rapidi per stagione, navigazione aggiornata.
-- [ ] Fase 4 — Import file Excel Inter Club
-- [ ] Fase 5 — Gestione quote e pagamenti (prima nota automatica)
-- [ ] Fase 6 — Prima nota
-- [ ] Fase 7 — Messaggi e WhatsApp assistito
-- [ ] Fase 8 — Integrazione WhatsApp Business API
+## Struttura navigazione
 
-Lo schema database (`database/schema.sql`) include **già tutte le tabelle** previste
-da tutte le fasi (soci, stagioni, tipologie_tesseramento, tesseramenti,
-pagamenti_tesseramenti, prima_nota, importazioni, righe_importazione,
-template_whatsapp, messaggi_whatsapp, utenti_admin), così da non dover fare
-migrazioni distruttive più avanti.
+L'interfaccia è organizzata in tre aree principali:
 
-## Struttura del progetto
+| Voce menu | Contenuto |
+|---|---|
+| **Dashboard** | KPI rapidi: soci totali, tesserati stagione corrente |
+| **Soci** | Anagrafica completa. La scheda di ogni socio include lo storico dei tesseramenti stagionali |
+| **Configurazione** | Voci di sistema: Stagioni sportive, Tipologie tessera |
+
+> **Nota:** I tesseramenti non hanno una sezione dedicata nel menu principale perché
+> sono strettamente legati al singolo socio. Si accede allo storico tesseramenti
+> direttamente dalla scheda socio (`/soci/view.php?id=X`).
+
+## Struttura cartelle
 
 ```
-ICBRmanaging/
-├── config/
-│   └── database.php          # connessione PDO (legge variabili d'ambiente)
-├── includes/
-│   ├── auth.php               # login, sessioni, CSRF, controllo ruoli
-│   ├── functions.php          # normalizzazione dati (telefono, CF, date, ecc.)
-│   ├── layout_header.php      # navbar aggiornata con Tesseramenti/Stagioni/Tipologie
-│   └── layout_footer.php
-├── public/                    # <-- DOCUMENT ROOT del web server
-│   ├── index.php
-│   ├── login.php
-│   ├── logout.php
-│   ├── dashboard.php
-│   ├── soci/
-│   │   ├── list.php
-│   │   ├── create.php
-│   │   ├── edit.php
-│   │   └── view.php
-│   ├── tesseramenti/          # NUOVO — Fase 3
-│   │   ├── list.php
-│   │   ├── create.php
-│   │   ├── edit.php
-│   │   ├── view.php
-│   │   └── pagamento_add.php
-│   ├── stagioni/              # NUOVO — Fase 3
-│   │   ├── list.php
-│   │   ├── create.php
-│   │   └── edit.php
-│   ├── tipologie/             # NUOVO — Fase 3
-│   │   ├── list.php
-│   │   ├── create.php
-│   │   └── edit.php
-│   └── assets/css/style.css
-├── bin/
-│   └── reset_admin_password.php   # crea/aggiorna l'utente admin da CLI
-├── database/
-│   └── schema.sql              # schema completo di tutte le fasi
-└── docs/                       # documenti di analisi originali (PDF)
+/
+├── config/          # Configurazione DB e costanti
+├── database/        # Schema SQL
+├── docs/            # Documentazione di progetto
+├── includes/        # Funzioni comuni, auth, layout header/footer
+└── public/          # Pagine web accessibili
+    ├── assets/      # CSS, immagini
+    ├── soci/        # list, view, create, edit
+    ├── stagioni/    # list (Configurazione)
+    ├── tipologie/   # list (Configurazione)
+    ├── tesseramenti/ # Accessibili da scheda socio
+    ├── dashboard.php
+    ├── login.php
+    └── logout.php
 ```
 
-**Importante:** la document root del server web deve puntare alla cartella
-`public/`, non alla radice del progetto, in modo che `config/`, `includes/`,
-`database/` e `bin/` non siano mai raggiungibili via browser.
+## Roadmap fasi
 
-## Setup rapido (ambiente di sviluppo locale)
+- **Fase 1 ✅** — Fondamenta tecniche (auth, DB, layout)
+- **Fase 2 ✅** — Anagrafica soci (CRUD completo + tesseramenti in scheda)
+- **Fase 3** — Tesseramenti stagionali (gestione completa, import file Inter Club)
+- **Fase 4** — Import file Excel dal portale Inter Club
+- **Fase 5** — Gestione quote e pagamenti
+- **Fase 6** — Prima nota contabile
+- **Fase 7** — Messaggi WhatsApp assistiti
 
-1. Creare il database e importare lo schema:
-   ```bash
-   mysql -u root -p -e "CREATE DATABASE icbr_gestionale CHARACTER SET utf8mb4;"
-   mysql -u root -p icbr_gestionale < database/schema.sql
-   ```
+## Accesso area riservata
 
-2. Configurare le credenziali di connessione tramite variabili d'ambiente
-   (oppure modificare i valori di default in `config/database.php` solo in
-   sviluppo locale, mai in produzione):
-   ```bash
-   export ICBR_DB_HOST=127.0.0.1
-   export ICBR_DB_NAME=icbr_gestionale
-   export ICBR_DB_USER=root
-   export ICBR_DB_PASS=la_tua_password
-   ```
-
-3. Creare il primo utente amministratore:
-   ```bash
-   php bin/reset_admin_password.php admin "PasswordSiceura123!"
-   ```
-
-4. Avviare il server di sviluppo PHP puntando alla cartella `public/`:
-   ```bash
-   php -S localhost:8000 -t public
-   ```
-
-5. Aprire `http://localhost:8000` ed effettuare il login.
-
-## Sicurezza
-
-- Password sempre gestite con `password_hash()` / `password_verify()`, mai in chiaro.
-- Sessioni con `session_regenerate_id()` al login, cookie `HttpOnly`/`SameSite`.
-- Token CSRF su tutti i form di scrittura.
-- Query sempre parametrizzate via PDO (nessuna concatenazione SQL).
-- `.htaccess` in `public/` e struttura a cartelle separate per evitare che file
-  sensibili (config, schema, script CLI) siano raggiungibili dal web.
-
-## Documenti di analisi
-
-I PDF originali di analisi (brief, schema DB, mappatura import, roadmap) sono
-conservati in `docs/` come riferimento per lo sviluppo delle fasi successive.
+L'applicazione richiede autenticazione. Ruoli previsti: `admin`, `segreteria`.
+Credenziali di default configurabili nel seeder SQL in `database/`.

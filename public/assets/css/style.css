@@ -30,16 +30,83 @@ body {
 
 .topbar-brand { font-weight: 700; }
 
+.topbar-nav {
+    display: flex;
+    align-items: center;
+    gap: 0;
+}
+
 .topbar-nav a {
     color: #fff;
     text-decoration: none;
     margin-right: 1rem;
     opacity: 0.9;
 }
-.topbar-nav a:hover { opacity: 1; text-decoration: underline; }
+.topbar-nav a:hover,
+.topbar-nav a.active { opacity: 1; text-decoration: underline; }
 
 .topbar-user { display: flex; align-items: center; gap: 1rem; font-size: 0.9rem; }
 .topbar-user a { color: #fff; }
+
+/* ── Dropdown Configurazione ── */
+.nav-dropdown {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+}
+
+.nav-dropdown-toggle {
+    background: none;
+    border: none;
+    color: #fff;
+    font-size: 1rem;
+    cursor: pointer;
+    padding: 0;
+    margin-right: 1rem;
+    opacity: 0.9;
+    font-family: inherit;
+}
+.nav-dropdown-toggle:hover,
+.nav-dropdown.active .nav-dropdown-toggle {
+    opacity: 1;
+    text-decoration: underline;
+}
+
+.nav-dropdown-menu {
+    display: none;
+    position: absolute;
+    top: calc(100% + 0.6rem);
+    left: 0;
+    background: #fff;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    list-style: none;
+    margin: 0;
+    padding: 0.3rem 0;
+    min-width: 180px;
+    z-index: 100;
+}
+
+.nav-dropdown-menu li a {
+    display: block;
+    padding: 0.55rem 1rem;
+    color: var(--text);
+    text-decoration: none;
+    font-size: 0.92rem;
+    margin-right: 0;
+    opacity: 1;
+}
+.nav-dropdown-menu li a:hover {
+    background: var(--gray-bg);
+    color: var(--blue);
+    text-decoration: none;
+}
+
+/* Apertura dropdown al click (toggle via JS) */
+.nav-dropdown.open .nav-dropdown-menu { display: block; }
+
+/* Script inline minimale — attivato da layout_header */
 
 .content {
     max-width: 1100px;

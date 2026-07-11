@@ -5,6 +5,12 @@
  */
 $utente = current_user();
 $flash = get_flash_message();
+
+// Determina la sezione attiva per evidenziare la voce di menu
+$current_path = $_SERVER['REQUEST_URI'] ?? '';
+$nav_soci    = str_contains($current_path, '/soci');
+$nav_config  = str_contains($current_path, '/stagioni') || str_contains($current_path, '/tipologie') || str_contains($current_path, '/tesseramenti');
+$nav_dash    = !$nav_soci && !$nav_config;
 ?>
 <!DOCTYPE html>
 <html lang="it">
@@ -18,11 +24,17 @@ $flash = get_flash_message();
 <header class="topbar">
     <div class="topbar-brand">Inter Club Javier Zanetti Brindisi</div>
     <nav class="topbar-nav">
-        <a href="/dashboard.php">Dashboard</a>
-        <a href="/soci/list.php">Soci</a>
-        <a href="/tesseramenti/list.php">Tesseramenti</a>
-        <a href="/stagioni/list.php">Stagioni</a>
-        <a href="/tipologie/list.php">Tipologie</a>
+        <a href="/dashboard.php" <?= $nav_dash  ? 'class="active"' : '' ?>>Dashboard</a>
+        <a href="/soci/list.php" <?= $nav_soci   ? 'class="active"' : '' ?>>Soci</a>
+        <div class="nav-dropdown <?= $nav_config ? 'active' : '' ?>">
+            <button class="nav-dropdown-toggle" type="button" aria-haspopup="true" aria-expanded="false">
+                Configurazione &#9662;
+            </button>
+            <ul class="nav-dropdown-menu" role="menu">
+                <li><a href="/stagioni/list.php" role="menuitem">Stagioni</a></li>
+                <li><a href="/tipologie/list.php" role="menuitem">Tipologie tessera</a></li>
+            </ul>
+        </div>
     </nav>
     <div class="topbar-user">
         <?php if ($utente): ?>
