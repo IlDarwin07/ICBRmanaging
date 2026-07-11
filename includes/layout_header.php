@@ -9,8 +9,9 @@ $flash = get_flash_message();
 // Determina la sezione attiva per evidenziare la voce di menu
 $current_path = $_SERVER['REQUEST_URI'] ?? '';
 $nav_soci    = str_contains($current_path, '/soci');
+$nav_import  = str_contains($current_path, '/import');
 $nav_config  = str_contains($current_path, '/stagioni') || str_contains($current_path, '/tipologie') || str_contains($current_path, '/tesseramenti');
-$nav_dash    = !$nav_soci && !$nav_config;
+$nav_dash    = !$nav_soci && !$nav_config && !$nav_import;
 ?>
 <!DOCTYPE html>
 <html lang="it">
@@ -24,8 +25,9 @@ $nav_dash    = !$nav_soci && !$nav_config;
 <header class="topbar">
     <div class="topbar-brand">Inter Club Javier Zanetti Brindisi</div>
     <nav class="topbar-nav">
-        <a href="/dashboard.php" <?= $nav_dash  ? 'class="active"' : '' ?>>Dashboard</a>
+        <a href="/dashboard.php" <?= $nav_dash   ? 'class="active"' : '' ?>>Dashboard</a>
         <a href="/soci/list.php" <?= $nav_soci   ? 'class="active"' : '' ?>>Soci</a>
+        <a href="/import/upload.php" <?= $nav_import ? 'class="active"' : '' ?>>Import</a>
         <div class="nav-dropdown <?= $nav_config ? 'active' : '' ?>">
             <button class="nav-dropdown-toggle" type="button" aria-haspopup="true" aria-expanded="false">
                 Configurazione &#9662;
