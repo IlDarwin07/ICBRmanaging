@@ -23,7 +23,11 @@ $soci_anagrafica_confermata  = 0;
 
 if ($stagione_attiva) {
     $stmt = $pdo->prepare(
-        'SELECT COUNT(*) FROM tesseramenti WHERE id_stagione = :id_stagione AND attivo_portale = 1'
+        'SELECT
+            COUNT(*) AS totale_tesserati,
+            SUM(conferma_anagrafica) AS confermati
+         FROM tesseramenti
+         WHERE id_stagione = :id_stagione AND attivo_portale = 1'
     );
     $stmt->execute(['id_stagione' => $stagione_attiva['id_stagione']]);
     $tesserati_stagione_corrente = (int)$stmt->fetchColumn();
@@ -71,8 +75,13 @@ require __DIR__ . '/../includes/layout_header.php';
     <div class="card">
         <span class="card-value"><?= $tesserati_stagione_corrente ?></span>
         <span class="card-label">
-            Tesserati attivi
-            <?= $stagione_attiva ? '(' . h($stagione_attiva['codice_stagione']) . ')' : '(nessuna stagione attiva)' ?>
+            Tesserati<?= $stagione_attiva ? ' (' . h($stagione_attiva['codice_stagione']) . ')' : '' ?>
+        </span>
+    </div>
+    <div class="card">
+        <span class="card-value"><?= $anagrafica_confermata ?></span>
+        <span class="card-label">
+            Anagrafica confermata<?= $stagione_attiva ? ' (' . h($stagione_attiva['codice_stagione']) . ')' : '' ?>
         </span>
     </div>
 </div>
@@ -82,6 +91,29 @@ require __DIR__ . '/../includes/layout_header.php';
     <a class="btn btn-secondary" href="/soci/create.php">+ Nuovo socio</a>
 </div>
 
+<h2>Soci per nazionalità</h2>
+<?php if (empty($soci_per_nazione)): ?>
+    <p class="note">Nessun dato disponibile.</p>
+<?php else: ?>
+    <table class="data-table" style="max-width:420px">
+        <thead>
+            <tr>
+                <th>Nazionalità</th>
+                <th style="text-align:right">N. soci</th>
+            </tr>
+        </thead>
+        <tbody>
+            <?php foreach ($soci_per_nazione as $row): ?>
+                <tr>
+                    <td><?= h($row['nazione']) ?></td>
+                    <td style="text-align:right"><?= (int)$row['totale'] ?></td>
+                </tr>
+            <?php endforeach; ?>
+        </tbody>
+    </table>
+<?php endif; ?>
+
+<p class="note" style="margin-top:1.5rem">
 <?php if (!empty($soci_per_paese)): ?>
 <section class="dashboard-section">
     <h2>Soci per paese</h2>
