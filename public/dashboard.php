@@ -45,7 +45,6 @@ if ($stagione_precedente) {
     $id_prec = $stagione_precedente['id_stagione'];
     $id_att  = $stagione_attiva['id_stagione'] ?? null;
 
-    // Soci attivi nella stagione precedente che NON hanno un tesseramento nella stagione corrente
     if ($id_att) {
         $stmt3 = $pdo->prepare(
             'SELECT COUNT(DISTINCT t_prec.id_socio)
@@ -63,10 +62,10 @@ if ($stagione_precedente) {
     }
 }
 
-// Distribuzione soci per paese
+// Distribuzione soci per paese (colonna `paese`, non `nazionalita`)
 $soci_per_paese = $pdo->query(
     "SELECT
-        COALESCE(NULLIF(TRIM(nazionalita), ''), 'Non specificata') AS paese,
+        COALESCE(NULLIF(TRIM(paese), ''), 'Non specificato') AS paese,
         COUNT(*) AS totale
      FROM soci
      WHERE attivo_record = 1
@@ -114,16 +113,17 @@ require __DIR__ . '/../includes/layout_header.php';
 <div class="quick-links">
     <a class="btn" href="/soci/list.php">Anagrafica soci</a>
     <a class="btn btn-secondary" href="/soci/create.php">+ Nuovo socio</a>
+    <a class="btn btn-secondary" href="/importazioni/upload.php">&#8682; Importa XLSX</a>
 </div>
 
-<h2>Soci per nazionalit&agrave;</h2>
+<h2>Soci per paese</h2>
 <?php if (empty($soci_per_paese)): ?>
     <p class="note">Nessun dato disponibile.</p>
 <?php else: ?>
     <table class="data-table" style="max-width:420px">
         <thead>
             <tr>
-                <th>Nazionalit&agrave;</th>
+                <th>Paese</th>
                 <th style="text-align:right">N. soci</th>
             </tr>
         </thead>
@@ -140,8 +140,6 @@ require __DIR__ . '/../includes/layout_header.php';
 
 <p class="note" style="margin-top:1.5rem">
     I tesseramenti di ogni socio sono consultabili dalla relativa scheda socio.
-    Moduli import Excel, gestione pagamenti, prima nota e messaggi WhatsApp
-    sono pianificati nelle fasi successive della roadmap (Fase 3 in poi).
 </p>
 
 <?php require __DIR__ . '/../includes/layout_footer.php'; ?>
