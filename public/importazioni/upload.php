@@ -74,6 +74,13 @@ require __DIR__ . '/../../includes/layout_header.php';
                     </option>
                 <?php endforeach; ?>
             </select>
+            <?php if (empty($stagioni)): ?>
+                <small class="note" style="color:var(--color-warning)">
+                    &#9888; Nessuna stagione trovata.
+                    <a href="/configurazione/stagioni.php">Crea una stagione</a>
+                    prima di importare.
+                </small>
+            <?php endif; ?>
         </div>
 
         <div class="form-group">
@@ -84,7 +91,10 @@ require __DIR__ . '/../../includes/layout_header.php';
         </div>
 
         <div class="form-actions">
-            <button type="submit" class="btn">Continua &rarr;</button>
+            <button type="submit" class="btn"
+                <?= empty($stagioni) ? 'disabled title="Crea prima una stagione"' : '' ?>>
+                Continua &rarr;
+            </button>
             <a href="/dashboard.php" class="btn btn-secondary">Annulla</a>
         </div>
     </form>
@@ -93,19 +103,23 @@ require __DIR__ . '/../../includes/layout_header.php';
 <div class="card" style="max-width:560px;margin-top:1.5rem">
     <h3 style="margin-bottom:.75rem">Storico importazioni</h3>
     <?php
+    // FIX: tabella righe_importazione (non importazioni_righe)
+    //      colonna data_importazione (non data_import)
+    //      esito ENUM: 'inserita','aggiornata' (non inserito/aggiornato)
+    //      PK: id_riga_import (non id_riga)
     $imports = $pdo->query(
-        "SELECT i.id_importazione, i.nome_file, i.data_import,
+        "SELECT i.id_importazione, i.nome_file, i.data_importazione,
                 s.codice_stagione,
-                SUM(CASE WHEN ir.esito = 'inserito' THEN 1 ELSE 0 END)    AS inseriti,
-                SUM(CASE WHEN ir.esito = 'aggiornato' THEN 1 ELSE 0 END) AS aggiornati,
-                SUM(CASE WHEN ir.esito = 'duplicato' THEN 1 ELSE 0 END)  AS duplicati,
-                SUM(CASE WHEN ir.esito = 'errore' THEN 1 ELSE 0 END)     AS errori,
-                COUNT(ir.id_riga)                                          AS totale_righe
+                SUM(CASE WHEN ir.esito = 'inserita'   THEN 1 ELSE 0 END) AS inseriti,
+                SUM(CASE WHEN ir.esito = 'aggiornata' THEN 1 ELSE 0 END) AS aggiornati,
+                SUM(CASE WHEN ir.esito = 'duplicato'  THEN 1 ELSE 0 END) AS duplicati,
+                SUM(CASE WHEN ir.esito = 'errore'     THEN 1 ELSE 0 END) AS errori,
+                COUNT(ir.id_riga_import)                                   AS totale_righe
          FROM importazioni i
          JOIN stagioni s ON s.id_stagione = i.id_stagione
-         LEFT JOIN importazioni_righe ir ON ir.id_importazione = i.id_importazione
+         LEFT JOIN righe_importazione ir ON ir.id_importazione = i.id_importazione
          GROUP BY i.id_importazione
-         ORDER BY i.data_import DESC
+         ORDER BY i.data_importazione DESC
          LIMIT 10"
     )->fetchAll();
     ?>
@@ -128,7 +142,7 @@ require __DIR__ . '/../../includes/layout_header.php';
             <tbody>
                 <?php foreach ($imports as $im): ?>
                     <tr>
-                        <td><?= h(date('d/m/Y H:i', strtotime($im['data_import']))) ?></td>
+                        <td><?= h(date('d/m/Y H:i', strtotime($im['data_importazione']))) ?></td>
                         <td><?= h($im['nome_file']) ?></td>
                         <td><?= h($im['codice_stagione']) ?></td>
                         <td style="text-align:right"><?= (int)$im['inseriti'] ?></td>
