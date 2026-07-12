@@ -44,13 +44,9 @@ $stmt->execute($params);
 $soci = $stmt->fetchAll();
 
 $page_title = 'Anagrafica soci';
+// $base viene definito da layout_header.php — non ridefinire BASE_URL qui
 require __DIR__ . '/../../includes/layout_header.php';
-
-if (!defined('BASE_URL')) {
-    $script = $_SERVER['SCRIPT_NAME'] ?? '';
-    define('BASE_URL', str_contains($script, '/ICBRmanaging/') ? '/ICBRmanaging/public' : '');
-}
-$urlbase = rtrim(BASE_URL, '/');
+// Dopo l'include $base è disponibile
 ?>
 
 <div class="page-header">
@@ -61,7 +57,7 @@ $urlbase = rtrim(BASE_URL, '/');
             </small>
         <?php endif; ?>
     </h1>
-    <a class="btn" href="<?= $urlbase ?>/soci/create.php">+ Nuovo socio</a>
+    <a class="btn" href="<?= $base ?>/soci/create.php">+ Nuovo socio</a>
 </div>
 
 <form method="get" class="search-form">
@@ -73,22 +69,32 @@ $urlbase = rtrim(BASE_URL, '/');
     </label>
     <button type="submit" class="btn">Cerca</button>
     <?php if ($q !== '' || !$solo_attivi): ?>
-        <a class="btn btn-secondary" href="<?= $urlbase ?>/soci/list.php">Azzera</a>
+        <a class="btn btn-secondary" href="<?= $base ?>/soci/list.php">Azzera</a>
     <?php endif; ?>
 </form>
 
 <p class="note"><?= count($soci) ?> soci trovati<?= count($soci) >= 500 ? ' (max 500 &mdash; affina la ricerca)' : '' ?>.</p>
 
-<table class="data-table soci-table">
+<table class="soci-table">
+    <colgroup>
+        <col style="width:20%">
+        <col style="width:9%">
+        <col style="width:14%">
+        <col style="width:15%">
+        <col style="width:11%">
+        <col style="width:8%">
+        <col style="width:8%">
+        <col style="width:15%">
+    </colgroup>
     <thead>
     <tr>
         <th>Cognome e Nome</th>
         <th>Data nascita</th>
         <th>Comune</th>
         <th>Cod. fiscale</th>
-        <th>N. Tessera<?= $stagione_attiva ? '<br><small>' . h($stagione_attiva['codice_stagione']) . '</small>' : '' ?></th>
-        <th>Portale<?= $stagione_attiva ? '<br><small>' . h($stagione_attiva['codice_stagione']) . '</small>' : '' ?></th>
-        <th>Stato</th>
+        <th style="text-align:center">N. Tessera<?= $stagione_attiva ? '<br><small>' . h($stagione_attiva['codice_stagione']) . '</small>' : '' ?></th>
+        <th style="text-align:center">Portale<?= $stagione_attiva ? '<br><small>' . h($stagione_attiva['codice_stagione']) . '</small>' : '' ?></th>
+        <th style="text-align:center">Stato</th>
         <th>Azioni</th>
     </tr>
     </thead>
@@ -102,7 +108,7 @@ $urlbase = rtrim(BASE_URL, '/');
             <td><?= $s['data_nascita'] ? date('d/m/Y', strtotime($s['data_nascita'])) : '&mdash;' ?></td>
             <td><?php
                 $loc = h($s['comune'] ?? '');
-                if ($s['provincia']) $loc .= ' (' . h($s['provincia']) . ')';
+                if (!empty($s['provincia'])) $loc .= ' (' . h($s['provincia']) . ')';
                 echo $loc ?: '&mdash;';
             ?></td>
             <td><?= h($s['codice_fiscale']) ?: '&mdash;' ?></td>
@@ -122,8 +128,8 @@ $urlbase = rtrim(BASE_URL, '/');
                 </span>
             </td>
             <td class="td-actions">
-                <a class="btn btn-sm" href="<?= $urlbase ?>/soci/view.php?id=<?= (int)$s['id_socio'] ?>">Scheda</a>
-                <a class="btn-icon" href="<?= $urlbase ?>/soci/edit.php?id=<?= (int)$s['id_socio'] ?>" title="Modifica anagrafica">
+                <a class="btn btn-sm" href="<?= $base ?>/soci/view.php?id=<?= (int)$s['id_socio'] ?>">Scheda</a>
+                <a class="btn-icon" href="<?= $base ?>/soci/edit.php?id=<?= (int)$s['id_socio'] ?>" title="Modifica anagrafica">
                     <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none"
                          stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
