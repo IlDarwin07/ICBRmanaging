@@ -1,27 +1,30 @@
-</main>
-<footer class="app-footer">
-    <small>Gestionale Inter Club Brindisi &mdash; uso interno riservato</small>
-</footer>
-<script>
-(function () {
-    var dropdowns = document.querySelectorAll('.nav-dropdown');
-    dropdowns.forEach(function (dd) {
-        var toggle = dd.querySelector('.nav-dropdown-toggle');
-        if (!toggle) return;
-        toggle.addEventListener('click', function (e) {
-            e.stopPropagation();
-            dd.classList.toggle('open');
-            toggle.setAttribute('aria-expanded', dd.classList.contains('open'));
+    </main>
+    <footer class="site-footer">
+        <p>Gestionale Inter Club Brindisi &mdash; uso interno riservato</p>
+    </footer>
+    <script>
+    // Dropdown navbar
+    document.querySelectorAll('.nav-dropdown-toggle').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const open = this.getAttribute('aria-expanded') === 'true';
+            document.querySelectorAll('.nav-dropdown-toggle').forEach(b => {
+                b.setAttribute('aria-expanded', 'false');
+                b.closest('.nav-dropdown').classList.remove('open');
+            });
+            if (!open) {
+                this.setAttribute('aria-expanded', 'true');
+                this.closest('.nav-dropdown').classList.add('open');
+            }
         });
     });
-    document.addEventListener('click', function () {
-        dropdowns.forEach(function (dd) {
-            dd.classList.remove('open');
-            var t = dd.querySelector('.nav-dropdown-toggle');
-            if (t) t.setAttribute('aria-expanded', 'false');
-        });
+    document.addEventListener('click', e => {
+        if (!e.target.closest('.nav-dropdown')) {
+            document.querySelectorAll('.nav-dropdown-toggle').forEach(b => {
+                b.setAttribute('aria-expanded', 'false');
+                b.closest('.nav-dropdown').classList.remove('open');
+            });
+        }
     });
-})();
-</script>
+    </script>
 </body>
 </html>

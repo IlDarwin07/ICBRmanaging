@@ -1,1 +1,9 @@
 Options -Indexes
+
+# Se Apache non è configurato con DocumentRoot su /public,
+# questo .htaccess NON viene usato come root.
+# Lasciare così — la configurazione del percorso base avviene in config.php
+
+RewriteEngine On
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
