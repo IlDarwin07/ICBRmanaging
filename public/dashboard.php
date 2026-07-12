@@ -62,15 +62,15 @@ if ($stagione_precedente) {
     }
 }
 
-// Distribuzione soci per paese (colonna `paese`, non `nazionalita`)
-$soci_per_paese = $pdo->query(
+// Distribuzione soci per comune di residenza
+$soci_per_comune = $pdo->query(
     "SELECT
-        COALESCE(NULLIF(TRIM(paese), ''), 'Non specificato') AS paese,
+        COALESCE(NULLIF(TRIM(comune), ''), 'Non specificato') AS comune,
         COUNT(*) AS totale
      FROM soci
      WHERE attivo_record = 1
-     GROUP BY paese
-     ORDER BY totale DESC, paese ASC"
+     GROUP BY comune
+     ORDER BY totale DESC, comune ASC"
 )->fetchAll();
 
 $page_title = 'Dashboard';
@@ -116,21 +116,21 @@ require __DIR__ . '/../includes/layout_header.php';
     <a class="btn btn-secondary" href="/importazioni/upload.php">&#8682; Importa XLSX</a>
 </div>
 
-<h2>Soci per paese</h2>
-<?php if (empty($soci_per_paese)): ?>
+<h2>Soci per comune</h2>
+<?php if (empty($soci_per_comune)): ?>
     <p class="note">Nessun dato disponibile.</p>
 <?php else: ?>
     <table class="data-table" style="max-width:420px">
         <thead>
             <tr>
-                <th>Paese</th>
+                <th>Comune</th>
                 <th style="text-align:right">N. soci</th>
             </tr>
         </thead>
         <tbody>
-            <?php foreach ($soci_per_paese as $row): ?>
+            <?php foreach ($soci_per_comune as $row): ?>
                 <tr>
-                    <td><?= h($row['paese']) ?></td>
+                    <td><?= h($row['comune']) ?></td>
                     <td style="text-align:right"><?= (int)$row['totale'] ?></td>
                 </tr>
             <?php endforeach; ?>
