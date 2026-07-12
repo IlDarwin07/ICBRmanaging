@@ -17,7 +17,6 @@ $stagioni = $pdo->query(
 )->fetchAll();
 
 $error   = '';
-$success = '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $id_stagione = (int)($_POST['id_stagione'] ?? 0);
@@ -25,7 +24,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (!$id_stagione) {
         $error = 'Seleziona una stagione prima di procedere.';
     } elseif (!isset($_FILES['xlsx_file']) || $_FILES['xlsx_file']['error'] !== UPLOAD_ERR_OK) {
-        $error = 'Errore nel caricamento del file. Verificare che sia un file .xlsx valido.';
+        $upload_errors = [
+            UPLOAD_ERR_INI_SIZE   => 'File troppo grande (limite php.ini).',
+            UPLOAD_ERR_FORM_SIZE  => 'File troppo grande (limite form).',
+            UPLOAD_ERR_PARTIAL    => 'Caricamento parziale, riprova.',
+            UPLOAD_ERR_NO_FILE    => 'Nessun file selezionato.',
+            UPLOAD_ERR_NO_TMP_DIR => 'Cartella temporanea mancante sul server.',
+            UPLOAD_ERR_CANT_WRITE => 'Impossibile scrivere il file sul server (permessi).',
+            UPLOAD_ERR_EXTENSION  => 'Upload bloccato da un\'estensione PHP.',
+        ];
+        $err_code = $_FILES['xlsx_file']['error'] ?? -1;
+        $error = $upload_errors[$err_code] ?? "Errore upload (codice: $err_code).";
     } else {
         $tmp  = $_FILES['xlsx_file']['tmp_name'];
         $nome = basename($_FILES['xlsx_file']['name']);
@@ -34,21 +43,26 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if (!in_array($ext, ['xlsx', 'xls', 'csv'])) {
             $error = 'Formato non supportato. Carica un file .xlsx, .xls o .csv.';
         } else {
-            // Salva in sessione il path temporaneo e i metadati
-            $dest_dir = sys_get_temp_dir() . '/interclub_import';
+            // Salva nella cartella storage/import/ del progetto
+            // (evita problemi di permessi con sys_get_temp_dir() su XAMPP Windows)
+            $dest_dir = dirname(__DIR__, 2) . '/storage/import';
             if (!is_dir($dest_dir)) {
-                mkdir($dest_dir, 0700, true);
+                mkdir($dest_dir, 0755, true);
             }
             $dest = $dest_dir . '/' . session_id() . '_' . time() . '.' . $ext;
-            move_uploaded_file($tmp, $dest);
 
-            $_SESSION['import_file']      = $dest;
-            $_SESSION['import_ext']       = $ext;
-            $_SESSION['import_stagione']  = $id_stagione;
-            $_SESSION['import_filename']  = $nome;
+            if (!move_uploaded_file($tmp, $dest)) {
+                $error = 'Impossibile salvare il file in ' . $dest_dir
+                       . '. Verificare i permessi della cartella.';
+            } else {
+                $_SESSION['import_file']      = $dest;
+                $_SESSION['import_ext']       = $ext;
+                $_SESSION['import_stagione']  = $id_stagione;
+                $_SESSION['import_filename']  = $nome;
 
-            header('Location: /importazioni/mapping.php');
-            exit;
+                header('Location: /importazioni/mapping.php');
+                exit;
+            }
         }
     }
 }
@@ -56,10 +70,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 $page_title = 'Importa file XLSX';
 require __DIR__ . '/../../includes/layout_header.php';
 ?>
-<h1>Importazione Inter Club <small style="font-size:.6em;font-weight:400">Step 1 di 3 — Carica file</small></h1>
+<h1>Importazione Inter Club <small style="font-size:.6em;font-weight:400">Step 1 di 3 &mdash; Carica file</small></h1>
 
 <?php if ($error): ?>
     <div class="alert alert-error"><?= h($error) ?></div>
+<?php endif; ?>
+
+<?php if (!empty($_SESSION['import_error'])): ?>
+    <div class="alert alert-error"><?= h($_SESSION['import_error']) ?></div>
+    <?php unset($_SESSION['import_error']); ?>
 <?php endif; ?>
 
 <div class="card" style="max-width:560px">
@@ -103,10 +122,6 @@ require __DIR__ . '/../../includes/layout_header.php';
 <div class="card" style="max-width:560px;margin-top:1.5rem">
     <h3 style="margin-bottom:.75rem">Storico importazioni</h3>
     <?php
-    // FIX: tabella righe_importazione (non importazioni_righe)
-    //      colonna data_importazione (non data_import)
-    //      esito ENUM: 'inserita','aggiornata' (non inserito/aggiornato)
-    //      PK: id_riga_import (non id_riga)
     $imports = $pdo->query(
         "SELECT i.id_importazione, i.nome_file, i.data_importazione,
                 s.codice_stagione,

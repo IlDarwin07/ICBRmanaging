@@ -3,15 +3,8 @@
  * Fase 4 — Import XLSX Inter Club
  * Step 2: leggi intestazioni file e mostra mapping colonne → campi DB
  *
- * Il file XLS Inter Club ha sempre le stesse 24 intestazioni:
- * Nome | Cognome | Sesso | Data di nascita | Codice fiscale | Nazionalita |
- * Indirizzo | Numero civico | CAP | Provincia | Comune | Telefono | email |
- * Listino | Numero Tessera | Ruolo | Socio PLUS | Tipo | Comune Nascita |
- * Attivo scorsa stagione | Data/ora attivazione | Attivo |
- * Conferma Anagrafica | Tessera Fisica
- *
- * Se il mapping automatico copre tutte le colonne e include almeno un
- * identificatore, lo step viene saltato (?force=1 per revisione manuale).
+ * Se il mapping automatico copre almeno un identificatore,
+ * lo step viene saltato automaticamente (?force=1 per revisione manuale).
  */
 require_once __DIR__ . '/../../includes/auth.php';
 require_once __DIR__ . '/../../includes/functions.php';
@@ -20,13 +13,23 @@ require_once __DIR__ . '/../../includes/xlsx_reader.php';
 start_secure_session();
 require_login();
 
-if (empty($_SESSION['import_file']) || !file_exists($_SESSION['import_file'])) {
+// Verifica sessione valida
+if (empty($_SESSION['import_file'])) {
     header('Location: /importazioni/upload.php');
     exit;
 }
 
-$file        = $_SESSION['import_file'];
-$ext         = $_SESSION['import_ext'];
+$file = $_SESSION['import_file'];
+$ext  = $_SESSION['import_ext'];
+
+if (!file_exists($file)) {
+    $_SESSION['import_error'] = 'File di import non trovato sul server ('
+        . basename($file) . '). Verifica che la cartella storage/import/ '
+        . 'esista e sia scrivibile da PHP (chmod 755).';
+    header('Location: /importazioni/upload.php');
+    exit;
+}
+
 $filename    = $_SESSION['import_filename'] ?? basename($file);
 $id_stagione = (int)$_SESSION['import_stagione'];
 
@@ -42,6 +45,12 @@ try {
     $samples = $reader->getSampleRows(3);
 } catch (Exception $e) {
     $_SESSION['import_error'] = 'Impossibile leggere il file: ' . $e->getMessage();
+    header('Location: /importazioni/upload.php');
+    exit;
+}
+
+if (empty($headers)) {
+    $_SESSION['import_error'] = 'Il file sembra vuoto o non contiene intestazioni leggibili.';
     header('Location: /importazioni/upload.php');
     exit;
 }
@@ -76,7 +85,6 @@ $campi_db = [
 ];
 
 // ── Tabella alias: intestazioni ESATTE del file Inter Club + varianti ─────
-// Chiave = campo DB, valore = array di intestazioni accettate (lowercase)
 $alias_map = [
     'nome'                => ['nome', 'first name', 'first_name', 'given name'],
     'cognome'             => ['cognome', 'surname', 'last name', 'last_name'],
@@ -122,6 +130,7 @@ $alias_map = [
 $auto_map = [];
 foreach ($headers as $i => $h) {
     $h_norm = strtolower(trim($h));
+    if ($h_norm === '') continue;
     foreach ($alias_map as $campo => $aliases) {
         if (in_array($h_norm, $aliases, true)) {
             $auto_map[$i] = $campo;
@@ -130,14 +139,15 @@ foreach ($headers as $i => $h) {
     }
 }
 
-// ── Skip automatico se mapping è completo ────────────────────────────────
-$valori_auto   = array_values($auto_map);
-$ha_id_auto    = in_array('numero_tessera', $valori_auto)
-                 || in_array('codice_fiscale', $valori_auto)
-                 || (in_array('cognome', $valori_auto) && in_array('nome', $valori_auto));
-$tutti_mappati = (count($auto_map) === count($headers));
+// ── Skip automatico: basta avere almeno un identificatore mappato ─────────
+// Non richiediamo più che TUTTE le colonne siano mappate:
+// colonne sconosciute vengono semplicemente ignorate.
+$valori_auto = array_values($auto_map);
+$ha_id_auto  = in_array('numero_tessera', $valori_auto)
+               || in_array('codice_fiscale', $valori_auto)
+               || (in_array('cognome', $valori_auto) && in_array('nome', $valori_auto));
 
-if ($tutti_mappati && $ha_id_auto && ($_GET['force'] ?? '') !== '1') {
+if ($ha_id_auto && ($_GET['force'] ?? '') !== '1') {
     $_SESSION['import_mapping'] = $auto_map;
     header('Location: /importazioni/process.php');
     exit;
@@ -173,18 +183,15 @@ $page_title = 'Importa XLSX — Mapping colonne';
 require __DIR__ . '/../../includes/layout_header.php';
 ?>
 <h1>Importazione Inter Club
-    <small style="font-size:.6em;font-weight:400">Step 2 di 3 — Mapping colonne</small>
+    <small style="font-size:.6em;font-weight:400">Step 2 di 3 &mdash; Mapping colonne</small>
 </h1>
 
 <p class="note">
     File: <strong><?= h($filename) ?></strong> &nbsp;|&nbsp;
     Stagione: <strong><?= h($codice_stagione) ?></strong> &nbsp;|&nbsp;
     <?= count($headers) ?> colonne rilevate
-    <?php if ($tutti_mappati && $ha_id_auto): ?>
-        &nbsp;&mdash;&nbsp;
-        <span style="color:var(--color-success)">✓ mapping automatico riuscito</span>
-        &nbsp;<a href="?force=1" style="font-size:.85em">(rivedi manualmente)</a>
-    <?php endif; ?>
+    &nbsp;&mdash;&nbsp;
+    <a href="?force=1" style="font-size:.85em">Rivedi mapping manualmente</a>
 </p>
 
 <?php if ($error): ?>
