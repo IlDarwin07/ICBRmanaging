@@ -2,6 +2,16 @@
 /**
  * Fase 4 — Import XLSX Inter Club
  * Step 2: leggi intestazioni file e mostra mapping colonne → campi DB
+ *
+ * Il file XLS Inter Club ha sempre le stesse 24 intestazioni:
+ * Nome | Cognome | Sesso | Data di nascita | Codice fiscale | Nazionalita |
+ * Indirizzo | Numero civico | CAP | Provincia | Comune | Telefono | email |
+ * Listino | Numero Tessera | Ruolo | Socio PLUS | Tipo | Comune Nascita |
+ * Attivo scorsa stagione | Data/ora attivazione | Attivo |
+ * Conferma Anagrafica | Tessera Fisica
+ *
+ * Se il mapping automatico copre tutte le colonne e include almeno un
+ * identificatore, lo step viene saltato (?force=1 per revisione manuale).
  */
 require_once __DIR__ . '/../../includes/auth.php';
 require_once __DIR__ . '/../../includes/functions.php';
@@ -15,84 +25,127 @@ if (empty($_SESSION['import_file']) || !file_exists($_SESSION['import_file'])) {
     exit;
 }
 
-$file     = $_SESSION['import_file'];
-$ext      = $_SESSION['import_ext'];
-$filename = $_SESSION['import_filename'] ?? basename($file);
+$file        = $_SESSION['import_file'];
+$ext         = $_SESSION['import_ext'];
+$filename    = $_SESSION['import_filename'] ?? basename($file);
 $id_stagione = (int)$_SESSION['import_stagione'];
 
-$pdo = get_db_connection();
+$pdo      = get_db_connection();
 $stagione = $pdo->prepare('SELECT codice_stagione FROM stagioni WHERE id_stagione = ?');
 $stagione->execute([$id_stagione]);
 $codice_stagione = $stagione->fetchColumn() ?: '—';
 
-// Leggi solo la prima riga (intestazioni) + prime 3 righe campione
+// ── Leggi intestazioni + prime 3 righe campione ───────────────────────────
 try {
-    $reader = new XlsxReader($file, $ext);
-    $headers = $reader->getHeaders();      // array di stringhe
-    $samples = $reader->getSampleRows(3); // array di array
+    $reader  = new XlsxReader($file, $ext);
+    $headers = $reader->getHeaders();
+    $samples = $reader->getSampleRows(3);
 } catch (Exception $e) {
     $_SESSION['import_error'] = 'Impossibile leggere il file: ' . $e->getMessage();
     header('Location: /importazioni/upload.php');
     exit;
 }
 
-// Campi disponibili nel DB (target)
+// ── Campi disponibili nel DB (target del mapping) ─────────────────────────
 $campi_db = [
     ''                     => '— Non importare —',
-    // Anagrafica
-    'cognome'              => 'Cognome',
     'nome'                 => 'Nome',
-    'codice_fiscale'       => 'Codice Fiscale',
-    'data_nascita'         => 'Data di nascita',
-    'luogo_nascita'        => 'Luogo di nascita',
-    'paese'                => 'Paese',
+    'cognome'              => 'Cognome',
     'sesso'                => 'Sesso (M/F)',
-    'email'                => 'Email',
-    'telefono'             => 'Telefono',
+    'data_nascita'         => 'Data di nascita',
+    'codice_fiscale'       => 'Codice Fiscale',
+    'paese'                => 'Paese / Nazionalità',
     'indirizzo'            => 'Indirizzo',
+    'numero_civico'        => 'Numero civico',
     'cap'                  => 'CAP',
-    'citta'                => 'Città',
     'provincia'            => 'Provincia',
-    // Tesseramento
+    'citta'                => 'Città / Comune',
+    'telefono'             => 'Telefono',
+    'email'                => 'Email',
+    'listino'              => 'Listino / Quota',
     'numero_tessera'       => 'Numero tessera (Inter Club)',
-    'tipologia_codice'     => 'Tipologia (codice, es. SENIOR)',
-    'data_iscrizione'      => 'Data iscrizione',
-    'attivo_portale'       => 'Attivo portale (0/1)',
-    'conferma_anagrafica'  => 'Anagrafica confermata (0/1)',
-    'note_tesseramento'    => 'Note tesseramento',
+    'ruolo'                => 'Ruolo',
+    'socio_plus'           => 'Socio PLUS (SI/NO)',
+    'tipologia_codice'     => 'Tipo (senior/junior/…)',
+    'luogo_nascita'        => 'Luogo di nascita',
+    'attivo_scorsa'        => 'Attivo scorsa stagione',
+    'data_attivazione'     => 'Data/ora attivazione',
+    'attivo_portale'       => 'Attivo portale (SI/NO)',
+    'conferma_anagrafica'  => 'Conferma Anagrafica (SI/NO)',
+    'tessera_fisica'       => 'Tessera Fisica (SI/NO)',
 ];
 
-// Mapping automatico euristica (case-insensitive, trim)
+// ── Tabella alias: intestazioni ESATTE del file Inter Club + varianti ─────
+// Chiave = campo DB, valore = array di intestazioni accettate (lowercase)
+$alias_map = [
+    'nome'                => ['nome', 'first name', 'first_name', 'given name'],
+    'cognome'             => ['cognome', 'surname', 'last name', 'last_name'],
+    'sesso'               => ['sesso', 'gender', 'sex'],
+    'data_nascita'        => ['data di nascita', 'data_nascita', 'birthdate',
+                              'birth date', 'dob', 'date of birth'],
+    'codice_fiscale'      => ['codice fiscale', 'codice_fiscale', 'cf',
+                              'fiscal code', 'tax code', 'codicefiscale'],
+    'paese'               => ['nazionalita', 'nazionalità', 'paese',
+                              'country', 'nazione', 'nation'],
+    'indirizzo'           => ['indirizzo', 'address', 'via', 'street'],
+    'numero_civico'       => ['numero civico', 'numero_civico', 'civico',
+                              'house number', 'streetnumber'],
+    'cap'                 => ['cap', 'postal code', 'postcode', 'zip', 'zip code'],
+    'provincia'           => ['provincia', 'province', 'prov'],
+    'citta'               => ['comune', 'citta', 'città', 'city', 'town'],
+    'telefono'            => ['telefono', 'phone', 'tel', 'mobile',
+                              'cellulare', 'cell'],
+    'email'               => ['email', 'e-mail', 'mail'],
+    'listino'             => ['listino', 'quota', 'membership type',
+                              'listino/quota'],
+    'numero_tessera'      => ['numero tessera', 'numero_tessera', 'tessera',
+                              'card number', 'membership number', 'num tessera'],
+    'ruolo'               => ['ruolo', 'role'],
+    'socio_plus'          => ['socio plus', 'socio_plus', 'plus'],
+    'tipologia_codice'    => ['tipo', 'tipo socio', 'tipologia', 'type'],
+    'luogo_nascita'       => ['comune nascita', 'comune_nascita',
+                              'luogo nascita', 'luogo_nascita',
+                              'birthplace', 'city of birth'],
+    'attivo_scorsa'       => ['attivo scorsa stagione',
+                              'attivo_scorsa_stagione',
+                              'attivo scorsa', 'renewed'],
+    'data_attivazione'    => ['data/ora attivazione', 'data attivazione',
+                              'data_attivazione', 'activation date'],
+    'attivo_portale'      => ['attivo', 'attivo portale', 'active'],
+    'conferma_anagrafica' => ['conferma anagrafica', 'conferma_anagrafica',
+                              'anagrafica confermata'],
+    'tessera_fisica'      => ['tessera fisica', 'tessera_fisica',
+                              'physical card'],
+];
+
+// ── Auto-map ──────────────────────────────────────────────────────────────
 $auto_map = [];
 foreach ($headers as $i => $h) {
     $h_norm = strtolower(trim($h));
-    foreach (array_keys($campi_db) as $campo) {
-        if ($campo === '') continue;
-        if ($h_norm === strtolower($campo)) {
-            $auto_map[$i] = $campo;
-            break;
-        }
-        // Alias comuni
-        $aliases = [
-            'cognome'         => ['surname', 'last name', 'last_name'],
-            'nome'            => ['first name', 'first_name', 'given name'],
-            'codice_fiscale'  => ['cf', 'fiscal code', 'tax code'],
-            'data_nascita'    => ['birthdate', 'birth date', 'dob', 'data di nascita'],
-            'paese'           => ['country', 'nazione', 'nation'],
-            'email'           => ['e-mail', 'mail'],
-            'telefono'        => ['phone', 'tel', 'mobile', 'cellulare'],
-            'numero_tessera'  => ['tessera', 'card number', 'membership number', 'num tessera'],
-        ];
-        if (isset($aliases[$campo]) && in_array($h_norm, $aliases[$campo])) {
+    foreach ($alias_map as $campo => $aliases) {
+        if (in_array($h_norm, $aliases, true)) {
             $auto_map[$i] = $campo;
             break;
         }
     }
 }
 
+// ── Skip automatico se mapping è completo ────────────────────────────────
+$valori_auto   = array_values($auto_map);
+$ha_id_auto    = in_array('numero_tessera', $valori_auto)
+                 || in_array('codice_fiscale', $valori_auto)
+                 || (in_array('cognome', $valori_auto) && in_array('nome', $valori_auto));
+$tutti_mappati = (count($auto_map) === count($headers));
+
+if ($tutti_mappati && $ha_id_auto && ($_GET['force'] ?? '') !== '1') {
+    $_SESSION['import_mapping'] = $auto_map;
+    header('Location: /importazioni/process.php');
+    exit;
+}
+
+// ── Gestione POST (revisione manuale) ────────────────────────────────────
 $error = '';
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    // Salva mapping in sessione e vai allo step 3
     $mapping = [];
     foreach ($headers as $i => $h) {
         $campo = $_POST['map'][$i] ?? '';
@@ -100,14 +153,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $mapping[$i] = $campo;
         }
     }
-    // Verifica che almeno cognome+nome o numero_tessera siano mappati
-    $valori_mapping = array_values($mapping);
+    $valori_mapping    = array_values($mapping);
     $ha_identificatore = in_array('numero_tessera', $valori_mapping)
-        || (in_array('cognome', $valori_mapping) && in_array('nome', $valori_mapping))
-        || in_array('codice_fiscale', $valori_mapping);
+                         || in_array('codice_fiscale', $valori_mapping)
+                         || (in_array('cognome', $valori_mapping)
+                             && in_array('nome', $valori_mapping));
 
     if (!$ha_identificatore) {
-        $error = 'Devi mappare almeno un identificatore: Numero tessera, oppure Codice Fiscale, oppure Cognome + Nome.';
+        $error = 'Devi mappare almeno un identificatore: '
+               . 'Numero tessera, oppure Codice Fiscale, oppure Cognome + Nome.';
     } else {
         $_SESSION['import_mapping'] = $mapping;
         header('Location: /importazioni/process.php');
@@ -118,17 +172,29 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 $page_title = 'Importa XLSX — Mapping colonne';
 require __DIR__ . '/../../includes/layout_header.php';
 ?>
-<h1>Importazione Inter Club <small style="font-size:.6em;font-weight:400">Step 2 di 3 — Mapping colonne</small></h1>
+<h1>Importazione Inter Club
+    <small style="font-size:.6em;font-weight:400">Step 2 di 3 — Mapping colonne</small>
+</h1>
 
 <p class="note">
     File: <strong><?= h($filename) ?></strong> &nbsp;|&nbsp;
     Stagione: <strong><?= h($codice_stagione) ?></strong> &nbsp;|&nbsp;
     <?= count($headers) ?> colonne rilevate
+    <?php if ($tutti_mappati && $ha_id_auto): ?>
+        &nbsp;&mdash;&nbsp;
+        <span style="color:var(--color-success)">✓ mapping automatico riuscito</span>
+        &nbsp;<a href="?force=1" style="font-size:.85em">(rivedi manualmente)</a>
+    <?php endif; ?>
 </p>
 
 <?php if ($error): ?>
     <div class="alert alert-error"><?= h($error) ?></div>
 <?php endif; ?>
+
+<p class="note" style="color:var(--color-text-muted)">
+    Devi mappare almeno un identificatore: <em>Numero tessera</em>,
+    oppure <em>Codice Fiscale</em>, oppure <em>Cognome + Nome</em>.
+</p>
 
 <form method="post">
     <div style="overflow-x:auto">
