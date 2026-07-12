@@ -46,14 +46,9 @@ $soci = $stmt->fetchAll();
 $page_title = 'Anagrafica soci';
 require __DIR__ . '/../../includes/layout_header.php';
 
-// Risolvi BASE_URL una volta sola, compatibile con XAMPP e produzione
 if (!defined('BASE_URL')) {
     $script = $_SERVER['SCRIPT_NAME'] ?? '';
-    if (str_contains($script, '/ICBRmanaging/')) {
-        define('BASE_URL', '/ICBRmanaging/public');
-    } else {
-        define('BASE_URL', '');
-    }
+    define('BASE_URL', str_contains($script, '/ICBRmanaging/') ? '/ICBRmanaging/public' : '');
 }
 $urlbase = rtrim(BASE_URL, '/');
 ?>
@@ -106,13 +101,13 @@ $urlbase = rtrim(BASE_URL, '/');
             <td><strong><?= h($s['cognome']) ?></strong> <?= h($s['nome']) ?></td>
             <td><?= $s['data_nascita'] ? date('d/m/Y', strtotime($s['data_nascita'])) : '&mdash;' ?></td>
             <td><?php
-                $loc = trim(($s['comune'] ?? ''));
+                $loc = h($s['comune'] ?? '');
                 if ($s['provincia']) $loc .= ' (' . h($s['provincia']) . ')';
                 echo $loc ?: '&mdash;';
             ?></td>
-            <td style="font-family:monospace;font-size:.8rem"><?= h($s['codice_fiscale']) ?: '&mdash;' ?></td>
-            <td><?= h($s['numero_tessera']) ?: '<span class="badge badge-gray">&mdash;</span>' ?></td>
-            <td>
+            <td><?= h($s['codice_fiscale']) ?: '&mdash;' ?></td>
+            <td style="text-align:center"><?= h($s['numero_tessera']) ?: '<span class="badge badge-gray">&mdash;</span>' ?></td>
+            <td style="text-align:center">
                 <?php if ($s['numero_tessera'] !== null): ?>
                     <span class="badge <?= $s['attivo_portale'] ? 'badge-green' : 'badge-red' ?>">
                         <?= $s['attivo_portale'] ? 'S&igrave;' : 'No' ?>
@@ -121,14 +116,20 @@ $urlbase = rtrim(BASE_URL, '/');
                     <span class="badge badge-gray">&mdash;</span>
                 <?php endif; ?>
             </td>
-            <td>
+            <td style="text-align:center">
                 <span class="badge <?= $s['attivo_record'] ? 'badge-green' : 'badge-gray' ?>">
                     <?= $s['attivo_record'] ? 'Attivo' : 'Disatt.' ?>
                 </span>
             </td>
             <td class="td-actions">
                 <a class="btn btn-sm" href="<?= $urlbase ?>/soci/view.php?id=<?= (int)$s['id_socio'] ?>">Scheda</a>
-                <a class="btn btn-sm btn-secondary" href="<?= $urlbase ?>/soci/edit.php?id=<?= (int)$s['id_socio'] ?>">Modifica</a>
+                <a class="btn-icon" href="<?= $urlbase ?>/soci/edit.php?id=<?= (int)$s['id_socio'] ?>" title="Modifica anagrafica">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none"
+                         stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                        <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                    </svg>
+                </a>
             </td>
         </tr>
     <?php endforeach; ?>

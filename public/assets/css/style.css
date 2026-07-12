@@ -1,6 +1,6 @@
 /* =========================================================
    Inter Club Javier Zanetti Brindisi — Gestionale
-   style.css  v3
+   style.css  v4
    ========================================================= */
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -28,18 +28,8 @@ a:hover { text-decoration: underline; }
     z-index: 100;
     box-shadow: 0 2px 6px rgba(0,0,0,.25);
 }
-.topbar-brand {
-    font-weight: 700;
-    font-size: 1rem;
-    white-space: nowrap;
-    flex-shrink: 0;
-}
-.topbar-nav {
-    display: flex;
-    align-items: center;
-    gap: .25rem;
-    flex: 1;
-}
+.topbar-brand { font-weight: 700; font-size: 1rem; white-space: nowrap; flex-shrink: 0; }
+.topbar-nav { display: flex; align-items: center; gap: .25rem; flex: 1; }
 .topbar-nav a, .nav-dropdown-toggle {
     color: rgba(255,255,255,.85);
     font-size: .875rem;
@@ -56,14 +46,7 @@ a:hover { text-decoration: underline; }
     background: rgba(255,255,255,.15);
     color: #fff;
 }
-.topbar-user {
-    display: flex;
-    align-items: center;
-    gap: .75rem;
-    font-size: .8rem;
-    white-space: nowrap;
-    flex-shrink: 0;
-}
+.topbar-user { display: flex; align-items: center; gap: .75rem; font-size: .8rem; white-space: nowrap; flex-shrink: 0; }
 .topbar-user a { color: rgba(255,255,255,.8); }
 .topbar-user a:hover { color: #fff; }
 
@@ -85,20 +68,11 @@ a:hover { text-decoration: underline; }
 }
 .nav-dropdown:hover .nav-dropdown-menu,
 .nav-dropdown-toggle[aria-expanded="true"] + .nav-dropdown-menu { display: block; }
-.nav-dropdown-menu li a {
-    display: block;
-    padding: .45rem 1rem;
-    font-size: .875rem;
-    color: #1a1a1a;
-}
+.nav-dropdown-menu li a { display: block; padding: .45rem 1rem; font-size: .875rem; color: #1a1a1a; }
 .nav-dropdown-menu li a:hover { background: #f0f4ff; }
 
 /* --- Content area --- */
-.content {
-    max-width: 1400px;
-    margin: 0 auto;
-    padding: 1.25rem 1.25rem 3rem;
-}
+.content { max-width: 1400px; margin: 0 auto; padding: 1.25rem 1.25rem 3rem; }
 
 /* --- Page header --- */
 .page-header {
@@ -114,12 +88,7 @@ h1 { font-size: 1.4rem; margin-bottom: .9rem; }
 h2 { font-size: 1.1rem; margin-bottom: .6rem; color: #333; }
 
 /* --- Flash messages --- */
-.flash {
-    padding: .65rem 1rem;
-    border-radius: 6px;
-    margin-bottom: 1rem;
-    font-size: .875rem;
-}
+.flash { padding: .65rem 1rem; border-radius: 6px; margin-bottom: 1rem; font-size: .875rem; }
 .flash-success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
 .flash-error   { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
 .flash-info    { background: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb; }
@@ -145,7 +114,25 @@ h2 { font-size: 1.1rem; margin-bottom: .6rem; color: #333; }
 .btn-secondary:hover { background: #545b62; }
 .btn-danger { background: #c0392b; }
 .btn-danger:hover { background: #96281b; }
-.btn-sm { padding: .2rem .55rem; font-size: .78rem; }
+.btn-sm { padding: .2rem .55rem; font-size: .8rem; }
+
+/* Icona matita (solo lista soci) */
+.btn-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 30px;
+    height: 28px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+    background: #fff;
+    color: #555;
+    cursor: pointer;
+    text-decoration: none;
+    transition: background .15s, border-color .15s, color .15s;
+    vertical-align: middle;
+}
+.btn-icon:hover { background: #f0f4ff; border-color: #003580; color: #003580; text-decoration: none; }
 
 /* --- Dashboard KPI cards --- */
 .cards-grid {
@@ -210,29 +197,49 @@ h2 { font-size: 1.1rem; margin-bottom: .6rem; color: #333; }
 .badge-gray   { background: #e9ecef; color: #6c757d; }
 .badge-blue   { background: #d1ecf1; color: #0c5460; }
 
-/* --- Tabella soci: compatta, niente scroll orizzontale --- */
+/* --- Tabella soci: compatta, niente scroll orizzontale su desktop --- */
 .soci-table {
     table-layout: fixed;
     width: 100%;
+    border-collapse: collapse;
+    background: #fff;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 1px 4px rgba(0,0,0,.09);
 }
-.soci-table th, .soci-table td {
-    font-size: .8rem;
-    padding: .4rem .5rem;
+.soci-table th {
+    background: #003580;
+    color: #fff;
+    padding: .5rem .6rem;
+    text-align: left;
+    font-size: .78rem;
+    font-weight: 600;
+}
+.soci-table td {
+    padding: .45rem .6rem;
+    border-bottom: 1px solid #f0f0f0;
+    font-size: .82rem;         /* stesso font body, non monospace */
+    font-family: inherit;      /* forza font body su tutte le celle */
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+    vertical-align: middle;
 }
-/* Larghezze colonne: adattate per stare senza scroll su 1024px+ */
-.soci-table th:nth-child(1), .soci-table td:nth-child(1) { width: 18%; }  /* Cognome+Nome */
-.soci-table th:nth-child(2), .soci-table td:nth-child(2) { width: 9%;  }  /* Data nasc. */
-.soci-table th:nth-child(3), .soci-table td:nth-child(3) { width: 14%; }  /* Comune */
-.soci-table th:nth-child(4), .soci-table td:nth-child(4) { width: 14%; font-family:monospace; } /* CF */
-.soci-table th:nth-child(5), .soci-table td:nth-child(5) { width: 10%; text-align:center; } /* N. Tessera */
-.soci-table th:nth-child(6), .soci-table td:nth-child(6) { width: 8%;  text-align:center; } /* Portale */
-.soci-table th:nth-child(7), .soci-table td:nth-child(7) { width: 8%;  text-align:center; } /* Stato */
-.soci-table th:nth-child(8), .soci-table td:nth-child(8) { width: 19%; }  /* Azioni */
+.soci-table tbody tr:hover { background: #f8f9ff; }
+.soci-table tbody tr:last-child td { border-bottom: none; }
 
-.td-actions { white-space: nowrap; }
+/* Larghezze colonne (totale = 100%) */
+.soci-table colgroup col:nth-child(1) { width: 20%; }   /* Cognome+Nome */
+.soci-table colgroup col:nth-child(2) { width: 9%;  }   /* Data nasc */
+.soci-table colgroup col:nth-child(3) { width: 14%; }   /* Comune */
+.soci-table colgroup col:nth-child(4) { width: 15%; }   /* CF */
+.soci-table colgroup col:nth-child(5) { width: 11%; }   /* N.Tessera */
+.soci-table colgroup col:nth-child(6) { width: 8%;  }   /* Portale */
+.soci-table colgroup col:nth-child(7) { width: 8%;  }   /* Stato */
+.soci-table colgroup col:nth-child(8) { width: 15%; }   /* Azioni */
+
+.td-actions { display: flex; align-items: center; gap: .35rem; }
+.row-disabled td { color: #aaa; background: #fafafa; }
 
 /* --- Tabelle generali --- */
 .data-table {
@@ -243,6 +250,7 @@ h2 { font-size: 1.1rem; margin-bottom: .6rem; color: #333; }
     overflow: hidden;
     box-shadow: 0 1px 4px rgba(0,0,0,.09);
     font-size: .85rem;
+    font-family: inherit;
 }
 .data-table th {
     background: #003580;
@@ -257,19 +265,13 @@ h2 { font-size: 1.1rem; margin-bottom: .6rem; color: #333; }
     padding: .45rem .75rem;
     border-bottom: 1px solid #f0f0f0;
     vertical-align: middle;
+    font-family: inherit;
 }
 .data-table tr:last-child td { border-bottom: none; }
 .data-table tbody tr:hover { background: #f8f9ff; }
-.row-disabled td { color: #aaa; background: #fafafa; }
 
 /* --- Search form --- */
-.search-form {
-    display: flex;
-    gap: .5rem;
-    align-items: center;
-    flex-wrap: wrap;
-    margin-bottom: .85rem;
-}
+.search-form { display: flex; gap: .5rem; align-items: center; flex-wrap: wrap; margin-bottom: .85rem; }
 .search-form input[type="text"] {
     padding: .4rem .7rem;
     border: 1px solid #ccc;
@@ -284,13 +286,7 @@ h2 { font-size: 1.1rem; margin-bottom: .6rem; color: #333; }
     border-color: #003580;
     box-shadow: 0 0 0 2px rgba(0,53,128,.2);
 }
-.checkbox-inline {
-    display: flex;
-    align-items: center;
-    gap: .35rem;
-    font-size: .85rem;
-    cursor: pointer;
-}
+.checkbox-inline { display: flex; align-items: center; gap: .35rem; font-size: .85rem; cursor: pointer; }
 
 /* --- Forms --- */
 .record-form {
@@ -300,12 +296,7 @@ h2 { font-size: 1.1rem; margin-bottom: .6rem; color: #333; }
     box-shadow: 0 1px 4px rgba(0,0,0,.09);
     max-width: 860px;
 }
-.form-row {
-    display: flex;
-    gap: 1rem;
-    flex-wrap: wrap;
-    margin-bottom: .9rem;
-}
+.form-row { display: flex; gap: 1rem; flex-wrap: wrap; margin-bottom: .9rem; }
 .form-row label, .record-form > label {
     display: flex;
     flex-direction: column;
@@ -344,24 +335,17 @@ h2 { font-size: 1.1rem; margin-bottom: .6rem; color: #333; }
 .quick-links { display: flex; gap: .75rem; flex-wrap: wrap; margin-bottom: 1.75rem; }
 
 /* --- Footer --- */
-.site-footer {
-    text-align: center;
-    font-size: .78rem;
-    color: #aaa;
-    padding: 1.5rem;
-    margin-top: 2rem;
-    border-top: 1px solid #e0e0e0;
-}
+.site-footer { text-align: center; font-size: .78rem; color: #aaa; padding: 1.5rem; margin-top: 2rem; border-top: 1px solid #e0e0e0; }
 
 /* --- Responsive --- */
 @media (max-width: 900px) {
+    .soci-table, .data-table { display: block; overflow-x: auto; }
     .soci-table { table-layout: auto; }
-    .soci-table th, .soci-table td { width: auto !important; }
-    .data-table, .soci-table { display: block; overflow-x: auto; }
     .content { padding: 1rem .75rem 2rem; }
     .cards-grid { grid-template-columns: 1fr 1fr; }
     .detail-grid { grid-template-columns: 1fr 1fr; }
     .page-header { flex-direction: column; }
     .record-form { padding: 1rem; }
     .form-row { flex-direction: column; gap: .5rem; }
+    .td-actions { flex-wrap: wrap; }
 }
