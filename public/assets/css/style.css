@@ -1,9 +1,8 @@
 /* =========================================================
    Inter Club Javier Zanetti Brindisi — Gestionale
-   style.css  (v2 — badge + detail-card + row-disabled)
+   style.css  v3
    ========================================================= */
 
-/* --- Reset & base --- */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 html { font-size: 16px; scroll-behavior: smooth; }
 body {
@@ -98,7 +97,7 @@ a:hover { text-decoration: underline; }
 .content {
     max-width: 1400px;
     margin: 0 auto;
-    padding: 1.5rem 1.25rem 3rem;
+    padding: 1.25rem 1.25rem 3rem;
 }
 
 /* --- Page header --- */
@@ -107,19 +106,19 @@ a:hover { text-decoration: underline; }
     align-items: flex-start;
     justify-content: space-between;
     gap: 1rem;
-    margin-bottom: 1.25rem;
+    margin-bottom: 1rem;
     flex-wrap: wrap;
 }
-.page-header h1 { font-size: 1.5rem; font-weight: 700; }
-h1 { font-size: 1.5rem; margin-bottom: 1rem; }
-h2 { font-size: 1.15rem; margin-bottom: .75rem; color: #333; }
+.page-header h1 { font-size: 1.4rem; font-weight: 700; }
+h1 { font-size: 1.4rem; margin-bottom: .9rem; }
+h2 { font-size: 1.1rem; margin-bottom: .6rem; color: #333; }
 
 /* --- Flash messages --- */
 .flash {
-    padding: .75rem 1rem;
+    padding: .65rem 1rem;
     border-radius: 6px;
     margin-bottom: 1rem;
-    font-size: .9rem;
+    font-size: .875rem;
 }
 .flash-success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
 .flash-error   { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
@@ -128,7 +127,7 @@ h2 { font-size: 1.15rem; margin-bottom: .75rem; color: #333; }
 /* --- Buttons --- */
 .btn {
     display: inline-block;
-    padding: .45rem 1rem;
+    padding: .4rem .9rem;
     border-radius: 5px;
     border: none;
     background: #003580;
@@ -139,62 +138,56 @@ h2 { font-size: 1.15rem; margin-bottom: .75rem; color: #333; }
     text-decoration: none;
     transition: background .15s;
     white-space: nowrap;
+    line-height: 1.4;
 }
 .btn:hover { background: #00276b; color: #fff; text-decoration: none; }
-.btn-secondary {
-    background: #6c757d;
-}
+.btn-secondary { background: #6c757d; }
 .btn-secondary:hover { background: #545b62; }
-.btn-danger {
-    background: #c0392b;
-}
+.btn-danger { background: #c0392b; }
 .btn-danger:hover { background: #96281b; }
-.btn-sm {
-    padding: .25rem .6rem;
-    font-size: .8rem;
-}
+.btn-sm { padding: .2rem .55rem; font-size: .78rem; }
 
-/* --- Cards grid (dashboard) --- */
+/* --- Dashboard KPI cards --- */
 .cards-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
     gap: 1rem;
-    margin-bottom: 2rem;
+    margin-bottom: 1.75rem;
 }
 .card {
     background: #fff;
     border-radius: 8px;
-    padding: 1.25rem 1rem;
+    padding: 1.1rem 1rem;
     box-shadow: 0 1px 4px rgba(0,0,0,.09);
     display: flex;
     flex-direction: column;
-    gap: .25rem;
+    gap: .2rem;
 }
-.card-value { font-size: 2rem; font-weight: 700; color: #003580; }
-.card-label { font-size: .8rem; color: #666; }
+.card-value { font-size: 1.9rem; font-weight: 700; color: #003580; }
+.card-label { font-size: .78rem; color: #666; }
 .card-warning .card-value { color: #c0392b; }
 
 /* --- Detail card (scheda socio) --- */
 .detail-card {
     background: #fff;
     border-radius: 8px;
-    padding: 1.25rem 1.5rem;
+    padding: 1.1rem 1.25rem;
     box-shadow: 0 1px 4px rgba(0,0,0,.09);
 }
 .detail-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-    gap: .6rem 1.25rem;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: .5rem 1.1rem;
 }
 .detail-grid > div {
     display: flex;
     flex-direction: column;
     gap: .1rem;
-    padding: .4rem 0;
+    padding: .35rem 0;
     border-bottom: 1px solid #f0f0f0;
 }
 .detail-label {
-    font-size: .72rem;
+    font-size: .7rem;
     text-transform: uppercase;
     letter-spacing: .05em;
     color: #888;
@@ -204,11 +197,12 @@ h2 { font-size: 1.15rem; margin-bottom: .75rem; color: #333; }
 /* --- Badges --- */
 .badge {
     display: inline-block;
-    padding: .15rem .55rem;
+    padding: .12rem .5rem;
     border-radius: 999px;
-    font-size: .75rem;
+    font-size: .72rem;
     font-weight: 600;
     white-space: nowrap;
+    line-height: 1.5;
 }
 .badge-green  { background: #d4edda; color: #155724; }
 .badge-red    { background: #f8d7da; color: #721c24; }
@@ -216,7 +210,31 @@ h2 { font-size: 1.15rem; margin-bottom: .75rem; color: #333; }
 .badge-gray   { background: #e9ecef; color: #6c757d; }
 .badge-blue   { background: #d1ecf1; color: #0c5460; }
 
-/* --- Tables --- */
+/* --- Tabella soci: compatta, niente scroll orizzontale --- */
+.soci-table {
+    table-layout: fixed;
+    width: 100%;
+}
+.soci-table th, .soci-table td {
+    font-size: .8rem;
+    padding: .4rem .5rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+/* Larghezze colonne: adattate per stare senza scroll su 1024px+ */
+.soci-table th:nth-child(1), .soci-table td:nth-child(1) { width: 18%; }  /* Cognome+Nome */
+.soci-table th:nth-child(2), .soci-table td:nth-child(2) { width: 9%;  }  /* Data nasc. */
+.soci-table th:nth-child(3), .soci-table td:nth-child(3) { width: 14%; }  /* Comune */
+.soci-table th:nth-child(4), .soci-table td:nth-child(4) { width: 14%; font-family:monospace; } /* CF */
+.soci-table th:nth-child(5), .soci-table td:nth-child(5) { width: 10%; text-align:center; } /* N. Tessera */
+.soci-table th:nth-child(6), .soci-table td:nth-child(6) { width: 8%;  text-align:center; } /* Portale */
+.soci-table th:nth-child(7), .soci-table td:nth-child(7) { width: 8%;  text-align:center; } /* Stato */
+.soci-table th:nth-child(8), .soci-table td:nth-child(8) { width: 19%; }  /* Azioni */
+
+.td-actions { white-space: nowrap; }
+
+/* --- Tabelle generali --- */
 .data-table {
     width: 100%;
     border-collapse: collapse;
@@ -224,19 +242,19 @@ h2 { font-size: 1.15rem; margin-bottom: .75rem; color: #333; }
     border-radius: 8px;
     overflow: hidden;
     box-shadow: 0 1px 4px rgba(0,0,0,.09);
-    font-size: .875rem;
+    font-size: .85rem;
 }
 .data-table th {
     background: #003580;
     color: #fff;
-    padding: .6rem .75rem;
+    padding: .55rem .75rem;
     text-align: left;
-    font-size: .8rem;
+    font-size: .78rem;
     font-weight: 600;
     white-space: nowrap;
 }
 .data-table td {
-    padding: .5rem .75rem;
+    padding: .45rem .75rem;
     border-bottom: 1px solid #f0f0f0;
     vertical-align: middle;
 }
@@ -250,16 +268,16 @@ h2 { font-size: 1.15rem; margin-bottom: .75rem; color: #333; }
     gap: .5rem;
     align-items: center;
     flex-wrap: wrap;
-    margin-bottom: 1rem;
+    margin-bottom: .85rem;
 }
 .search-form input[type="text"] {
-    padding: .45rem .75rem;
+    padding: .4rem .7rem;
     border: 1px solid #ccc;
     border-radius: 5px;
     font-size: .875rem;
     flex: 1;
-    min-width: 220px;
-    max-width: 420px;
+    min-width: 200px;
+    max-width: 380px;
 }
 .search-form input[type="text"]:focus {
     outline: none;
@@ -270,7 +288,7 @@ h2 { font-size: 1.15rem; margin-bottom: .75rem; color: #333; }
     display: flex;
     align-items: center;
     gap: .35rem;
-    font-size: .875rem;
+    font-size: .85rem;
     cursor: pointer;
 }
 
@@ -322,8 +340,8 @@ h2 { font-size: 1.15rem; margin-bottom: .75rem; color: #333; }
 .record-form button[type="submit"] { margin-top: .75rem; }
 
 /* --- Note & misc --- */
-.note { font-size: .85rem; color: #666; margin: .5rem 0; }
-.quick-links { display: flex; gap: .75rem; flex-wrap: wrap; margin-bottom: 2rem; }
+.note { font-size: .82rem; color: #666; margin: .4rem 0 .6rem; }
+.quick-links { display: flex; gap: .75rem; flex-wrap: wrap; margin-bottom: 1.75rem; }
 
 /* --- Footer --- */
 .site-footer {
@@ -336,15 +354,14 @@ h2 { font-size: 1.15rem; margin-bottom: .75rem; color: #333; }
 }
 
 /* --- Responsive --- */
-@media (max-width: 700px) {
-    .topbar { flex-wrap: wrap; gap: .5rem; }
+@media (max-width: 900px) {
+    .soci-table { table-layout: auto; }
+    .soci-table th, .soci-table td { width: auto !important; }
+    .data-table, .soci-table { display: block; overflow-x: auto; }
     .content { padding: 1rem .75rem 2rem; }
     .cards-grid { grid-template-columns: 1fr 1fr; }
-    .data-table { font-size: .8rem; }
-    .data-table th, .data-table td { padding: .4rem .5rem; }
     .detail-grid { grid-template-columns: 1fr 1fr; }
     .page-header { flex-direction: column; }
     .record-form { padding: 1rem; }
     .form-row { flex-direction: column; gap: .5rem; }
-    .data-table { display: block; overflow-x: auto; }
 }
