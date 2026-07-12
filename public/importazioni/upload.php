@@ -1,7 +1,7 @@
 <?php
 /**
- * Fase 4 — Import XLSX Inter Club
- * Step 1: upload file e anteprima intestazioni
+ * Importazione Inter Club
+ * Step 1: upload file e anteprima storico
  */
 require_once __DIR__ . '/../../includes/auth.php';
 require_once __DIR__ . '/../../includes/functions.php';
@@ -13,10 +13,10 @@ $pdo = get_db_connection();
 
 // Recupera stagioni per il selettore
 $stagioni = $pdo->query(
-    "SELECT id_stagione, codice_stagione FROM stagioni ORDER BY codice_stagione DESC"
+    'SELECT id_stagione, codice_stagione FROM stagioni ORDER BY codice_stagione DESC'
 )->fetchAll();
 
-$error   = '';
+$error = '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $id_stagione = (int)($_POST['id_stagione'] ?? 0);
@@ -31,7 +31,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             UPLOAD_ERR_NO_FILE    => 'Nessun file selezionato.',
             UPLOAD_ERR_NO_TMP_DIR => 'Cartella temporanea mancante sul server.',
             UPLOAD_ERR_CANT_WRITE => 'Impossibile scrivere il file sul server (permessi).',
-            UPLOAD_ERR_EXTENSION  => 'Upload bloccato da un\'estensione PHP.',
+            UPLOAD_ERR_EXTENSION  => "Upload bloccato da un'estensione PHP.",
         ];
         $err_code = $_FILES['xlsx_file']['error'] ?? -1;
         $error = $upload_errors[$err_code] ?? "Errore upload (codice: $err_code).";
@@ -43,8 +43,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if (!in_array($ext, ['xlsx', 'xls', 'csv'])) {
             $error = 'Formato non supportato. Carica un file .xlsx, .xls o .csv.';
         } else {
-            // Salva nella cartella storage/import/ del progetto
-            // (evita problemi di permessi con sys_get_temp_dir() su XAMPP Windows)
             $dest_dir = dirname(__DIR__, 2) . '/storage/import';
             if (!is_dir($dest_dir)) {
                 mkdir($dest_dir, 0755, true);
@@ -55,10 +53,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $error = 'Impossibile salvare il file in ' . $dest_dir
                        . '. Verificare i permessi della cartella.';
             } else {
-                $_SESSION['import_file']      = $dest;
-                $_SESSION['import_ext']       = $ext;
-                $_SESSION['import_stagione']  = $id_stagione;
-                $_SESSION['import_filename']  = $nome;
+                $_SESSION['import_file']     = $dest;
+                $_SESSION['import_ext']      = $ext;
+                $_SESSION['import_stagione'] = $id_stagione;
+                $_SESSION['import_filename'] = $nome;
 
                 header('Location: /importazioni/mapping.php');
                 exit;
@@ -86,7 +84,7 @@ require __DIR__ . '/../../includes/layout_header.php';
         <div class="form-group">
             <label for="id_stagione">Stagione di riferimento *</label>
             <select name="id_stagione" id="id_stagione" required>
-                <option value="">— Seleziona —</option>
+                <option value="">&mdash; Seleziona &mdash;</option>
                 <?php foreach ($stagioni as $s): ?>
                     <option value="<?= (int)$s['id_stagione'] ?>">
                         <?= h($s['codice_stagione']) ?>
@@ -119,24 +117,31 @@ require __DIR__ . '/../../includes/layout_header.php';
     </form>
 </div>
 
-<div class="card" style="max-width:560px;margin-top:1.5rem">
+<div class="card" style="max-width:760px;margin-top:1.5rem">
     <h3 style="margin-bottom:.75rem">Storico importazioni</h3>
     <?php
-    $imports = $pdo->query(
-        "SELECT i.id_importazione, i.nome_file, i.data_importazione,
-                s.codice_stagione,
-                SUM(CASE WHEN ir.esito = 'inserita'   THEN 1 ELSE 0 END) AS inseriti,
-                SUM(CASE WHEN ir.esito = 'aggiornata' THEN 1 ELSE 0 END) AS aggiornati,
-                SUM(CASE WHEN ir.esito = 'duplicato'  THEN 1 ELSE 0 END) AS duplicati,
-                SUM(CASE WHEN ir.esito = 'errore'     THEN 1 ELSE 0 END) AS errori,
-                COUNT(ir.id_riga_import)                                   AS totale_righe
-         FROM importazioni i
-         JOIN stagioni s ON s.id_stagione = i.id_stagione
-         LEFT JOIN righe_importazione ir ON ir.id_importazione = i.id_importazione
-         GROUP BY i.id_importazione
-         ORDER BY i.data_importazione DESC
-         LIMIT 10"
-    )->fetchAll();
+    try {
+        $imports = $pdo->query(
+            "SELECT i.id_importazione,
+                    i.nome_file,
+                    i.data_importazione,
+                    s.codice_stagione,
+                    SUM(CASE WHEN ri.esito = 'inserita'   THEN 1 ELSE 0 END) AS inseriti,
+                    SUM(CASE WHEN ri.esito = 'aggiornata' THEN 1 ELSE 0 END) AS aggiornati,
+                    SUM(CASE WHEN ri.esito = 'duplicato'  THEN 1 ELSE 0 END) AS duplicati,
+                    SUM(CASE WHEN ri.esito = 'errore'     THEN 1 ELSE 0 END) AS errori,
+                    COUNT(ri.id_riga_import)                                   AS totale_righe
+             FROM importazioni i
+             JOIN stagioni s ON s.id_stagione = i.id_stagione
+             LEFT JOIN righe_importazione ri ON ri.id_importazione = i.id_importazione
+             GROUP BY i.id_importazione
+             ORDER BY i.data_importazione DESC
+             LIMIT 10"
+        )->fetchAll();
+    } catch (PDOException $e) {
+        $imports = [];
+        echo '<p class="note" style="color:var(--color-warning)">Errore storico: ' . h($e->getMessage()) . '</p>';
+    }
     ?>
     <?php if (empty($imports)): ?>
         <p class="note">Nessuna importazione eseguita finora.</p>
