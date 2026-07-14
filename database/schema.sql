@@ -111,7 +111,11 @@ CREATE TABLE IF NOT EXISTS tesseramenti (
     data_ora_attivazione DATETIME NULL,
     attivo_portale TINYINT(1) NOT NULL DEFAULT 0,
     conferma_anagrafica TINYINT(1) NOT NULL DEFAULT 0,
-    tessera_fisica TINYINT(1) NOT NULL DEFAULT 0,
+    -- tessera_fisica: stato consegna tessera fisica Inter Club
+    -- non_richiesta = il socio non ha ancora richiesto la tessera
+    -- non_consegnata = richiesta registrata, in attesa di consegna
+    -- consegnata     = tessera fisica consegnata al socio
+    tessera_fisica ENUM('non_richiesta','non_consegnata','consegnata') NOT NULL DEFAULT 'non_richiesta',
     fonte_inserimento ENUM('portale','manuale','misto') NOT NULL DEFAULT 'portale',
     id_importazione INT NULL,
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -119,6 +123,7 @@ CREATE TABLE IF NOT EXISTS tesseramenti (
     UNIQUE KEY uq_socio_stagione (id_socio, id_stagione),
     KEY idx_numero_tessera (numero_tessera),
     KEY idx_attivo_portale (attivo_portale),
+    KEY idx_tessera_fisica (tessera_fisica),
     CONSTRAINT fk_tesseramenti_socio FOREIGN KEY (id_socio) REFERENCES soci(id_socio) ON DELETE CASCADE,
     CONSTRAINT fk_tesseramenti_stagione FOREIGN KEY (id_stagione) REFERENCES stagioni(id_stagione) ON DELETE RESTRICT,
     CONSTRAINT fk_tesseramenti_tipologia FOREIGN KEY (id_tipologia) REFERENCES tipologie_tesseramento(id_tipologia) ON DELETE SET NULL,
@@ -225,8 +230,24 @@ SET FOREIGN_KEY_CHECKS = 1;
 -- Dopo aver importato questo schema, creare il primo utente admin con:
 --   php bin/reset_admin_password.php admin "PasswordSicura123!"
 
+-- ---------------------------------------------------------------------
+-- Tipologie tesseramento - Campagna 2026/27
+-- Fonte: locandina ufficiale Inter Club Brindisi
+-- Nuovo socio / Rinnovo (entro 30/06/2026) / Quota Plus
+-- ---------------------------------------------------------------------
 INSERT INTO tipologie_tesseramento (tipo, listino_label, quota_standard, attiva) VALUES
-    ('senior', 'SENIOR 2026/27', NULL, 1),
-    ('senior_rinnovo', 'SENIOR RINNOVO 2026/27', NULL, 1),
-    ('junior', 'JUNIOR 2026/27', NULL, 1)
+    -- Nuovi soci 2026/27
+    ('fuori_sede',           'FUORI SEDE - Nuovo Socio 2026/27',              50.00, 1),
+    ('sostenitore',          'SOSTENITORE - Nuovo Socio 2026/27',             55.00, 1),
+    ('fedelissimo',          'FEDELISSIMO - Nuovo Socio 2026/27',             95.00, 1),
+    ('family',               'FAMILY - Nuovo Socio 2026/27',                  50.00, 1),
+    ('junior',               'JUNIOR - Nuovo Socio 2026/27',                  25.00, 1),
+    -- Rinnovi (entro 30/06/2026)
+    ('fuori_sede_rinnovo',   'FUORI SEDE - Rinnovo entro 30/06/2026',         45.00, 1),
+    ('sostenitore_rinnovo',  'SOSTENITORE - Rinnovo entro 30/06/2026',        50.00, 1),
+    ('fedelissimo_rinnovo',  'FEDELISSIMO - Rinnovo entro 30/06/2026',        90.00, 1),
+    ('family_rinnovo',       'FAMILY - Rinnovo entro 30/06/2026',             45.00, 1),
+    ('junior_rinnovo',       'JUNIOR - Rinnovo entro 30/06/2026',             25.00, 1),
+    -- Quota Plus (upgrade big match - attivabile da ogni Socio Senior)
+    ('quota_plus',           'QUOTA PLUS - Upgrade Senior 2026/27',           35.00, 1)
 ON DUPLICATE KEY UPDATE tipo = tipo;
