@@ -44,9 +44,7 @@ $stmt->execute($params);
 $soci = $stmt->fetchAll();
 
 $page_title = 'Anagrafica soci';
-// $base viene definito da layout_header.php — non ridefinire BASE_URL qui
 require __DIR__ . '/../../includes/layout_header.php';
-// Dopo l'include $base è disponibile
 ?>
 
 <div class="page-header">
@@ -77,58 +75,37 @@ require __DIR__ . '/../../includes/layout_header.php';
 
 <table class="soci-table">
     <colgroup>
-        <col style="width:20%">
-        <col style="width:9%">
-        <col style="width:14%">
+        <col style="width:30%">
         <col style="width:15%">
-        <col style="width:11%">
-        <col style="width:8%">
-        <col style="width:8%">
-        <col style="width:15%">
+        <col style="width:18%">
+        <col style="width:12%">
+        <col style="width:25%">
     </colgroup>
     <thead>
     <tr>
         <th>Cognome e Nome</th>
-        <th>Data nascita</th>
-        <th>Comune</th>
-        <th>Cod. fiscale</th>
-        <th style="text-align:center">N. Tessera<?= $stagione_attiva ? '<br><small>' . h($stagione_attiva['codice_stagione']) . '</small>' : '' ?></th>
-        <th style="text-align:center">Portale<?= $stagione_attiva ? '<br><small>' . h($stagione_attiva['codice_stagione']) . '</small>' : '' ?></th>
+        <th>Data di nascita</th>
+        <th style="text-align:center">N. Tessera</th>
         <th style="text-align:center">Stato</th>
         <th>Azioni</th>
     </tr>
     </thead>
     <tbody>
     <?php if (empty($soci)): ?>
-        <tr><td colspan="8" style="text-align:center;padding:2rem">Nessun socio trovato.</td></tr>
+        <tr><td colspan="5" style="text-align:center;padding:2rem">Nessun socio trovato.</td></tr>
     <?php endif; ?>
     <?php foreach ($soci as $s): ?>
         <tr class="<?= $s['attivo_record'] ? '' : 'row-disabled' ?>">
             <td><strong><?= h($s['cognome']) ?></strong> <?= h($s['nome']) ?></td>
             <td><?= $s['data_nascita'] ? date('d/m/Y', strtotime($s['data_nascita'])) : '&mdash;' ?></td>
-            <td><?php
-                $loc = h($s['comune'] ?? '');
-                if (!empty($s['provincia'])) $loc .= ' (' . h($s['provincia']) . ')';
-                echo $loc ?: '&mdash;';
-            ?></td>
-            <td><?= h($s['codice_fiscale']) ?: '&mdash;' ?></td>
             <td style="text-align:center"><?= h($s['numero_tessera']) ?: '<span class="badge badge-gray">&mdash;</span>' ?></td>
-            <td style="text-align:center">
-                <?php if ($s['numero_tessera'] !== null): ?>
-                    <span class="badge <?= $s['attivo_portale'] ? 'badge-green' : 'badge-red' ?>">
-                        <?= $s['attivo_portale'] ? 'S&igrave;' : 'No' ?>
-                    </span>
-                <?php else: ?>
-                    <span class="badge badge-gray">&mdash;</span>
-                <?php endif; ?>
-            </td>
             <td style="text-align:center">
                 <span class="badge <?= $s['attivo_record'] ? 'badge-green' : 'badge-gray' ?>">
                     <?= $s['attivo_record'] ? 'Attivo' : 'Disatt.' ?>
                 </span>
             </td>
             <td class="td-actions">
-                <a class="btn btn-sm" href="<?= $base ?>/soci/view.php?id=<?= (int)$s['id_socio'] ?>">Scheda</a>
+                <a class="btn btn-sm" href="<?= $base ?>/soci/view.php?id=<?= (int)$s['id_socio'] ?>">&#128100; Scheda</a>
                 <a class="btn-icon" href="<?= $base ?>/soci/edit.php?id=<?= (int)$s['id_socio'] ?>" title="Modifica anagrafica">
                     <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none"
                          stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
