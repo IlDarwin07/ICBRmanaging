@@ -22,7 +22,7 @@ if (!$socio) {
     die('Socio non trovato.');
 }
 
-// Stagione attiva (per badge tessera rapido)
+// Stagione attiva
 $stagione_attiva = $pdo->query(
     "SELECT id_stagione, codice_stagione FROM stagioni ORDER BY codice_stagione DESC LIMIT 1"
 )->fetch();
@@ -41,18 +41,15 @@ if ($stagione_attiva) {
     $tessera_corrente = $stx->fetch();
 }
 
-// Storico tesseramenti completo con pagamenti
+// Storico tesseramenti (senza JOIN pagamenti — tabella non ancora implementata)
 $stmt = $pdo->prepare(
     'SELECT t.*,
             s.codice_stagione,
-            tt.tipo AS tipologia_tipo,
-            COALESCE(SUM(p.importo), 0) AS totale_pagato
+            tt.tipo AS tipologia_tipo
      FROM tesseramenti t
      LEFT JOIN stagioni s ON s.id_stagione = t.id_stagione
      LEFT JOIN tipologie_tesseramento tt ON tt.id_tipologia = t.id_tipologia
-     LEFT JOIN pagamenti p ON p.id_tesseramento = t.id_tesseramento
      WHERE t.id_socio = :id
-     GROUP BY t.id_tesseramento
      ORDER BY s.codice_stagione DESC'
 );
 $stmt->execute(['id' => $id_socio]);
@@ -94,7 +91,7 @@ require __DIR__ . '/../../includes/layout_header.php';
 .scheda-field .lbl { font-size: .75rem; color: #6b7280; font-weight: 600; text-transform: uppercase; letter-spacing: .03em; margin-bottom: .15rem; }
 .scheda-field .val { font-size: .95rem; color: #111; }
 .scheda-field .val a { color: var(--color-primary, #003f8a); text-decoration: none; }
-.tessera-box { display: flex; align-items: center; gap: 1rem; padding: .75rem 1rem; background: #f8f9ff; border: 1px solid #d0d7ff; border-radius: 8px; margin-bottom: .75rem; }
+.tessera-box { display: flex; align-items: center; gap: 1rem; padding: .75rem 1rem; background: #f8f9ff; border: 1px solid #d0d7ff; border-radius: 8px; margin-bottom: .75rem; flex-wrap: wrap; }
 .tessera-box .t-num { font-size: 1.4rem; font-weight: 700; color: #003f8a; }
 .tessera-box .t-info { font-size: .85rem; color: #555; }
 </style>
@@ -149,7 +146,7 @@ require __DIR__ . '/../../includes/layout_header.php';
     </div>
 </div>
 
-<!-- CONTATTI E RESIDENZA -->
+<!-- RESIDENZA E CONTATTI -->
 <div class="scheda-section">
     <h2>&#127968; Residenza &amp; Contatti</h2>
     <div class="scheda-grid">
@@ -172,29 +169,18 @@ require __DIR__ . '/../../includes/layout_header.php';
                 <div class="t-num"># <?= h($tessera_corrente['numero_tessera']) ?: '—' ?></div>
                 <div class="t-info"><?= h($tessera_corrente['tipologia_tipo'] ?? $tessera_corrente['tipo_portale'] ?? '—') ?></div>
             </div>
-            <div style="display:flex;flex-wrap:wrap;gap:.5rem">
+            <div style="display:flex;flex-wrap:wrap;gap:.5rem;align-items:center">
                 <span class="badge <?= $tessera_corrente['attivo_portale'] ? 'badge-green' : 'badge-gray' ?>">Portale: <?= $tessera_corrente['attivo_portale'] ? 'Attivo' : 'Non attivo' ?></span>
                 <span class="badge <?= $tessera_corrente['tessera_fisica'] ? 'badge-green' : 'badge-gray' ?>">Tessera fisica: <?= $tessera_corrente['tessera_fisica'] ? 'Consegnata' : 'Non consegnata' ?></span>
                 <span class="badge <?= $tessera_corrente['conferma_anagrafica'] ? 'badge-green' : 'badge-orange' ?>">Anagrafica: <?= $tessera_corrente['conferma_anagrafica'] ? 'Confermata' : 'Da confermare' ?></span>
             </div>
-            <?php
-                $dovuta_c  = (float)($tessera_corrente['quota_associativa'] ?? 0);
-                // recupera pagato stagione corrente
-                $stpag = $pdo->prepare('SELECT COALESCE(SUM(importo),0) AS tot FROM pagamenti WHERE id_tesseramento = :id');
-                $stpag->execute(['id' => $tessera_corrente['id_tesseramento']]);
-                $pagato_c  = (float)$stpag->fetchColumn();
-                $residuo_c = $dovuta_c - $pagato_c;
-                if ($dovuta_c <= 0)       { $sq = ['—',           'badge-gray']; }
-                elseif ($residuo_c <= 0)  { $sq = ['Saldata',     'badge-green']; }
-                elseif ($pagato_c > 0)    { $sq = ['Acconto',     'badge-orange']; }
-                else                      { $sq = ['Da pagare',   'badge-red']; }
-            ?>
+            <?php if (!empty($tessera_corrente['quota_associativa']) && $tessera_corrente['quota_associativa'] > 0): ?>
             <div style="margin-left:auto;text-align:right">
-                <?php if ($dovuta_c > 0): ?>
-                    <div style="font-size:.8rem;color:#555">Quota: <strong><?= number_format($dovuta_c, 2, ',', '.') ?> €</strong> &nbsp;|&nbsp; Pagato: <strong><?= number_format($pagato_c, 2, ',', '.') ?> €</strong></div>
-                    <div style="margin-top:.3rem"><span class="badge <?= $sq[1] ?>"><?= $sq[0] ?></span></div>
-                <?php endif; ?>
-                <a class="btn btn-sm btn-secondary" style="margin-top:.5rem"
+                <div style="font-size:.8rem;color:#555">Quota: <strong><?= number_format((float)$tessera_corrente['quota_associativa'], 2, ',', '.') ?> €</strong></div>
+            </div>
+            <?php endif; ?>
+            <div style="margin-left:auto">
+                <a class="btn btn-sm btn-secondary"
                    href="<?= $base ?>/tesseramenti/view.php?id=<?= (int)$tessera_corrente['id_tesseramento'] ?>">Dettaglio</a>
             </div>
         </div>
@@ -222,34 +208,30 @@ require __DIR__ . '/../../includes/layout_header.php';
                 <th>N. Tessera</th>
                 <th style="text-align:center">Tessera fisica</th>
                 <th style="text-align:center">Conf. anagrafica</th>
+                <th style="text-align:center">Portale</th>
                 <th style="text-align:right">Quota</th>
-                <th style="text-align:right">Pagato</th>
-                <th style="text-align:right">Residuo</th>
-                <th style="text-align:center">Stato quota</th>
                 <th></th>
             </tr>
             </thead>
             <tbody>
             <?php foreach ($tesseramenti as $t): ?>
-                <?php
-                    $dovuta   = (float)($t['quota_associativa'] ?? 0);
-                    $pagato   = (float)$t['totale_pagato'];
-                    $residuo  = $dovuta - $pagato;
-                    if ($dovuta <= 0)      { $stato_q = ['—',         'badge-gray']; }
-                    elseif ($residuo <= 0) { $stato_q = ['Saldata',   'badge-green']; }
-                    elseif ($pagato > 0)   { $stato_q = ['Acconto',   'badge-orange']; }
-                    else                   { $stato_q = ['Da pagare', 'badge-red']; }
-                ?>
                 <tr>
                     <td><?= h($t['codice_stagione']) ?></td>
                     <td><?= h($t['tipologia_tipo'] ?? $t['tipo_portale'] ?? '—') ?></td>
                     <td><?= h($t['numero_tessera']) ?: '—' ?></td>
-                    <td style="text-align:center"><span class="badge <?= $t['tessera_fisica'] ? 'badge-green' : 'badge-gray' ?>"><?= $t['tessera_fisica'] ? 'Sì' : 'No' ?></span></td>
-                    <td style="text-align:center"><span class="badge <?= $t['conferma_anagrafica'] ? 'badge-green' : 'badge-gray' ?>"><?= $t['conferma_anagrafica'] ? 'Sì' : 'No' ?></span></td>
-                    <td style="text-align:right"><?= $dovuta > 0 ? number_format($dovuta, 2, ',', '.') . ' €' : '—' ?></td>
-                    <td style="text-align:right"><?= $pagato > 0 ? number_format($pagato, 2, ',', '.') . ' €' : '—' ?></td>
-                    <td style="text-align:right"><?= $dovuta > 0 ? number_format($residuo, 2, ',', '.') . ' €' : '—' ?></td>
-                    <td style="text-align:center"><span class="badge <?= $stato_q[1] ?>"><?= $stato_q[0] ?></span></td>
+                    <td style="text-align:center">
+                        <span class="badge <?= $t['tessera_fisica'] ? 'badge-green' : 'badge-gray' ?>"><?= $t['tessera_fisica'] ? 'Sì' : 'No' ?></span>
+                    </td>
+                    <td style="text-align:center">
+                        <span class="badge <?= $t['conferma_anagrafica'] ? 'badge-green' : 'badge-gray' ?>"><?= $t['conferma_anagrafica'] ? 'Sì' : 'No' ?></span>
+                    </td>
+                    <td style="text-align:center">
+                        <span class="badge <?= $t['attivo_portale'] ? 'badge-green' : 'badge-gray' ?>"><?= $t['attivo_portale'] ? 'Attivo' : 'No' ?></span>
+                    </td>
+                    <td style="text-align:right">
+                        <?php $q = (float)($t['quota_associativa'] ?? 0); ?>
+                        <?= $q > 0 ? number_format($q, 2, ',', '.') . ' €' : '—' ?>
+                    </td>
                     <td style="white-space:nowrap">
                         <a class="btn btn-sm btn-secondary"
                            href="<?= $base ?>/tesseramenti/view.php?id=<?= (int)$t['id_tesseramento'] ?>">Dettaglio</a>
