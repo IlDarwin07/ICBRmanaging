@@ -42,14 +42,19 @@ ALTER TABLE prima_nota
 -- ---------------------------------------------------------------------
 -- 3. Unicità tipologia di tesseramento
 --    Prima di eliminare i duplicati, i riferimenti dei tesseramenti
---    vengono spostati sulla tipologia conservata (id minore con lo stesso
---    `tipo`): così nessun tesseramento perde la tipologia (la FK sarebbe
---    ON DELETE SET NULL e il legame andrebbe perso).
+--    vengono spostati sulla tipologia canonica (id MINIMO per `tipo`,
+--    scelto in modo deterministico): così nessun tesseramento perde la
+--    tipologia (la FK è ON DELETE SET NULL e il legame andrebbe perso).
 -- ---------------------------------------------------------------------
 UPDATE tesseramenti t
 JOIN tipologie_tesseramento dup ON dup.id_tipologia = t.id_tipologia
-JOIN tipologie_tesseramento keep ON keep.tipo = dup.tipo AND keep.id_tipologia < dup.id_tipologia
-SET t.id_tipologia = keep.id_tipologia;
+JOIN (
+    SELECT tipo, MIN(id_tipologia) AS id_conservato
+    FROM tipologie_tesseramento
+    GROUP BY tipo
+) canon ON canon.tipo = dup.tipo
+SET t.id_tipologia = canon.id_conservato
+WHERE t.id_tipologia <> canon.id_conservato;
 
 DELETE t1 FROM tipologie_tesseramento t1
 JOIN tipologie_tesseramento t2
