@@ -19,7 +19,7 @@ require_login();
 
 if (empty($_SESSION['import_file']) || !file_exists($_SESSION['import_file'])
     || empty($_SESSION['import_mapping'])) {
-    header('Location: /importazioni/upload.php');
+    header('Location: ' . base_path('/importazioni/upload.php'));
     exit;
 }
 
@@ -35,14 +35,13 @@ $pdo = get_db_connection();
 // La tabella `importazioni` ha: id_importazione, nome_file, hash_file,
 // data_importazione (DEFAULT NOW()), righe_totali, righe_inserite,
 // righe_aggiornate, righe_scartate, note_esito, importato_da, id_stagione
-// NOTA: id_stagione NON è nello schema base — usiamo solo nome_file e
-// importato_da per ora; la stagione la teniamo in righe_importazione.
-// Se esiste id_stagione nello schema aggiornato, aggiungerlo qui.
+// (id_stagione aggiunta dalla migration 002 / schema aggiornato)
 $stmt = $pdo->prepare(
-    'INSERT INTO importazioni (nome_file, importato_da) VALUES (?, ?)'
+    'INSERT INTO importazioni (nome_file, importato_da, id_stagione) VALUES (?, ?, ?)'
 );
-$id_utente = $_SESSION['user_id'] ?? null;
-$stmt->execute([$filename, $id_utente]);
+$utente   = current_user();
+$id_utente = $utente ? (int)$utente['id_utente'] : null;
+$stmt->execute([$filename, $id_utente, $id_stagione > 0 ? $id_stagione : null]);
 $id_import = (int)$pdo->lastInsertId();
 
 // ── Leggi righe dati ──────────────────────────────────────────────────────
@@ -88,10 +87,16 @@ foreach ($rows as $r_idx => $row) {
         $dati['data_attivazione'] = null;
     }
     // Booleani
-    foreach (['attivo_portale','conferma_anagrafica','tessera_fisica','socio_plus','attivo_scorsa'] as $bf) {
+    foreach (['attivo_portale','conferma_anagrafica','socio_plus','attivo_scorsa'] as $bf) {
         if (isset($dati[$bf])) {
             $dati[$bf] = in_array(strtolower(trim($dati[$bf])), ['1','si','sì','yes','true','x']) ? 1 : 0;
         }
+    }
+    // Tessera fisica: colonna ENUM (non booleana)
+    if (isset($dati['tessera_fisica'])) {
+        $dati['tessera_fisica'] = in_array(strtolower(trim($dati['tessera_fisica'])), ['1','si','sì','yes','true','x'])
+            ? 'consegnata'
+            : 'non_richiesta';
     }
 
     // Salta riga vuota
@@ -204,6 +209,13 @@ foreach ($rows as $r_idx => $row) {
                 $id_tipologia = $tp->fetchColumn() ?: null;
                 if ($id_tipologia) {
                     $dati_tess['id_tipologia'] = $id_tipologia;
+                    // Snapshot quota corrente del listino (non retroattivo)
+                    $qs = $pdo->prepare('SELECT quota_standard FROM tipologie_tesseramento WHERE id_tipologia = ?');
+                    $qs->execute([$id_tipologia]);
+                    $quota_snap = $qs->fetchColumn();
+                    if ($quota_snap !== false && $quota_snap !== null) {
+                        $dati_tess['quota_tesseramento'] = $quota_snap;
+                    }
                 }
             }
         } else {
@@ -377,9 +389,9 @@ require __DIR__ . '/../../includes/layout_header.php';
 <?php endif; ?>
 
 <div class="form-actions" style="margin-top:1.5rem">
-    <a href="/importazioni/upload.php" class="btn">Nuova importazione</a>
-    <a href="/soci/list.php" class="btn btn-secondary">Vai all'anagrafica soci</a>
-    <a href="/dashboard.php" class="btn btn-secondary">Dashboard</a>
+    <a href="<?= u('/importazioni/upload.php') ?>" class="btn">Nuova importazione</a>
+    <a href="<?= u('/soci/list.php') ?>" class="btn btn-secondary">Vai all'anagrafica soci</a>
+    <a href="<?= u('/dashboard.php') ?>" class="btn btn-secondary">Dashboard</a>
 </div>
 
 <?php require __DIR__ . '/../../includes/layout_footer.php'; ?>

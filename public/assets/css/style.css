@@ -339,13 +339,21 @@ h2 { font-size: 1.1rem; margin-bottom: .6rem; color: #333; }
 
 /* --- Responsive --- */
 @media (max-width: 900px) {
-    .soci-table, .data-table { display: block; overflow-x: auto; }
+    .topbar { flex-wrap: wrap; padding: .5rem .75rem; gap: .5rem; }
+    .topbar-brand { font-size: .9rem; }
+    /* La navigazione va su riga propria, scrollabile orizzontalmente,
+       restando dentro la barra blu (testo bianco sempre leggibile) */
+    .topbar-nav { order: 3; flex: 1 1 100%; width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: thin; }
+    .topbar-nav a, .nav-dropdown-toggle { white-space: nowrap; }
+    .topbar-user { margin-left: auto; font-size: .72rem; }
+    .soci-table, .data-table { display: block; overflow-x: auto; max-width: 100%; }
     .soci-table { table-layout: auto; }
-    .content { padding: 1rem .75rem 2rem; }
+    .content { padding: 1rem .75rem 2rem; overflow-x: hidden; }
     .cards-grid { grid-template-columns: 1fr 1fr; }
     .detail-grid { grid-template-columns: 1fr 1fr; }
     .page-header { flex-direction: column; }
     .record-form { padding: 1rem; }
     .form-row { flex-direction: column; gap: .5rem; }
     .td-actions { flex-wrap: wrap; }
+    .search-form { flex-direction: column; }
 }

@@ -11,6 +11,233 @@ function h(?string $value): string
     return htmlspecialchars($value ?? '', ENT_QUOTES, 'UTF-8');
 }
 
+// -------------------------------------------------------------------------
+// Percorsi base (supporto installazione in sottocartella, es. XAMPP)
+// -------------------------------------------------------------------------
+
+/**
+ * Percorso base dell'area pubblica.
+ * - '' quando il DocumentRoot punta su /public
+ * - '/ICBRmanaging/public' in installazione XAMPP in sottocartella
+ */
+function base_url(): string
+{
+    if (!defined('BASE_URL')) {
+        $script = $_SERVER['SCRIPT_NAME'] ?? '';
+        if (str_contains($script, '/ICBRmanaging/')) {
+            define('BASE_URL', '/ICBRmanaging/public');
+        } else {
+            define('BASE_URL', '');
+        }
+    }
+    return rtrim(BASE_URL, '/');
+}
+
+/**
+ * Prefissa un path assoluto ('/dashboard.php') con il base path reale.
+ * I path relativi o URL completi vengono restituiti invariati.
+ */
+function base_path(string $url): string
+{
+    if ($url === '' || $url[0] !== '/' || str_starts_with($url, '//')) {
+        return $url;
+    }
+    return base_url() . $url;
+}
+
+/**
+ * Come base_path() ma con escape HTML: da usare negli attributi href/action.
+ */
+function u(string $url): string
+{
+    return h(base_path($url));
+}
+
+// -------------------------------------------------------------------------
+// Alias CSRF (retrocompatibilità con le pagine che usano i nomi storici)
+// -------------------------------------------------------------------------
+
+/**
+ * Alias di auth\csrf_token(): genera/recupera il token CSRF di sessione.
+ */
+function generate_csrf_token(): string
+{
+    return csrf_token();
+}
+
+/**
+ * Alias di auth\csrf_verify(): verifica il token CSRF di un form.
+ * A differenza di csrf_verify() (che restituisce un booleano), questa funzione
+ * BLOCCA la richiesta se il token non è valido: le pagine che la invocano
+ * come semplice istruzione devono essere protette davvero.
+ */
+function verify_csrf_token(?string $token): void
+{
+    if (!csrf_verify($token)) {
+        http_response_code(403);
+        die('Sessione scaduta o token non valido. Torna alla pagina precedente e riprova.');
+    }
+}
+
+// -------------------------------------------------------------------------
+// Formattazione importi
+// -------------------------------------------------------------------------
+
+/**
+ * Formatta un importo in euro (12.5 -> "12,50").
+ */
+function euro(?float $importo): string
+{
+    return number_format((float)($importo ?? 0), 2, ',', '.');
+}
+
+// -------------------------------------------------------------------------
+// Quote, versamenti e stato pagamento (logica centralizzata)
+// -------------------------------------------------------------------------
+
+/**
+ * Quota dovuta per un tesseramento.
+ * Priorità: snapshot quota_tesseramento (non retroattivo), poi quota tipologia.
+ * Restituisce null se la quota non è nota (distinto da 0).
+ */
+function tess_quota(?array $t): ?float
+{
+    if ($t === null) {
+        return null;
+    }
+    if (isset($t['quota_tesseramento']) && $t['quota_tesseramento'] !== null && (float)$t['quota_tesseramento'] > 0) {
+        return (float)$t['quota_tesseramento'];
+    }
+    if (isset($t['quota_standard']) && $t['quota_standard'] !== null && (float)$t['quota_standard'] > 0) {
+        return (float)$t['quota_standard'];
+    }
+    return null;
+}
+
+/**
+ * Totale versato netto da un elenco di pagamenti.
+ * I rimborsi vengono sottratti, le eccedenze non vengono nascoste.
+ */
+function pagamenti_netto(array $pagamenti): float
+{
+    $tot = 0.0;
+    foreach ($pagamenti as $p) {
+        $importo = (float)$p['importo'];
+        $tot += ($p['tipo_pagamento'] === 'rimborso') ? -$importo : $importo;
+    }
+    return $tot;
+}
+
+/**
+ * Stato economico di un tesseramento.
+ *
+ * Codici possibili:
+ * - quota_sconosciuta : quota non impostata (non si può valutare il residuo)
+ * - da_pagare         : nessun versamento registrato
+ * - acconto            : versato > 0 ma inferiore alla quota ("solo acconto")
+ * - saldato            : versato >= quota
+ * - eccedenza          : versato > quota (resto a credito del socio)
+ * - credito            : netto negativo (rimborsi superiori agli incassi: il club deve al socio)
+ */
+function stato_quota(?float $quota, float $versato_netto): array
+{
+    if ($quota === null || $quota <= 0) {
+        return ['code' => 'quota_sconosciuta', 'label' => 'Quota n/d', 'badge' => 'badge-gray'];
+    }
+    if ($versato_netto < -0.004) {
+        return ['code' => 'credito', 'label' => 'A credito', 'badge' => 'badge-blue'];
+    }
+    if ($versato_netto <= 0 && $versato_netto >= -0.004) {
+        return ['code' => 'da_pagare', 'label' => 'Da saldare', 'badge' => 'badge-red'];
+    }
+    if ($versato_netto < $quota - 0.004) {
+        return ['code' => 'acconto', 'label' => 'Solo acconto', 'badge' => 'badge-orange'];
+    }
+    if ($versato_netto > $quota + 0.004) {
+        return ['code' => 'eccedenza', 'label' => 'Eccedenza', 'badge' => 'badge-blue'];
+    }
+    return ['code' => 'saldato', 'label' => 'Saldato', 'badge' => 'badge-green'];
+}
+
+/**
+ * Residuo dovuto: max(0, quota - versato). Null se quota sconosciuta.
+ */
+function tess_residuo(?float $quota, float $versato_netto): ?float
+{
+    if ($quota === null || $quota <= 0) {
+        return null;
+    }
+    return round(max(0.0, $quota - $versato_netto), 2);
+}
+
+// -------------------------------------------------------------------------
+// Messaggi WhatsApp assistiti: placeholder
+// -------------------------------------------------------------------------
+
+/**
+ * Placeholder riconosciuti nei template WhatsApp.
+ */
+const WHATSAPP_PLACEHOLDER = [
+    '{{nome}}'           => 'Nome del socio',
+    '{{cognome}}'        => 'Cognome del socio',
+    '{{nome_completo}}'  => 'Nome e cognome',
+    '{{telefono}}'       => 'Telefono del socio',
+    '{{quota}}'          => 'Quota dovuta della stagione',
+    '{{pagato}}'         => 'Totale già versato',
+    '{{residuo}}'        => 'Residuo da saldare',
+    '{{stagione}}'       => 'Codice stagione (es. 2026/27)',
+    '{{data}}'           => 'Data odierna',
+];
+
+/**
+ * Elenca i placeholder presenti in un testo che NON sono riconosciuti.
+ */
+function placeholder_sconosciuti(string $testo): array
+{
+    preg_match_all('/\{\{[^}]*\}\}/', $testo, $m);
+    $trovati = array_unique($m[0] ?? []);
+    return array_values(array_filter($trovati, fn($p) => !isset(WHATSAPP_PLACEHOLDER[$p])));
+}
+
+/**
+ * Sostituisce i placeholder con i valori del socio/tesseramento.
+ * I placeholder sconosciuti restano invariati nel testo.
+ */
+function render_messaggio(string $testo, array $vars): string
+{
+    $map = [];
+    foreach ($vars as $k => $v) {
+        $map['{{' . $k . '}}'] = (string)$v;
+    }
+    return strtr($testo, $map);
+}
+
+/**
+ * Normalizza un numero di telefono per il link wa.me:
+ * - toglie spazi, punti, trattini, parentesi
+ * - +39 / 0039 gestiti (0039 diventa 39)
+ * Restituisce null se il numero non è valido (troppo corto).
+ */
+function wa_phone(?string $phone): ?string
+{
+    if ($phone === null || trim($phone) === '') {
+        return null;
+    }
+    $p = preg_replace('/[\s.\-()\/]/', '', trim($phone));
+    if (str_starts_with($p, '00')) {
+        $p = '+' . substr($p, 2);
+    }
+    if (str_starts_with($p, '+')) {
+        $digits = substr($p, 1);
+    } else {
+        $digits = $p; // numero italiano senza prefisso
+    }
+    if (!preg_match('/^\d{8,15}$/', $digits)) {
+        return null;
+    }
+    return $digits;
+}
+
 /**
  * Trim + normalizzazione spazi multipli.
  */
@@ -98,7 +325,7 @@ function si_no_to_bool(?string $value): int
 function redirect_with_message(string $url, string $message, string $type = 'success'): void
 {
     $_SESSION['flash'] = ['type' => $type, 'message' => $message];
-    header('Location: ' . $url);
+    header('Location: ' . base_path($url));
     exit;
 }
 

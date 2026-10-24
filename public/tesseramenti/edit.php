@@ -37,14 +37,29 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $attivo_portale  = isset($_POST['attivo_portale']) ? 1 : 0;
     $attivo_scorsa   = isset($_POST['attivo_scorsa_stagione']) ? 1 : 0;
     $conf_anagrafica = isset($_POST['conferma_anagrafica']) ? 1 : 0;
-    $tessera_fisica  = isset($_POST['tessera_fisica']) ? 1 : 0;
+    $tessera_fisica  = $_POST['tessera_fisica'] ?? ($t['tessera_fisica'] ?? 'non_richiesta');
+    if (!array_key_exists($tessera_fisica, TESSERA_FISICA_STATI)) {
+        $tessera_fisica = 'non_richiesta';
+    }
     $data_att_raw    = trim($_POST['data_ora_attivazione'] ?? '');
     $data_att        = $data_att_raw !== '' ? $data_att_raw : null;
     $fonte           = $_POST['fonte_inserimento'] ?? $t['fonte_inserimento'];
 
+    // Se la tipologia cambia, aggiorna anche lo snapshot della quota
+    // (la modifica è voluta e riguarda questo tesseramento, non i listini storici).
+    $quota_snapshot = $t['quota_tesseramento'];
+    if ($id_tipologia !== (int)$t['id_tipologia']) {
+        $quota_snapshot = null;
+        if ($id_tipologia) {
+            $qs = $pdo->prepare('SELECT quota_standard FROM tipologie_tesseramento WHERE id_tipologia = :id');
+            $qs->execute(['id' => $id_tipologia]);
+            $quota_snapshot = $qs->fetchColumn() ?: null;
+        }
+    }
+
     $stmt = $pdo->prepare(
         'UPDATE tesseramenti SET
-            id_tipologia=:tipologia, listino_originale=:listino, numero_tessera=:tessera,
+            id_tipologia=:tipologia, quota_tesseramento=:quota, listino_originale=:listino, numero_tessera=:tessera,
             ruolo_portale=:ruolo, tipo_portale=:tipo, socio_plus=:plus,
             attivo_portale=:attivo, attivo_scorsa_stagione=:scorsa,
             conferma_anagrafica=:conferma, tessera_fisica=:fisica,
@@ -53,6 +68,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     );
     $stmt->execute([
         'tipologia' => $id_tipologia,
+        'quota'     => $quota_snapshot,
         'listino'   => $listino_orig,
         'tessera'   => $numero_tessera,
         'ruolo'     => $ruolo_portale,
@@ -75,7 +91,7 @@ require __DIR__ . '/../../includes/layout_header.php';
 ?>
 <div class="page-header">
     <h1>Modifica tesseramento: <?= h($t['cognome'] . ' ' . $t['nome']) ?></h1>
-    <a class="btn btn-secondary" href="/tesseramenti/view.php?id=<?= $id ?>">← Indietro</a>
+    <a class="btn btn-secondary" href="<?= u('/tesseramenti/view.php') ?>?id=<?= $id ?>">← Indietro</a>
 </div>
 
 <?php if ($errors): ?>
@@ -141,7 +157,16 @@ require __DIR__ . '/../../includes/layout_header.php';
         <label class="checkbox-inline"><input type="checkbox" name="socio_plus" value="1" <?= $t['socio_plus'] ? 'checked' : '' ?>> Socio+</label>
         <label class="checkbox-inline"><input type="checkbox" name="attivo_scorsa_stagione" value="1" <?= $t['attivo_scorsa_stagione'] ? 'checked' : '' ?>> Attivo scorsa stagione</label>
         <label class="checkbox-inline"><input type="checkbox" name="conferma_anagrafica" value="1" <?= $t['conferma_anagrafica'] ? 'checked' : '' ?>> Anagrafica confermata</label>
-        <label class="checkbox-inline"><input type="checkbox" name="tessera_fisica" value="1" <?= $t['tessera_fisica'] ? 'checked' : '' ?>> Tessera fisica consegnata</label>
+    </div>
+    <div class="form-group">
+        <label>Tessera fisica</label>
+        <select name="tessera_fisica">
+            <?php foreach (TESSERA_FISICA_STATI as $val => $label): ?>
+                <option value="<?= h($val) ?>" <?= ($_POST['tessera_fisica'] ?? $t['tessera_fisica']) === $val ? 'selected' : '' ?>>
+                    <?= h($label) ?>
+                </option>
+            <?php endforeach; ?>
+        </select>
     </div>
 
     <div class="form-actions">

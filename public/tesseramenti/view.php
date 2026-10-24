@@ -37,14 +37,14 @@ $stmt_p = $pdo->prepare(
 $stmt_p->execute(['id' => $id]);
 $pagamenti = $stmt_p->fetchAll();
 
-// Totale pagato
-$stmt_tot = $pdo->prepare('SELECT COALESCE(SUM(importo),0) FROM pagamenti_tesseramenti WHERE id_tesseramento = :id');
-$stmt_tot->execute(['id' => $id]);
-$totale_pagato = (float)$stmt_tot->fetchColumn();
+// Totale versato netto (i rimborsi vengono sottratti) e stato economico
+$versato_netto = pagamenti_netto($pagamenti);
 
-$quota_std = (float)($t['quota_standard'] ?? 0);
-$residuo   = $quota_std > 0 ? max(0, $quota_std - $totale_pagato) : null;
-$perc_pagato = $quota_std > 0 ? min(100, round($totale_pagato / $quota_std * 100)) : null;
+// Quota dovuta: snapshot del tesseramento, fallback quota tipologia
+$quota = tess_quota($t);
+$residuo = tess_residuo($quota, $versato_netto);
+$stato_pag = stato_quota($quota, $versato_netto);
+$perc_pagato = ($quota !== null && $quota > 0) ? min(100, round($versato_netto / $quota * 100)) : null;
 
 // Label tessera fisica
 $tf_labels = [
@@ -54,6 +54,7 @@ $tf_labels = [
 ];
 $tf = $tf_labels[$t['tessera_fisica']] ?? $tf_labels['non_richiesta'];
 
+$csrf = generate_csrf_token();
 $page_title = $t['cognome'] . ' ' . $t['nome'] . ' — Tesseramento';
 require __DIR__ . '/../../includes/layout_header.php';
 ?>
@@ -219,13 +220,13 @@ require __DIR__ . '/../../includes/layout_header.php';
 
 <div class="view-header">
     <div class="view-header-left">
-        <div class="breadcrumb"><a href="/tesseramenti/list.php">Tesseramenti</a> &rsaquo; Scheda</div>
+        <div class="breadcrumb"><a href="<?= u('/tesseramenti/list.php') ?>">Tesseramenti</a> &rsaquo; Scheda</div>
         <h1><?= h($t['cognome'] . ' ' . $t['nome']) ?></h1>
     </div>
     <div class="view-header-actions">
-        <a class="btn btn-secondary" href="/tesseramenti/list.php">← Lista</a>
-        <a class="btn" href="/tesseramenti/edit.php?id=<?= $id ?>">&#9998; Modifica</a>
-        <a class="btn" href="/tesseramenti/pagamento_add.php?id_tesseramento=<?= $id ?>">+ Pagamento</a>
+        <a class="btn btn-secondary" href="<?= u('/tesseramenti/list.php') ?>">← Lista</a>
+        <a class="btn" href="<?= u('/tesseramenti/edit.php') ?>?id=<?= $id ?>">&#9998; Modifica</a>
+        <a class="btn" href="<?= u('/tesseramenti/pagamento_add.php') ?>?id_tesseramento=<?= $id ?>">+ Pagamento</a>
     </div>
 </div>
 
@@ -238,7 +239,7 @@ require __DIR__ . '/../../includes/layout_header.php';
         <div class="view-panel">
             <div class="view-panel-header">
                 <h2>Socio</h2>
-                <a class="btn btn-sm btn-secondary" href="/soci/view.php?id=<?= (int)$t['id_socio'] ?>">Apri scheda →</a>
+                <a class="btn btn-sm btn-secondary" href="<?= u('/soci/view.php') ?>?id=<?= (int)$t['id_socio'] ?>">Apri scheda →</a>
             </div>
             <div class="view-panel-body">
                 <div class="field-grid">
@@ -362,29 +363,33 @@ require __DIR__ . '/../../includes/layout_header.php';
     <div class="view-panel" style="position:sticky;top:70px;">
         <div class="view-panel-header">
             <h2>Pagamenti</h2>
-            <a class="btn btn-sm" href="/tesseramenti/pagamento_add.php?id_tesseramento=<?= $id ?>">+ Aggiungi</a>
+            <a class="btn btn-sm" href="<?= u('/tesseramenti/pagamento_add.php') ?>?id_tesseramento=<?= $id ?>">+ Aggiungi</a>
         </div>
         <div class="view-panel-body">
 
             <!-- KPI quota/pagato/residuo -->
             <div class="pay-summary">
-                <?php if ($quota_std > 0): ?>
+                <?php if ($quota !== null): ?>
                 <div class="pay-kpi">
                     <div class="pay-kpi-label">Quota</div>
-                    <div class="pay-kpi-value">€&nbsp;<?= number_format($quota_std, 2, ',', '.') ?></div>
+                    <div class="pay-kpi-value">€&nbsp;<?= euro($quota) ?></div>
                 </div>
                 <?php endif; ?>
                 <div class="pay-kpi">
                     <div class="pay-kpi-label">Pagato</div>
-                    <div class="pay-kpi-value paid">€&nbsp;<?= number_format($totale_pagato, 2, ',', '.') ?></div>
+                    <div class="pay-kpi-value paid">€&nbsp;<?= euro($versato_netto) ?></div>
                 </div>
                 <?php if ($residuo !== null): ?>
                 <div class="pay-kpi">
                     <div class="pay-kpi-label">Residuo</div>
-                    <div class="pay-kpi-value <?= $residuo > 0 ? 'due' : 'paid' ?>">€&nbsp;<?= number_format($residuo, 2, ',', '.') ?></div>
+                    <div class="pay-kpi-value <?= $residuo > 0 ? 'due' : 'paid' ?>">€&nbsp;<?= euro($residuo) ?></div>
                 </div>
                 <?php endif; ?>
             </div>
+
+            <p style="margin:-.4rem 0 1rem;">
+                <span class="badge <?= $stato_pag['badge'] ?>"><?= h($stato_pag['label']) ?></span>
+            </p>
 
             <?php if ($perc_pagato !== null): ?>
             <div class="progress-wrap">
@@ -408,6 +413,7 @@ require __DIR__ . '/../../includes/layout_header.php';
                         <th>Tipo</th>
                         <th>Importo</th>
                         <th>Metodo</th>
+                        <th></th>
                     </tr>
                 </thead>
                 <tbody>
@@ -415,8 +421,17 @@ require __DIR__ . '/../../includes/layout_header.php';
                     <tr>
                         <td><?= date('d/m/Y', strtotime($p['data_pagamento'])) ?></td>
                         <td><?= h($p['tipo_pagamento']) ?></td>
-                        <td class="amount">€&nbsp;<?= number_format((float)$p['importo'], 2, ',', '.') ?></td>
+                        <td class="amount"><?= $p['tipo_pagamento'] === 'rimborso' ? '−' : '' ?>€&nbsp;<?= euro((float)$p['importo']) ?></td>
                         <td><?= h($p['metodo_pagamento']) ?></td>
+                        <td>
+                            <form method="post" action="<?= u('/tesseramenti/pagamento_delete.php') ?>"
+                                  onsubmit="return confirm('Eliminare questo pagamento? Verrà rimosso anche il movimento di prima nota collegato.');"
+                                  style="display:inline">
+                                <input type="hidden" name="csrf_token" value="<?= h($csrf) ?>">
+                                <input type="hidden" name="id_pagamento" value="<?= (int)$p['id_pagamento'] ?>">
+                                <button type="submit" class="btn btn-sm btn-danger">✕</button>
+                            </form>
+                        </td>
                     </tr>
                 <?php endforeach; ?>
                 </tbody>

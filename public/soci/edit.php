@@ -114,7 +114,7 @@ require __DIR__ . '/../../includes/layout_header.php';
     </div>
 <?php endif; ?>
 
-<form method="post" action="/soci/edit.php?id=<?= $id_socio ?>" class="record-form">
+<form method="post" action="<?= u('/soci/edit.php') ?>?id=<?= $id_socio ?>" class="record-form">
     <input type="hidden" name="csrf_token" value="<?= h($csrf) ?>">
     <input type="hidden" name="id" value="<?= $id_socio ?>">
 
@@ -162,7 +162,7 @@ require __DIR__ . '/../../includes/layout_header.php';
     </label>
 
     <button type="submit" class="btn">Salva modifiche</button>
-    <a class="btn btn-secondary" href="/soci/view.php?id=<?= $id_socio ?>">Annulla</a>
+    <a class="btn btn-secondary" href="<?= u('/soci/view.php') ?>?id=<?= $id_socio ?>">Annulla</a>
 </form>
 
 <?php require __DIR__ . '/../../includes/layout_footer.php'; ?>

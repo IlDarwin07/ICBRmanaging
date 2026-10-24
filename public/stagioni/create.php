@@ -45,7 +45,7 @@ require __DIR__ . '/../../includes/layout_header.php';
 ?>
 <div class="page-header">
     <h1>Nuova stagione</h1>
-    <a class="btn btn-secondary" href="/stagioni/list.php">← Torna alla lista</a>
+    <a class="btn btn-secondary" href="<?= u('/stagioni/list.php') ?>">← Torna alla lista</a>
 </div>
 
 <?php if ($errors): ?>

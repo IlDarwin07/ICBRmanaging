@@ -15,7 +15,7 @@ require __DIR__ . '/../../includes/layout_header.php';
 ?>
 <div class="page-header">
     <h1>Stagioni</h1>
-    <a class="btn" href="/stagioni/create.php">+ Nuova stagione</a>
+    <a class="btn" href="<?= u('/stagioni/create.php') ?>">+ Nuova stagione</a>
 </div>
 
 <table class="data-table">
@@ -41,7 +41,7 @@ require __DIR__ . '/../../includes/layout_header.php';
             <td><?= $s['data_fine']  ? date('d/m/Y', strtotime($s['data_fine']))  : '—' ?></td>
             <td><?= $s['attiva'] ? '<span class="badge badge-ok">Sì</span>' : '<span class="badge">No</span>' ?></td>
             <td>
-                <a href="/stagioni/edit.php?id=<?= (int)$s['id_stagione'] ?>">Modifica</a>
+                <a href="<?= u('/stagioni/edit.php') ?>?id=<?= (int)$s['id_stagione'] ?>">Modifica</a>
             </td>
         </tr>
     <?php endforeach; ?>

@@ -15,7 +15,7 @@ require __DIR__ . '/../../includes/layout_header.php';
 ?>
 <div class="page-header">
     <h1>Tipologie tesseramento</h1>
-    <a class="btn" href="/tipologie/create.php">+ Nuova tipologia</a>
+    <a class="btn" href="<?= u('/tipologie/create.php') ?>">+ Nuova tipologia</a>
 </div>
 
 <table class="data-table">
@@ -40,7 +40,7 @@ require __DIR__ . '/../../includes/layout_header.php';
             <td><?= h($t['listino_label']) ?></td>
             <td><?= $t['quota_standard'] !== null ? '€ ' . number_format((float)$t['quota_standard'], 2, ',', '.') : '—' ?></td>
             <td><?= $t['attiva'] ? '<span class="badge badge-ok">Sì</span>' : '<span class="badge">No</span>' ?></td>
-            <td><a href="/tipologie/edit.php?id=<?= (int)$t['id_tipologia'] ?>">Modifica</a></td>
+            <td><a href="<?= u('/tipologie/edit.php') ?>?id=<?= (int)$t['id_tipologia'] ?>">Modifica</a></td>
         </tr>
     <?php endforeach; ?>
     </tbody>

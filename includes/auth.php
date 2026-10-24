@@ -76,7 +76,10 @@ function require_login(): void
 {
     start_secure_session();
     if (!is_logged_in()) {
-        header('Location: /login.php');
+        // base_path() è definita in includes/functions.php: se assente,
+        // il fallback è il path assoluto (DocumentRoot su /public).
+        $login = function_exists('base_path') ? base_path('/login.php') : '/login.php';
+        header('Location: ' . $login);
         exit;
     }
 }

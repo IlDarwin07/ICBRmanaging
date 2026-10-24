@@ -97,7 +97,7 @@ require __DIR__ . '/../../includes/layout_header.php';
     </div>
 <?php endif; ?>
 
-<form method="post" action="/soci/create.php" class="record-form">
+<form method="post" action="<?= u('/soci/create.php') ?>" class="record-form">
     <input type="hidden" name="csrf_token" value="<?= h($csrf) ?>">
 
     <div class="form-row">
@@ -139,7 +139,7 @@ require __DIR__ . '/../../includes/layout_header.php';
     </div>
 
     <button type="submit" class="btn">Salva socio</button>
-    <a class="btn btn-secondary" href="/soci/list.php">Annulla</a>
+    <a class="btn btn-secondary" href="<?= u('/soci/list.php') ?>">Annulla</a>
 </form>
 
 <?php require __DIR__ . '/../../includes/layout_footer.php'; ?>

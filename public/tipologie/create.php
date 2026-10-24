@@ -35,7 +35,7 @@ require __DIR__ . '/../../includes/layout_header.php';
 ?>
 <div class="page-header">
     <h1>Nuova tipologia tesseramento</h1>
-    <a class="btn btn-secondary" href="/tipologie/list.php">← Torna</a>
+    <a class="btn btn-secondary" href="<?= u('/tipologie/list.php') ?>">← Torna</a>
 </div>
 
 <?php if ($errors): ?>

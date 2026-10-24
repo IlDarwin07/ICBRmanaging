@@ -34,7 +34,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $attivo_portale   = isset($_POST['attivo_portale']) ? 1 : 0;
     $attivo_scorsa    = isset($_POST['attivo_scorsa_stagione']) ? 1 : 0;
     $conf_anagrafica  = isset($_POST['conferma_anagrafica']) ? 1 : 0;
-    $tessera_fisica   = isset($_POST['tessera_fisica']) ? 1 : 0;
+    $tessera_fisica   = $_POST['tessera_fisica'] ?? 'non_richiesta';
+    if (!array_key_exists($tessera_fisica, TESSERA_FISICA_STATI)) {
+        $tessera_fisica = 'non_richiesta';
+    }
     $data_att_raw     = trim($_POST['data_ora_attivazione'] ?? '');
     $data_att         = $data_att_raw !== '' ? $data_att_raw : null; // datetime-local
     $fonte            = $_POST['fonte_inserimento'] ?? 'manuale';
@@ -46,17 +49,26 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if ($id_socio && $id_stagione) {
         $dup = $pdo->prepare('SELECT id_tesseramento FROM tesseramenti WHERE id_socio=:s AND id_stagione=:st');
         $dup->execute(['s' => $id_socio, 'st' => $id_stagione]);
-        if ($dup->fetch()) $errors[] = 'Questo socio è già tesserat* per la stagione selezionata.';
+        if ($dup->fetch()) $errors[] = 'Questo socio è già tesserato per la stagione selezionata.';
     }
 
     if (empty($errors)) {
+        // Snapshot della quota corrente della tipologia: i listini futuri
+        // non modificheranno retroattivamente i residui di questo tesseramento.
+        $quota_snapshot = null;
+        if ($id_tipologia) {
+            $qs = $pdo->prepare('SELECT quota_standard FROM tipologie_tesseramento WHERE id_tipologia = :id');
+            $qs->execute(['id' => $id_tipologia]);
+            $quota_snapshot = $qs->fetchColumn() ?: null;
+        }
+
         $stmt = $pdo->prepare(
             'INSERT INTO tesseramenti
-             (id_socio, id_stagione, id_tipologia, listino_originale, numero_tessera,
+             (id_socio, id_stagione, id_tipologia, quota_tesseramento, listino_originale, numero_tessera,
               ruolo_portale, tipo_portale, socio_plus, attivo_portale, attivo_scorsa_stagione,
               conferma_anagrafica, tessera_fisica, data_ora_attivazione, fonte_inserimento)
              VALUES
-             (:socio, :stagione, :tipologia, :listino, :tessera,
+             (:socio, :stagione, :tipologia, :quota, :listino, :tessera,
               :ruolo, :tipo, :plus, :attivo, :scorsa,
               :conferma, :fisica, :data_att, :fonte)'
         );
@@ -64,6 +76,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             'socio'     => $id_socio,
             'stagione'  => $id_stagione,
             'tipologia' => $id_tipologia,
+            'quota'     => $quota_snapshot,
             'listino'   => $listino_orig,
             'tessera'   => $numero_tessera,
             'ruolo'     => $ruolo_portale,
@@ -87,7 +100,7 @@ require __DIR__ . '/../../includes/layout_header.php';
 ?>
 <div class="page-header">
     <h1>Nuovo tesseramento</h1>
-    <a class="btn btn-secondary" href="/tesseramenti/list.php">← Torna alla lista</a>
+    <a class="btn btn-secondary" href="<?= u('/tesseramenti/list.php') ?>">← Torna alla lista</a>
 </div>
 
 <?php if ($errors): ?>
@@ -99,7 +112,7 @@ require __DIR__ . '/../../includes/layout_header.php';
 
     <h3>Socio</h3>
     <div class="form-group">
-        <label>ID socio * <small>(cerca prima nella <a href="/soci/list.php" target="_blank">lista soci</a>)</small></label>
+        <label>ID socio * <small>(cerca prima nella <a href="<?= u('/soci/list.php') ?>" target="_blank">lista soci</a>)</small></label>
         <input type="number" name="id_socio" value="<?= h($_POST['id_socio'] ?? '') ?>" min="1" required
                placeholder="Inserisci ID numerico del socio">
     </div>
@@ -170,7 +183,16 @@ require __DIR__ . '/../../includes/layout_header.php';
         <label class="checkbox-inline"><input type="checkbox" name="socio_plus" value="1" <?= isset($_POST['socio_plus']) ? 'checked' : '' ?>> Socio+</label>
         <label class="checkbox-inline"><input type="checkbox" name="attivo_scorsa_stagione" value="1" <?= isset($_POST['attivo_scorsa_stagione']) ? 'checked' : '' ?>> Attivo scorsa stagione</label>
         <label class="checkbox-inline"><input type="checkbox" name="conferma_anagrafica" value="1" <?= isset($_POST['conferma_anagrafica']) ? 'checked' : '' ?>> Anagrafica confermata</label>
-        <label class="checkbox-inline"><input type="checkbox" name="tessera_fisica" value="1" <?= isset($_POST['tessera_fisica']) ? 'checked' : '' ?>> Tessera fisica consegnata</label>
+    </div>
+    <div class="form-group">
+        <label>Tessera fisica</label>
+        <select name="tessera_fisica">
+            <?php foreach (TESSERA_FISICA_STATI as $val => $label): ?>
+                <option value="<?= h($val) ?>" <?= ($_POST['tessera_fisica'] ?? 'non_richiesta') === $val ? 'selected' : '' ?>>
+                    <?= h($label) ?>
+                </option>
+            <?php endforeach; ?>
+        </select>
     </div>
 
     <div class="form-actions">

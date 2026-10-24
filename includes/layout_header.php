@@ -12,12 +12,15 @@ $flash  = get_flash_message();
 
 // Determina la sezione attiva per evidenziare la voce di menu
 $current_path = $_SERVER['REQUEST_URI'] ?? '';
-$nav_soci    = str_contains($current_path, '/soci');
-$nav_import  = str_contains($current_path, '/importazioni');
-$nav_config  = str_contains($current_path, '/stagioni')
-               || str_contains($current_path, '/tipologie')
-               || str_contains($current_path, '/tesseramenti');
-$nav_dash    = !$nav_soci && !$nav_config && !$nav_import;
+$nav_soci     = str_contains($current_path, '/soci');
+$nav_tess     = str_contains($current_path, '/tesseramenti');
+$nav_nota     = str_contains($current_path, '/prima_nota');
+$nav_msg      = str_contains($current_path, '/messaggi');
+$nav_import   = str_contains($current_path, '/importazioni');
+$nav_config   = str_contains($current_path, '/stagioni')
+               || str_contains($current_path, '/tipologie');
+$nav_dash     = !$nav_soci && !$nav_tess && !$nav_nota && !$nav_msg
+                && !$nav_config && !$nav_import;
 
 // Percorso base (definito in config.php, default sicuro per XAMPP)
 if (!defined('BASE_URL')) {
@@ -47,6 +50,12 @@ $base = rtrim(BASE_URL, '/');
            <?= $nav_dash   ? 'class="active"' : '' ?>>Dashboard</a>
         <a href="<?= $base ?>/soci/list.php"
            <?= $nav_soci   ? 'class="active"' : '' ?>>Soci</a>
+        <a href="<?= $base ?>/tesseramenti/list.php"
+           <?= $nav_tess  ? 'class="active"' : '' ?>>Tesseramenti</a>
+        <a href="<?= $base ?>/prima_nota/list.php"
+           <?= $nav_nota  ? 'class="active"' : '' ?>>Prima nota</a>
+        <a href="<?= $base ?>/messaggi/template_list.php"
+           <?= $nav_msg   ? 'class="active"' : '' ?>>Messaggi</a>
         <a href="<?= $base ?>/importazioni/upload.php"
            <?= $nav_import ? 'class="active"' : '' ?>>Importa</a>
         <div class="nav-dropdown <?= $nav_config ? 'active' : '' ?>">

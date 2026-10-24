@@ -24,7 +24,7 @@ if ($id_import) {
 }
 
 if (!$import) {
-    header('Location: /importazioni/upload.php');
+    header('Location: ' . base_path('/importazioni/upload.php'));
     exit;
 }
 
@@ -111,7 +111,7 @@ require __DIR__ . '/../../includes/layout_header.php';
 </div>
 
 <div class="form-actions" style="margin-top:1.5rem">
-    <a href="/importazioni/upload.php" class="btn btn-secondary">&larr; Storico importazioni</a>
+    <a href="<?= u('/importazioni/upload.php') ?>" class="btn btn-secondary">&larr; Storico importazioni</a>
 </div>
 
 <?php require __DIR__ . '/../../includes/layout_footer.php'; ?>

@@ -5,7 +5,7 @@ require_once __DIR__ . '/../includes/functions.php';
 start_secure_session();
 
 if (is_logged_in()) {
-    header('Location: /dashboard.php');
+    header('Location: ' . base_path('/dashboard.php'));
     exit;
 }
 
@@ -21,7 +21,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if ($username === '' || $password === '') {
             $errore = 'Inserisci username e password.';
         } elseif (attempt_login($username, $password)) {
-            header('Location: /dashboard.php');
+            header('Location: ' . base_path('/dashboard.php'));
             exit;
         } else {
             $errore = 'Credenziali non valide.';
@@ -37,7 +37,7 @@ $csrf = csrf_token();
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Accesso - Gestionale Inter Club Brindisi</title>
-    <link rel="stylesheet" href="/assets/css/style.css">
+    <link rel="stylesheet" href="<?= u('/assets/css/style.css') ?>">
 </head>
 <body class="login-body">
 <div class="login-box">
@@ -48,7 +48,7 @@ $csrf = csrf_token();
         <div class="flash flash-error"><?= h($errore) ?></div>
     <?php endif; ?>
 
-    <form method="post" action="/login.php" autocomplete="off">
+    <form method="post" action="<?= u('/login.php') ?>" autocomplete="off">
         <input type="hidden" name="csrf_token" value="<?= h($csrf) ?>">
 
         <label for="username">Username</label>

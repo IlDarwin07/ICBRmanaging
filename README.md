@@ -11,32 +11,36 @@ Gestionale web per la gestione dei soci e dei tesseramenti dell'Inter Club Javie
 
 ## Struttura navigazione
 
-L'interfaccia è organizzata in tre aree principali:
-
 | Voce menu | Contenuto |
 |---|---|
-| **Dashboard** | KPI rapidi: soci totali, tesserati stagione corrente |
+| **Dashboard** | KPI soci + KPI economici (incassato stagione, residuo previsto, saldi cassa/banca) |
 | **Soci** | Anagrafica completa. La scheda di ogni socio include lo storico dei tesseramenti stagionali |
-| **Configurazione** | Voci di sistema: Stagioni sportive, Tipologie tessera |
-
-> **Nota:** I tesseramenti non hanno una sezione dedicata nel menu principale perché
-> sono strettamente legati al singolo socio. Si accede allo storico tesseramenti
-> direttamente dalla scheda socio (`/soci/view.php?id=X`).
+| **Tesseramenti** | Lista con filtri (stagione, stato pagamento, attivo portale, tipologia, tessera fisica), colonna residuo, export CSV |
+| **Prima nota** | Registro contabile: entrate/uscite, conti cassa/banca, saldi, filtri per periodo, export CSV |
+| **Messaggi** | Template WhatsApp con placeholder, compositore per gruppi di soci, messaggi pronti con link wa.me |
+| **Importa** | Caricamento file XLSX/XLS del portale Inter Club con mappatura colonne |
+| **Configurazione** | Stagioni sportive, Tipologie tessera |
 
 ## Struttura cartelle
 
 ```
 /
+├── bin/             # Script da riga di comando (reset password admin)
 ├── config/          # Configurazione DB e costanti
-├── database/        # Schema SQL
+├── database/        # Schema SQL + migrations
+│   ├── schema.sql   # Installazione da zero
+│   └── migrations/  # Aggiornamenti per DB esistenti
 ├── docs/            # Documentazione di progetto
 ├── includes/        # Funzioni comuni, auth, layout header/footer
 └── public/          # Pagine web accessibili
-    ├── assets/      # CSS, immagini
-    ├── soci/        # list, view, create, edit
-    ├── stagioni/    # list (Configurazione)
-    ├── tipologie/   # list (Configurazione)
-    ├── tesseramenti/ # Accessibili da scheda socio
+    ├── assets/      # CSS
+    ├── soci/         # list, view, create, edit
+    ├── stagioni/     # list, create, edit
+    ├── tipologie/    # list, create, edit
+    ├── tesseramenti/ # list, view, create, edit, pagamento_add/delete
+    ├── prima_nota/   # list, create, edit, delete, export
+    ├── messaggi/     # template CRUD, compose, list
+    ├── importazioni/ # upload, mapping, process, log
     ├── dashboard.php
     ├── login.php
     └── logout.php
@@ -46,13 +50,65 @@ L'interfaccia è organizzata in tre aree principali:
 
 - **Fase 1 ✅** — Fondamenta tecniche (auth, DB, layout)
 - **Fase 2 ✅** — Anagrafica soci (CRUD completo + tesseramenti in scheda)
-- **Fase 3** — Tesseramenti stagionali (gestione completa, import file Inter Club)
-- **Fase 4** — Import file Excel dal portale Inter Club
-- **Fase 5** — Gestione quote e pagamenti
-- **Fase 6** — Prima nota contabile
-- **Fase 7** — Messaggi WhatsApp assistiti
+- **Fase 3 ✅** — Tesseramenti stagionali (gestione completa, import file Inter Club)
+- **Fase 4 ✅** — Import file Excel dal portale Inter Club
+- **Fase 5 ✅** — Gestione quote e pagamenti (filtri per stato pagamento, residuo, snapshot quota non retroattivo, prima nota collegata al pagamento)
+- **Fase 6 ✅** — Prima nota contabile (entrate/uscite, conti cassa/banca, saldi, export)
+- **Fase 7 ✅** — Messaggi WhatsApp assistiti (template con placeholder, compositore per gruppi, wa.me, copia testo)
+- **Fase 8** — Invio automatico via WhatsApp Business API (richiede configurazione Meta)
+
+## Logica quote e pagamenti
+
+- **Quota dovuta:** ogni tesseramento salva uno *snapshot* della quota al momento
+  della creazione (`quota_tesseramento`). Se assente, viene usata la quota corrente
+  della tipologia. Modificare i listini NON cambia retroattivamente i residui storici.
+- **Versato:** somma dei pagamenti; i **rimborsi** vengono sottratti (netto).
+- **Stati:** `Da saldare` (nessun versamento), `Solo acconto`, `Saldato`,
+  `Eccedenza` (versato > quota), `A credito` (rimborsi > incassi), `Quota n/d`.
+- **Prima nota:** registrando un pagamento puoi creare in automatico il movimento
+  contabile (stesso importo, conto scelto, entrata o uscita per i rimborsi).
+  Il movimento è vincolato 1:1 al pagamento (chiave unica) e si modifica/elimina
+  dal pagamento stesso.
+
+## Messaggi WhatsApp assistiti
+
+1. Crea un template con placeholder: `{{nome}}`, `{{cognome}}`, `{{nome_completo}}`,
+   `{{telefono}}`, `{{quota}}`, `{{pagato}}`, `{{residuo}}`, `{{stagione}}`, `{{data}}`.
+2. Componi l'invio scegliendo i destinatari per filtri (stagione, stato pagamento, tipologia...).
+3. Verifica l'anteprima personalizzata, copia il testo o apri `wa.me`.
+4. I messaggi salvati restano nella lista; l'apertura di WhatsApp NON li segna come
+   inviati: usa il pulsante "✓ Inviato" (l'invio automatico è la fase 8).
+
+## Installazione
+
+```bash
+# 1. Crea il database e importa lo schema
+mysql -u root -p < database/schema.sql
+
+# 2. Crea l'utente amministratore
+php bin/reset_admin_password.php admin "PasswordSicura123!"
+
+# 3. Configura config/database.php se necessario
+
+# 4. Servi la cartella public/ (DocumentRoot) oppure tutto il progetto
+#    in sottocartella (XAMPP: http://localhost/ICBRmanaging/public/)
+```
+
+### Aggiornamento di un database esistente
+
+Applica le migration in ordine:
+
+```bash
+mysql -u root -p icbr_gestionale < database/migrations/002_add_id_stagione_to_importazioni.sql
+mysql -u root -p icbr_gestionale < database/migrations/006_importazioni.sql
+mysql -u root -p icbr_gestionale < database/migrations/007_tessera_fisica_enum_tipologie_2027.sql
+mysql -u root -p icbr_gestionale < database/migrations/008_prima_nota_quota_snapshot.sql
+```
+
+La 008 aggiunge lo snapshot quota ai tesseramenti esistenti (backfill automatico),
+la chiave unica prima nota↔pagamento e l'unicità delle tipologie.
 
 ## Accesso area riservata
 
-L'applicazione richiede autenticazione. Ruoli previsti: `admin`, `segreteria`.
-Credenziali di default configurabili nel seeder SQL in `database/`.
+L'applicazione richiede autenticazione. Ruoli previsti: `admin`, `segreteria`, `tesoriere`, `presidente`.
+Credenziali di default configurabili con `bin/reset_admin_password.php`.

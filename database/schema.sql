@@ -71,7 +71,7 @@ CREATE TABLE IF NOT EXISTS stagioni (
 -- ---------------------------------------------------------------------
 CREATE TABLE IF NOT EXISTS tipologie_tesseramento (
     id_tipologia INT AUTO_INCREMENT PRIMARY KEY,
-    tipo VARCHAR(50) NOT NULL,
+    tipo VARCHAR(50) NOT NULL UNIQUE,
     listino_label VARCHAR(100) NULL,
     quota_standard DECIMAL(10,2) NULL,
     attiva TINYINT(1) NOT NULL DEFAULT 1
@@ -84,6 +84,7 @@ CREATE TABLE IF NOT EXISTS importazioni (
     id_importazione INT AUTO_INCREMENT PRIMARY KEY,
     nome_file VARCHAR(255) NOT NULL,
     hash_file VARCHAR(64) NULL,
+    id_stagione INT NULL,
     data_importazione DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     righe_totali INT NOT NULL DEFAULT 0,
     righe_inserite INT NOT NULL DEFAULT 0,
@@ -91,7 +92,8 @@ CREATE TABLE IF NOT EXISTS importazioni (
     righe_scartate INT NOT NULL DEFAULT 0,
     note_esito TEXT NULL,
     importato_da INT NULL,
-    CONSTRAINT fk_importazioni_utente FOREIGN KEY (importato_da) REFERENCES utenti_admin(id_utente) ON DELETE SET NULL
+    CONSTRAINT fk_importazioni_utente FOREIGN KEY (importato_da) REFERENCES utenti_admin(id_utente) ON DELETE SET NULL,
+    CONSTRAINT fk_importazioni_stagione FOREIGN KEY (id_stagione) REFERENCES stagioni(id_stagione) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- ---------------------------------------------------------------------
@@ -102,6 +104,9 @@ CREATE TABLE IF NOT EXISTS tesseramenti (
     id_socio INT NOT NULL,
     id_stagione INT NOT NULL,
     id_tipologia INT NULL,
+    -- snapshot della quota dovuta al momento della creazione:
+    -- evita che variazioni future dei listini cambino i residuti storici
+    quota_tesseramento DECIMAL(10,2) NULL,
     listino_originale VARCHAR(120) NULL,
     numero_tessera VARCHAR(50) NULL,
     ruolo_portale VARCHAR(100) NULL,
@@ -166,6 +171,9 @@ CREATE TABLE IF NOT EXISTS prima_nota (
     note TEXT NULL,
     registrato_da INT NULL,
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    -- un movimento contabile è collegato al massimo a un pagamento:
+    -- impedisce duplicazioni in caso di reinvio del form
+    UNIQUE KEY uq_primanota_pagamento (id_pagamento),
     CONSTRAINT fk_primanota_socio FOREIGN KEY (id_socio) REFERENCES soci(id_socio) ON DELETE SET NULL,
     CONSTRAINT fk_primanota_tesseramento FOREIGN KEY (id_tesseramento) REFERENCES tesseramenti(id_tesseramento) ON DELETE SET NULL,
     CONSTRAINT fk_primanota_pagamento FOREIGN KEY (id_pagamento) REFERENCES pagamenti_tesseramenti(id_pagamento) ON DELETE SET NULL,
