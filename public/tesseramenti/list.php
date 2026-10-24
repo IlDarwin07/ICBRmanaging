@@ -30,7 +30,7 @@ $tipologia_filtro = (int)($_GET['id_tipologia'] ?? 0);
 $tessera_filtro = $_GET['tessera_fisica'] ?? '';
 $export_csv     = ($_GET['export'] ?? '') === 'csv';
 
-$STATI_VALIDI = ['da_pagare', 'acconto', 'saldato', 'eccedenza', 'quota_sconosciuta'];
+$STATI_VALIDI = ['da_pagare', 'acconto', 'saldato', 'eccedenza', 'quota_sconosciuta', 'anomalia_rimborso'];
 if (!in_array($stato_filtro, $STATI_VALIDI, true)) {
     $stato_filtro = '';
 }
@@ -104,6 +104,9 @@ if ($stato_filtro !== '') {
         case 'eccedenza':
             $sql .= ' HAVING quota_dovuta IS NOT NULL AND versato_netto > quota_dovuta + 0.004';
             break;
+        case 'anomalia_rimborso':
+            $sql .= ' HAVING COALESCE(versato_netto,0) < -0.004';
+            break;
     }
 }
 
@@ -169,15 +172,18 @@ if ($id_stagione_filtro > 0) {
     $totale_attivi = (int)$pdo->query('SELECT COUNT(*) FROM tesseramenti WHERE attivo_portale = 1')->fetchColumn();
 }
 
-// Query string corrente per i link (preserva i filtri)
-$qs_current = http_build_query(array_filter([
-    'id_stagione' => $id_stagione_filtro ?: null,
+// Query string corrente per i link (preserva i filtri).
+// NB: id_stagione=0 ("tutte le stagioni") va conservato esplicitamente,
+// altrimenti l'export CSV ricadrebbe sul default della stagione attiva.
+$qs_parts = [
+    'id_stagione' => $id_stagione_filtro > 0 ? $id_stagione_filtro : ($id_stagione_filtro === 0 ? '0' : null),
     'q' => $q !== '' ? $q : null,
     'stato_pagamento' => $stato_filtro ?: null,
     'attivo_portale' => $attivo_filtro !== '' ? $attivo_filtro : null,
     'id_tipologia' => $tipologia_filtro ?: null,
     'tessera_fisica' => $tessera_filtro ?: null,
-], fn($v) => $v !== null && $v !== ''));
+];
+$qs_current = http_build_query(array_filter($qs_parts, fn($v) => $v !== null && $v !== ''));
 
 $page_title = 'Tesseramenti';
 require __DIR__ . '/../../includes/layout_header.php';
@@ -207,6 +213,7 @@ require __DIR__ . '/../../includes/layout_header.php';
         <option value="saldato" <?= $stato_filtro === 'saldato' ? 'selected' : '' ?>>Saldati</option>
         <option value="eccedenza" <?= $stato_filtro === 'eccedenza' ? 'selected' : '' ?>>Eccedenza</option>
         <option value="quota_sconosciuta" <?= $stato_filtro === 'quota_sconosciuta' ? 'selected' : '' ?>>Quota non definita</option>
+        <option value="anomalia_rimborso" <?= $stato_filtro === 'anomalia_rimborso' ? 'selected' : '' ?>>Anomalia rimborsi</option>
     </select>
     <select name="attivo_portale">
         <option value="">— Attivo portale —</option>

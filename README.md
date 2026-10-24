@@ -96,17 +96,33 @@ php bin/reset_admin_password.php admin "PasswordSicura123!"
 
 ### Aggiornamento di un database esistente
 
-Applica le migration in ordine:
+Applica le migration **non ancora applicate** in ordine di numero; quelle già
+applicate vanno saltate (falliscono con "Duplicate key/column" se rieseguite).
+Per un database aggiornato all'ultima versione pubblicata dello schema
+(tessera_fisica ENUM, tipologie 2027, id_stagione in importazioni) è sufficiente:
 
 ```bash
-mysql -u root -p icbr_gestionale < database/migrations/002_add_id_stagione_to_importazioni.sql
-mysql -u root -p icbr_gestionale < database/migrations/006_importazioni.sql
-mysql -u root -p icbr_gestionale < database/migrations/007_tessera_fisica_enum_tipologie_2027.sql
 mysql -u root -p icbr_gestionale < database/migrations/008_prima_nota_quota_snapshot.sql
 ```
 
-La 008 aggiunge lo snapshot quota ai tesseramenti esistenti (backfill automatico),
-la chiave unica prima nota↔pagamento e l'unicità delle tipologie.
+La 008: aggiunge lo snapshot quota ai tesseramenti esistenti (backfill
+automatico), crea la chiave unica prima nota↔pagamento e l'unicità delle
+tipologie (i riferimenti dei tesseramenti vengono prima spostati sulla
+tipologia conservata, quindi nessun tesseramento perde il listino).
+
+Su un DB più vecchio applica prima anche 002, 006 e 007, verificando che
+non siano già presenti.
+
+### Limiti noti
+
+- La registrazione pagamento NON è idempotente: il reinvio del form crea un
+  secondo pagamento (la chiave unica prima nota↔pagamento protegge solo il
+  rapporto 1:1 movimento-pagamento).
+- Il filtro "Tutte le stagioni" nella lista tesseramenti disattiva il default
+  della stagione attiva: è voluto (il default senza parametro resta la stagione attiva).
+- Numeri WhatsApp: i numeri nazionali senza prefisso sono considerati italiani
+  (viene anteposto 39 per il link wa.me); i prefissi internazionali già
+  presenti (+XX / 00XX) vengono mantenuti.
 
 ## Accesso area riservata
 

@@ -42,8 +42,16 @@ ALTER TABLE prima_nota
 
 -- ---------------------------------------------------------------------
 -- 3. Unicità tipologia di tesseramento
---    (deduplica di sicurezza prima della chiave: si conserva l'id minore)
+--    Prima di eliminare i duplicati, i riferimenti dei tesseramenti
+--    vengono spostati sulla tipologia conservata (id minore con lo stesso
+--    `tipo`): così nessun tesseramento perde la tipologia (la FK sarebbe
+--    ON DELETE SET NULL e il legame andrebbe perso).
 -- ---------------------------------------------------------------------
+UPDATE tesseramenti t
+JOIN tipologie_tesseramento dup ON dup.id_tipologia = t.id_tipologia
+JOIN tipologie_tesseramento keep ON keep.tipo = dup.tipo AND keep.id_tipologia < dup.id_tipologia
+SET t.id_tipologia = keep.id_tipologia;
+
 DELETE t1 FROM tipologie_tesseramento t1
 JOIN tipologie_tesseramento t2
   ON t1.tipo = t2.tipo

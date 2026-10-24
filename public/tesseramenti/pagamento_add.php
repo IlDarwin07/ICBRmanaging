@@ -12,7 +12,7 @@ $errors = [];
 // Carica tesseramento + socio
 $stmt = $pdo->prepare(
     'SELECT t.*, s.nome, s.cognome, s.telefono, st.codice_stagione,
-            tip.quota_standard AS quota_standard_tip
+            tip.quota_standard
      FROM tesseramenti t
      JOIN soci s ON s.id_socio = t.id_socio
      JOIN stagioni st ON st.id_stagione = t.id_stagione
@@ -76,8 +76,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $id_pagamento = (int)$pdo->lastInsertId();
 
             // Movimento in prima nota nella stessa transazione.
-            // La chiave unica uq_primanota_pagamento impedisce duplicazioni
-            // anche in caso di reinvio del form.
+            // NOTA: la chiave unica uq_primanota_pagamento garantisce il
+            // rapporto 1:1 movimento-pagamento, NON l'idempotenza del form:
+            // un reinvio crea un secondo pagamento distinto.
             if ($registra_prima_nota) {
                 $stmt_pn = $pdo->prepare(
                     'INSERT INTO prima_nota

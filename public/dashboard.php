@@ -99,7 +99,9 @@ if ($stagione_attiva) {
     foreach ($stmt_kpi->fetchAll() as $r) {
         $quota = $r['quota_dovuta'] !== null ? (float)$r['quota_dovuta'] : null;
         $netto = (float)$r['versato_netto'];
-        $incassato_stagione += max(0.0, $netto);
+        // incassato netto: anche i netti negativi (anomalia rimborsi)
+        // vanno sommati per com'è, altrimenti l'incassato è sovrastimato
+        $incassato_stagione += $netto;
         if ($quota !== null) {
             $residuo_previsto += tess_residuo($quota, $netto) ?? 0.0;
             if ($netto < $quota - 0.004) $soci_da_saldare++;

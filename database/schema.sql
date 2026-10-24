@@ -171,8 +171,9 @@ CREATE TABLE IF NOT EXISTS prima_nota (
     note TEXT NULL,
     registrato_da INT NULL,
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    -- un movimento contabile è collegato al massimo a un pagamento:
-    -- impedisce duplicazioni in caso di reinvio del form
+    -- rapporto 1:1 movimento-pagamento: un pagamento può avere al massimo
+    -- un movimento contabile collegato (NON rende idempotente il reinvio
+    -- del form di registrazione, che crea un pagamento distinto)
     UNIQUE KEY uq_primanota_pagamento (id_pagamento),
     CONSTRAINT fk_primanota_socio FOREIGN KEY (id_socio) REFERENCES soci(id_socio) ON DELETE SET NULL,
     CONSTRAINT fk_primanota_tesseramento FOREIGN KEY (id_tesseramento) REFERENCES tesseramenti(id_tesseramento) ON DELETE SET NULL,

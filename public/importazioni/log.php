@@ -29,18 +29,18 @@ if (!$import) {
 }
 
 $righe = $pdo->prepare(
-    'SELECT * FROM importazioni_righe WHERE id_importazione = ? ORDER BY numero_riga ASC'
+    'SELECT * FROM righe_importazione WHERE id_importazione = ? ORDER BY numero_riga ASC'
 );
 $righe->execute([$id_import]);
 $righe = $righe->fetchAll();
 
-$cnt = ['inserito' => 0, 'aggiornato' => 0, 'duplicato' => 0, 'errore' => 0];
+$cnt = ['inserita' => 0, 'aggiornata' => 0, 'duplicato' => 0, 'errore' => 0];
 foreach ($righe as $r) {
     $cnt[$r['esito']] = ($cnt[$r['esito']] ?? 0) + 1;
 }
 
 $filtro = $_GET['filtro'] ?? '';
-if ($filtro && in_array($filtro, ['inserito','aggiornato','duplicato','errore'])) {
+if ($filtro && in_array($filtro, ['inserita','aggiornata','duplicato','errore'])) {
     $righe = array_filter($righe, fn($r) => $r['esito'] === $filtro);
 }
 
@@ -56,7 +56,7 @@ require __DIR__ . '/../../includes/layout_header.php';
 </p>
 
 <div class="cards-grid" style="margin-bottom:1rem">
-    <?php foreach (['inserito'=>'Inseriti','aggiornato'=>'Aggiornati','duplicato'=>'Ambigui','errore'=>'Errori'] as $k => $label): ?>
+    <?php foreach (['inserita'=>'Inserite','aggiornata'=>'Aggiornate','duplicato'=>'Ambigui','errore'=>'Errori'] as $k => $label): ?>
         <div class="card<?= $k === 'errore' || $k === 'duplicato' ? ' card-warning' : '' ?>">
             <span class="card-value"><?= $cnt[$k] ?></span>
             <span class="card-label"><?= $label ?></span>
@@ -65,7 +65,7 @@ require __DIR__ . '/../../includes/layout_header.php';
 </div>
 
 <div class="quick-links" style="margin-bottom:1rem">
-    <?php foreach ([''=>'Tutti','inserito'=>'Inseriti','aggiornato'=>'Aggiornati','duplicato'=>'Ambigui','errore'=>'Errori'] as $k => $label): ?>
+    <?php foreach ([''=>'Tutti','inserita'=>'Inserite','aggiornata'=>'Aggiornate','duplicato'=>'Ambigui','errore'=>'Errori'] as $k => $label): ?>
         <a href="?id=<?= $id_import ?>&filtro=<?= $k ?>"
            class="btn btn-secondary<?= ($filtro === $k) ? ' btn-active' : '' ?>">
             <?= $label ?>
@@ -86,8 +86,8 @@ require __DIR__ . '/../../includes/layout_header.php';
         <tbody>
             <?php foreach ($righe as $r):
                 $cls = match($r['esito']) {
-                    'inserito'   => 'color:var(--color-success)',
-                    'aggiornato' => '',
+                    'inserita'   => 'color:var(--color-success)',
+                    'aggiornata' => '',
                     'duplicato'  => 'color:var(--color-warning)',
                     'errore'     => 'color:var(--color-error)',
                     default      => '',

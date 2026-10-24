@@ -42,12 +42,24 @@ foreach ($pdo->query('SELECT conto, SUM(CASE WHEN tipo_movimento = \'entrata\' T
     $saldi_conti[$r['conto']] = (float)$r['saldo'];
 }
 
-// Totali del PERIODO FILTRATO (utile per verifiche periodiche)
+// Totali del PERIODO FILTRATO: query aggregata sull'intero insieme
+// filtrato (NON limitata alle prime 200 righe mostrate in tabella)
 $tot_periodo_entrata = 0.0;
 $tot_periodo_uscita = 0.0;
-foreach ($movimenti as $m) {
-    if ($m['tipo_movimento'] === 'entrata') $tot_periodo_entrata += (float)$m['importo'];
-    else $tot_periodo_uscita += (float)$m['importo'];
+$sql_tot = 'SELECT tipo_movimento, COALESCE(SUM(importo),0) AS tot
+            FROM prima_nota WHERE 1=1';
+$params_tot = [];
+if ($f_conto !== '') { $sql_tot .= ' AND conto = :conto'; $params_tot['conto'] = $f_conto; }
+if ($f_tipo !== '') { $sql_tot .= ' AND tipo_movimento = :tipo'; $params_tot['tipo'] = $f_tipo; }
+if ($f_categoria !== '') { $sql_tot .= ' AND categoria = :cat'; $params_tot['cat'] = $f_categoria; }
+if ($f_da !== '') { $sql_tot .= ' AND data_movimento >= :da'; $params_tot['da'] = $f_da; }
+if ($f_a !== '') { $sql_tot .= ' AND data_movimento <= :a'; $params_tot['a'] = $f_a; }
+$sql_tot .= ' GROUP BY tipo_movimento';
+$stmt_tot = $pdo->prepare($sql_tot);
+$stmt_tot->execute($params_tot);
+foreach ($stmt_tot->fetchAll() as $r) {
+    if ($r['tipo_movimento'] === 'entrata') $tot_periodo_entrata = (float)$r['tot'];
+    else $tot_periodo_uscita = (float)$r['tot'];
 }
 
 // Categorie esistenti per il datalist

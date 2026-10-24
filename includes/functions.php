@@ -132,12 +132,16 @@ function pagamenti_netto(array $pagamenti): float
  * Stato economico di un tesseramento.
  *
  * Codici possibili:
- * - quota_sconosciuta : quota non impostata (non si può valutare il residuo)
+ * - quota_sconosciuta : quota non impostata (non si può valutare il residuo).
+ *                      Nota: anche quota = 0 è trattata come "non impostata".
  * - da_pagare         : nessun versamento registrato
  * - acconto            : versato > 0 ma inferiore alla quota ("solo acconto")
  * - saldato            : versato >= quota
  * - eccedenza          : versato > quota (resto a credito del socio)
- * - credito            : netto negativo (rimborsi superiori agli incassi: il club deve al socio)
+ * - anomalia_rimborso  : netto negativo (rimborsi superiori agli incassi).
+ *                      Regola contabile esplicita: il residuto è quota - netto,
+ *                      quindi SUPERA la quota (il rimborso va recuperato). Il
+ *                      badge segnala l'anomalia invece di mascherarla.
  */
 function stato_quota(?float $quota, float $versato_netto): array
 {
@@ -145,7 +149,7 @@ function stato_quota(?float $quota, float $versato_netto): array
         return ['code' => 'quota_sconosciuta', 'label' => 'Quota n/d', 'badge' => 'badge-gray'];
     }
     if ($versato_netto < -0.004) {
-        return ['code' => 'credito', 'label' => 'A credito', 'badge' => 'badge-blue'];
+        return ['code' => 'anomalia_rimborso', 'label' => 'Anomalia rimborsi', 'badge' => 'badge-orange'];
     }
     if ($versato_netto <= 0 && $versato_netto >= -0.004) {
         return ['code' => 'da_pagare', 'label' => 'Da saldare', 'badge' => 'badge-red'];
@@ -160,7 +164,11 @@ function stato_quota(?float $quota, float $versato_netto): array
 }
 
 /**
- * Residuo dovuto: max(0, quota - versato). Null se quota sconosciuta.
+ * Residuo dovuto: max(0, quota - versato netto).
+ * - netto > quota (eccedenza): residuo 0, l'eccedenza resta a credito del socio
+ * - netto < 0 (anomalia rimborsi): il residuo SUPERA la quota, perché il
+ *   rimborso va recuperato (regola contabile esplicita)
+ * Restituisce null se la quota è sconosciuta (NULL; anche 0 = non impostata).
  */
 function tess_residuo(?float $quota, float $versato_netto): ?float
 {
@@ -213,10 +221,13 @@ function render_messaggio(string $testo, array $vars): string
 }
 
 /**
- * Normalizza un numero di telefono per il link wa.me:
- * - toglie spazi, punti, trattini, parentesi
- * - +39 / 0039 gestiti (0039 diventa 39)
- * Restituisce null se il numero non è valido (troppo corto).
+ * Normalizza un numero di telefono per il link wa.me (formato internazionale
+ * completo di prefisso paese, obbligatorio per wa.me):
+ * - toglie spazi, punti, trattini, parentesi e barre
+ * - '+39...' e '0039...' restano invariati (prefisso internazionale già presente)
+ * - un numero nazionale senza prefisso viene considerato italiano: viene
+ *   anteposto '39' (es. '3334445566' -> '393334445566')
+ * Restituisce null se il numero non è valido.
  */
 function wa_phone(?string $phone): ?string
 {
@@ -224,13 +235,17 @@ function wa_phone(?string $phone): ?string
         return null;
     }
     $p = preg_replace('/[\s.\-()\/]/', '', trim($phone));
+    if ($p === '') {
+        return null;
+    }
     if (str_starts_with($p, '00')) {
         $p = '+' . substr($p, 2);
     }
     if (str_starts_with($p, '+')) {
         $digits = substr($p, 1);
     } else {
-        $digits = $p; // numero italiano senza prefisso
+        // nessun prefisso internazionale: assume numero italiano
+        $digits = '39' . $p;
     }
     if (!preg_match('/^\d{8,15}$/', $digits)) {
         return null;

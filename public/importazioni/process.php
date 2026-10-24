@@ -259,6 +259,22 @@ foreach ($rows as $r_idx => $row) {
             $id_tess = $t_ex->fetchColumn() ?: null;
 
             if ($id_tess) {
+                // Lo snapshot della quota si congela alla CREAZIONE del
+                // tesseramento: un reimport non deve sovrascriverlo (se il
+                // listino cambia, la quota storica resta quella dovuta allora).
+                unset($dati_tess['quota_tesseramento']);
+
+                // Lo stato 'non_consegnata' (tessera richiesta, in attesa di
+                // consegna) è più specifico di 'non_richiesta': non degradarlo
+                // durante un reimport con il portale che dice NO.
+                if (($dati_tess['tessera_fisica'] ?? '') === 'non_richiesta') {
+                    $cur = $pdo->prepare('SELECT tessera_fisica FROM tesseramenti WHERE id_tesseramento = ?');
+                    $cur->execute([$id_tess]);
+                    if ($cur->fetchColumn() === 'non_consegnata') {
+                        unset($dati_tess['tessera_fisica']);
+                    }
+                }
+
                 $dati_tess_f = array_filter($dati_tess, fn($v) => $v !== '' && $v !== null);
                 if (!empty($dati_tess_f)) {
                     $set = implode(', ', array_map(fn($c) => "`$c` = :$c", array_keys($dati_tess_f)));

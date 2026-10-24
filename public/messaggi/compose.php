@@ -59,6 +59,31 @@ function seleziona_destinatari(PDO $pdo, array $filtri): array
         $sql .= " AND s.telefono IS NOT NULL AND TRIM(s.telefono) <> ''";
     }
 
+    // Filtro stato pagamento: applicato IN SQL (HAVING), sulle stesse
+    // condizioni dello stato centralizzato in stato_quota() (includes/functions.php).
+    // Va applicato PRIMA del LIMIT: così i destinatari oltre il limite non
+    // vengono esclusi per errore dal filtro.
+    switch ($filtri['stato_pagamento']) {
+        case 'quota_sconosciuta':
+            $sql .= ' HAVING quota_dovuta IS NULL';
+            break;
+        case 'da_pagare':
+            $sql .= ' HAVING quota_dovuta IS NOT NULL AND COALESCE(versato_netto,0) BETWEEN -0.004 AND 0.004';
+            break;
+        case 'anomalia_rimborso':
+            $sql .= ' HAVING COALESCE(versato_netto,0) < -0.004';
+            break;
+        case 'acconto':
+            $sql .= ' HAVING quota_dovuta IS NOT NULL AND versato_netto > 0.004 AND versato_netto < quota_dovuta - 0.004';
+            break;
+        case 'saldato':
+            $sql .= ' HAVING quota_dovuta IS NOT NULL AND versato_netto >= quota_dovuta - 0.004 AND versato_netto <= quota_dovuta + 0.004';
+            break;
+        case 'eccedenza':
+            $sql .= ' HAVING quota_dovuta IS NOT NULL AND versato_netto > quota_dovuta + 0.004';
+            break;
+    }
+
     $sql .= ' ORDER BY s.cognome, s.nome LIMIT 500';
     $stmt = $pdo->prepare($sql);
     $stmt->execute($params);
@@ -67,11 +92,6 @@ function seleziona_destinatari(PDO $pdo, array $filtri): array
     foreach ($stmt->fetchAll() as $r) {
         $quota = $r['quota_dovuta'] !== null ? (float)$r['quota_dovuta'] : null;
         $netto = (float)$r['versato_netto'];
-        $stato = stato_quota($quota, $netto);
-        // Filtro per stato pagamento applicato in PHP (dipende dalla logica centralizzata)
-        if ($filtri['stato_pagamento'] !== '' && $stato['code'] !== $filtri['stato_pagamento']) {
-            continue;
-        }
         $r['quota'] = $quota;
         $r['pagato'] = $netto;
         $r['residuo'] = tess_residuo($quota, $netto);
@@ -316,6 +336,7 @@ document.querySelectorAll('.js-copia').forEach(function (btn) {
                 <option value="saldato" <?= $filtri['stato_pagamento'] === 'saldato' ? 'selected' : '' ?>>Saldati</option>
                 <option value="eccedenza" <?= $filtri['stato_pagamento'] === 'eccedenza' ? 'selected' : '' ?>>Eccedenza</option>
                 <option value="quota_sconosciuta" <?= $filtri['stato_pagamento'] === 'quota_sconosciuta' ? 'selected' : '' ?>>Quota non definita</option>
+                <option value="anomalia_rimborso" <?= $filtri['stato_pagamento'] === 'anomalia_rimborso' ? 'selected' : '' ?>>Anomalia rimborsi</option>
             </select>
         </div>
     </div>
