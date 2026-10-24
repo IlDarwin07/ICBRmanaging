@@ -52,7 +52,7 @@ require __DIR__ . '/../../includes/layout_header.php';
 <p class="note">
     File: <strong><?= h($import['nome_file']) ?></strong> &nbsp;|&nbsp;
     Stagione: <strong><?= h($import['codice_stagione']) ?></strong> &nbsp;|&nbsp;
-    Data: <strong><?= h(date('d/m/Y H:i', strtotime($import['data_import']))) ?></strong>
+    Data: <strong><?= h(date('d/m/Y H:i', strtotime($import['data_importazione']))) ?></strong>
 </p>
 
 <div class="cards-grid" style="margin-bottom:1rem">

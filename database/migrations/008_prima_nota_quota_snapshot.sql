@@ -10,9 +10,8 @@
 --    tipologia (vedi includes/functions.php::tess_quota()).
 --
 -- 2. prima_nota: chiave unica su id_pagamento
---    Un movimento contabile può essere collegato al massimo a un
---    pagamento (e viceversa): impedisce duplicazioni in caso di
---    reinvio del form di registrazione pagamento.
+--    Rapporto 1:1 movimento-pagamento (NON rende idempotente il reinvio
+--    del form di registrazione pagamento, che crea un pagamento distinto)
 --
 -- 3. tipologie_tesseramento: chiave unica su tipo
 --    Rende effettivo l'ON DUPLICATE KEY UPDATE già presente nello
