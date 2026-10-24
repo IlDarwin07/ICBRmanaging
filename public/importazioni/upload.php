@@ -105,7 +105,7 @@ require __DIR__ . '/../../includes/layout_header.php';
     <?php unset($_SESSION['import_error']); ?>
 <?php endif; ?>
 
-<div style="background:#fff;border:1px solid #ddd;border-radius:.5rem;padding:1.5rem;max-width:560px;margin-bottom:1.5rem">
+<div class="admin-panel" style="max-width:720px;margin-bottom:1.5rem">
     <form method="post" enctype="multipart/form-data">
         <div style="margin-bottom:1rem">
             <label for="id_stagione" style="display:block;font-weight:600;margin-bottom:.35rem">
@@ -142,9 +142,7 @@ require __DIR__ . '/../../includes/layout_header.php';
         </div>
 
         <div>
-            <button type="submit"
-                    style="background:#1a3a6b;color:#fff;border:none;padding:.5rem 1.25rem;
-                           border-radius:.375rem;cursor:pointer;font-weight:600"
+            <button type="submit" class="btn"
                     <?= empty($stagioni) ? 'disabled title="Crea prima una stagione"' : '' ?>>
                 Continua &rarr;
             </button>
@@ -186,7 +184,7 @@ require __DIR__ . '/../../includes/layout_header.php';
         <p style="color:#666">Nessuna importazione eseguita finora.</p>
     <?php else: ?>
         <div style="overflow-x:auto">
-        <table style="width:100%;border-collapse:collapse;font-size:.9rem">
+        <table class="data-table">
             <thead>
                 <tr style="border-bottom:2px solid #ddd">
                     <th style="text-align:left;padding:.5rem">Data</th>

@@ -1,0 +1,53 @@
+/* Schede storiche riallineate al sistema visivo del club, senza gradienti. */
+.admin-body .scheda-hero{background:#111722;border-radius:6px;padding:30px;border-left:5px solid var(--blue);box-shadow:none}
+.admin-body .scheda-hero-avatar{border-radius:4px;background:var(--blue);font-family:var(--display-font);font-size:38px;width:72px;height:80px}
+.admin-body .scheda-hero-info{min-width:0}
+.admin-body .scheda-hero-info h1{color:white;font-size:36px;margin-bottom:12px}
+.admin-body .scheda-hero-meta{color:#c0cbe2;font-size:14px}
+.admin-body .scheda-hero-actions .btn{background:#fff;border-color:#fff;color:var(--blue)}
+.admin-body .scheda-hero-actions .btn-secondary{background:transparent;color:white;border-color:#6a7796}
+.admin-body .scheda-section{border:1px solid #dfe4ef;border-radius:6px;box-shadow:none;padding:26px}
+.admin-body .scheda-section-header{border-bottom:1px solid #dce2ee;padding-bottom:18px;margin-bottom:22px}
+.admin-body .scheda-section-header h2{font-family:var(--display-font);font-size:24px;letter-spacing:.015em;color:var(--blue);line-height:1.1}
+.admin-body .scheda-grid{grid-template-columns:repeat(auto-fit,minmax(min(210px,100%),1fr));gap:24px}
+.admin-body .scheda-field .lbl{font-size:12px;color:#71798d;letter-spacing:.04em}
+.admin-body .scheda-field .val{font-size:16px;line-height:1.6;overflow-wrap:anywhere}
+.admin-body .tess-card{border:1px solid #dce3f2;border-radius:4px;background:#f8f9fd;padding:22px;gap:16px}
+.admin-body .tess-card.tess-corrente{background:#eef2ff;border-color:#acbce9}
+.admin-body .tess-card .t-num{color:var(--blue);font-family:var(--display-font);font-size:26px}
+.admin-body .badge-current{background:var(--blue);border-radius:3px;font-size:12px;padding:4px 8px}
+.admin-body .view-header-left h1{font-family:var(--display-font);font-size:36px;line-height:1.1;margin-bottom:10px}
+.admin-body .view-header-left .breadcrumb{font-size:13px;color:#717a8e}
+.admin-body .view-header-left .breadcrumb a,.admin-body .field-value a,.admin-body .scheda-field .val a{color:var(--blue)}
+.admin-body .view-layout{grid-template-columns:minmax(0,1fr) minmax(330px,.46fr);gap:22px}
+.admin-body .view-panel{border:1px solid #dfe4ef;border-radius:6px;box-shadow:none;min-width:0}
+.admin-body .view-panel-header{background:#e9edf9;padding:18px 22px;border-bottom:1px solid #dce2ee;gap:15px}
+.admin-body .view-panel-header h2{font-size:13px;letter-spacing:.04em;color:#34416d}
+.admin-body .view-panel-body{padding:24px}
+.admin-body .field-grid{gap:20px 30px;grid-template-columns:repeat(2,minmax(0,1fr))}
+.admin-body .field-label{font-size:12px;color:#71798d}
+.admin-body .field-value{font-size:15px;line-height:1.6;overflow-wrap:anywhere}
+.admin-body .section-sep{color:var(--blue);border-bottom:1px solid #b9c7f1;font-size:12px;padding:12px 0;margin:5px 0}
+.admin-body .pay-summary{gap:10px}
+.admin-body .pay-kpi{background:#f0f3fc;border-radius:4px;padding:14px 10px;min-width:0}
+.admin-body .pay-kpi-label{font-size:12px;color:#65708a;letter-spacing:0}
+.admin-body .pay-kpi-value{font-family:var(--display-font);font-size:27px;color:var(--blue);overflow-wrap:anywhere}
+.admin-body .pay-kpi-value.paid{color:#167043}.admin-body .pay-kpi-value.due{color:#a84715}
+.admin-body .progress-bar-fill{background:var(--blue);border-radius:0}
+.admin-body .progress-bar-bg{border-radius:0;height:6px}
+.admin-body .progress-label{font-size:12px;line-height:1.5;color:#6b758c}
+.admin-body .pay-table th{font-size:12px;color:#65708a}
+.admin-body .pay-table td{font-size:14px;padding:12px 8px}
+.admin-body select{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='m4 6 4 4 4-4' fill='none' stroke='%23011ea0' stroke-width='1.5'/%3E%3C/svg%3E");background-size:16px;background-position:right 12px center;background-repeat:no-repeat;padding-right:38px}
+.admin-body input[type=file]{padding:8px;background:#f5f7fc;border:1px dashed #abbbe8;max-width:100%;font-size:14px}
+.admin-body input[type=file]::file-selector-button{border:0;background:#e1e8ff;color:var(--blue);padding:12px 15px;margin-right:15px;font:600 13px var(--body-font);border-radius:3px;cursor:pointer}
+.admin-body .empty-table-state{padding:35px!important;background:#f8faff;color:#64708c;line-height:1.8}
+.admin-body .empty-table-state::before{content:"ICBR / ARCHIVIO";display:block;font-family:var(--display-font);font-size:26px;color:var(--blue);margin-bottom:8px;letter-spacing:.015em}
+.club-dialog{position:fixed;inset:0;margin:auto;border:0;border-top:5px solid var(--blue);background:var(--paper);color:var(--ink);width:calc(100% - 40px);max-width:500px;max-height:calc(100% - 40px);overflow:auto;padding:35px;border-radius:0;box-shadow:0 24px 90px #0004}
+.club-dialog::backdrop{background:#080d25b8;backdrop-filter:blur(5px)}
+.club-dialog-kicker{font-size:12px;letter-spacing:.07em;color:var(--blue);margin-bottom:22px}
+.club-dialog h2{font-family:var(--display-font);font-size:34px;line-height:1.1;margin:0 0 20px}
+.club-dialog p{font-size:16px;line-height:1.6;color:#525b70;margin:0 0 30px}
+.club-dialog-actions{display:flex;justify-content:flex-end;gap:10px;flex-wrap:wrap}
+@media(max-width:1050px){.admin-body .view-layout{grid-template-columns:minmax(0,1fr)}}
+@media(max-width:650px){.admin-body .scheda-hero,.admin-body .scheda-section{padding:22px 18px}.admin-body .scheda-hero-info h1,.admin-body .view-header-left h1{font-size:32px}.admin-body .scheda-hero{gap:20px}.admin-body .scheda-hero-actions{width:100%}.admin-body .scheda-hero-actions .btn{flex:1}.admin-body .field-grid{grid-template-columns:minmax(0,1fr)}.admin-body .view-panel-header,.admin-body .view-panel-body{padding:20px 16px}.admin-body .pay-kpi-value{font-size:24px}.admin-body .pay-kpi-label{font-size:12px}.admin-body .tess-card{padding:18px}.admin-body .tess-card .t-actions{margin-left:0;width:100%}}

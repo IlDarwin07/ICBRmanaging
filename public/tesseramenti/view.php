@@ -425,7 +425,7 @@ require __DIR__ . '/../../includes/layout_header.php';
                         <td><?= h($p['metodo_pagamento']) ?></td>
                         <td>
                             <form method="post" action="<?= u('/tesseramenti/pagamento_delete.php') ?>"
-                                  onsubmit="return confirm('Eliminare questo pagamento? Verrà rimosso anche il movimento di prima nota collegato.');"
+                                  data-confirm="Eliminare questo pagamento? Verrà rimosso anche il movimento di prima nota collegato."
                                   style="display:inline">
                                 <input type="hidden" name="csrf_token" value="<?= h($csrf) ?>">
                                 <input type="hidden" name="id_pagamento" value="<?= (int)$p['id_pagamento'] ?>">

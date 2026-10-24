@@ -72,7 +72,7 @@ require __DIR__ . '/../../includes/layout_header.php';
     <h1>Prima nota</h1>
     <div style="display:flex;gap:.5rem;flex-wrap:wrap;">
         <a class="btn" href="<?= u('/prima_nota/create.php') ?>">+ Nuovo movimento</a>
-        <a class="btn btn-secondary" href="<?= u('/prima_nota/export.php') ?><?= $_SERVER['QUERY_STRING'] ? '?' . h($_SERVER['QUERY_STRING']) : '' ?>">⬇ Esporta CSV</a>
+        <a class="btn btn-secondary" href="<?= u('/prima_nota/export.php') ?><?= !empty($_SERVER['QUERY_STRING']) ? '?' . h($_SERVER['QUERY_STRING']) : '' ?>">⬇ Esporta CSV</a>
     </div>
 </div>
 

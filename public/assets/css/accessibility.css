@@ -1,0 +1,19 @@
+/* Metadati leggibili e controlli touch, anche su schermi stretti. */
+.public-site .eyebrow,.public-site .wordmark-bottom,.public-site .hero .eyebrow,.public-site .hero-bottom,.public-site .hero-photo>figcaption>span:first-child,.public-site .photo-credit,.public-site .membership-tag,.public-site .source-note,.public-site .venue-photo figcaption,.public-site .form-fineprint,.public-site .footer-bottom{font-size:12px!important}
+.public-site .hero .eyebrow{flex-wrap:wrap;letter-spacing:.04em}
+.public-site .wordmark-bottom{letter-spacing:.025em}
+.public-site .hero-bottom{letter-spacing:.025em;flex-wrap:wrap;row-gap:8px}
+.public-site .public-nav,.public-site .public-nav .admin-link{font-size:14px}
+.public-site .photo-credit{font-size:12px;line-height:1.4}
+.admin-body .mobile-user-link{display:none!important}
+.admin-body h1{font-size:clamp(30px,2.8vw,36px)}
+.admin-body .topbar-brand small,.admin-body .admin-eyebrow,.admin-body .card-label,.admin-body .detail-label,.admin-body .badge,.admin-body .data-table th,.admin-body .soci-table th,.admin-body .site-footer,.admin-body .note{font-size:12px}
+.admin-body .topbar-brand small{letter-spacing:.04em}
+.admin-body .btn,.admin-body .topbar-nav>a,.admin-body .nav-dropdown-toggle{font-size:14px}
+.admin-body .data-table td,.admin-body .soci-table td{font-size:14px}
+.admin-body .form-group{flex:1;min-width:min(200px,100%)}
+.admin-body .form-group input,.admin-body .form-group select{width:100%}
+.admin-body .form-card .checkbox-inline{display:flex;align-items:center;gap:8px}
+.admin-body .record-form textarea{margin-top:8px}
+@media(max-width:1050px){.admin-body .mobile-user-link{display:flex!important}}
+@media(max-width:650px){.public-site .public-header{gap:10px}.public-site .wordmark-top{font-size:29px}.public-site .wordmark-bottom{font-size:12px!important;letter-spacing:0}.public-site .hero{grid-template-columns:minmax(0,1fr)}.public-site .hero-copy{min-width:0}.public-site .hero h1{font-size:clamp(3.2rem,17vw,6.4rem)}.public-site .hero .eyebrow{max-width:290px}.public-site .hero-photo>figcaption{bottom:70px}.public-site .hero-photo>figcaption>span:first-child{max-width:130px}.public-site .photo-credit{left:20px;right:20px}.admin-body input:not([type=checkbox]):not([type=radio]):not([type=hidden]),.admin-body select,.admin-body textarea{font-size:16px}.admin-body .form-group{width:100%}.admin-body .compact-table{min-width:0}}

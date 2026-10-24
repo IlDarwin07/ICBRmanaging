@@ -11,7 +11,7 @@ $templates = $pdo->query('SELECT * FROM template_whatsapp WHERE attivo = 1 ORDER
 $stagioni  = $pdo->query('SELECT * FROM stagioni ORDER BY attiva DESC, codice_stagione DESC')->fetchAll();
 $tipologie = $pdo->query('SELECT id_tipologia, listino_label, tipo FROM tipologie_tesseramento WHERE attiva = 1 ORDER BY tipo')->fetchAll();
 
-$STATI_VALIDI = ['da_pagare', 'acconto', 'saldato', 'eccedenza', 'quota_sconosciuta'];
+$STATI_VALIDI = ['da_pagare', 'acconto', 'saldato', 'eccedenza', 'quota_sconosciuta', 'anomalia_rimborso'];
 
 /**
  * Selezione destinatari: soci con tesseramento nella stagione scelta
@@ -112,6 +112,7 @@ $filtri = [
 
 $action = $_POST['action'] ?? '';
 $saved = 0;
+$_SESSION['wa_bulk_nonce'] ??= bin2hex(random_bytes(24));
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     verify_csrf_token($_POST['csrf_token'] ?? '');
@@ -120,6 +121,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // Step 2: salvataggio dei messaggi selezionati (stato "preparato")
     // -----------------------------------------------------------------
     if ($action === 'save') {
+        if (!hash_equals($_SESSION['wa_bulk_nonce'], (string)($_POST['nonce'] ?? ''))) {
+            redirect_with_message('/messaggi/compose.php', 'Invio già preparato o modulo scaduto: aggiorna l’anteprima.', 'error');
+        }
         $selezionati = array_map('intval', (array)($_POST['includi'] ?? []));
         if ($selezionati && $filtri['id_template']) {
             $tpl = $pdo->prepare('SELECT * FROM template_whatsapp WHERE id_template = :id');
@@ -157,6 +161,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
         }
         if ($saved > 0) {
+            $_SESSION['wa_bulk_nonce'] = bin2hex(random_bytes(24));
             redirect_with_message('/messaggi/list.php', "$saved messaggi preparati. Aprili dalla lista per inviarli con WhatsApp.");
         } else {
             redirect_with_message('/messaggi/compose.php', 'Nessun messaggio da salvare: seleziona almeno un destinatario.', 'error');
@@ -204,6 +209,7 @@ require __DIR__ . '/../../includes/layout_header.php';
 <form method="post">
     <input type="hidden" name="csrf_token" value="<?= h($csrf) ?>">
     <input type="hidden" name="action" value="save">
+    <input type="hidden" name="nonce" value="<?= h($_SESSION['wa_bulk_nonce']) ?>">
     <input type="hidden" name="id_template" value="<?= (int)$filtri['id_template'] ?>">
     <input type="hidden" name="id_stagione" value="<?= (int)$filtri['id_stagione'] ?>">
     <input type="hidden" name="stato_pagamento" value="<?= h($filtri['stato_pagamento']) ?>">
@@ -275,17 +281,6 @@ require __DIR__ . '/../../includes/layout_header.php';
 // Seleziona/deseleziona tutti i destinatari
 document.getElementById('sel-tutti').addEventListener('change', function () {
     document.querySelectorAll('.chk-includi').forEach(function (c) { c.checked = this.checked; }, this);
-});
-// Copia il testo del messaggio negli appunti
-document.querySelectorAll('.js-copia').forEach(function (btn) {
-    btn.addEventListener('click', function () {
-        var ta = btn.closest('td').querySelector('[data-copy]');
-        ta.select();
-        document.execCommand('copy');
-        var old = btn.textContent;
-        btn.textContent = 'Copiato ✓';
-        setTimeout(function () { btn.textContent = old; }, 1200);
-    });
 });
 </script>
 

@@ -184,7 +184,7 @@ require __DIR__ . '/../../includes/layout_header.php';
 
 <form method="post">
     <div style="overflow-x:auto">
-        <table style="width:100%;border-collapse:collapse;font-size:.9rem">
+        <table class="data-table">
             <thead>
                 <tr style="border-bottom:2px solid #ddd">
                     <th style="text-align:left;padding:.5rem">#</th>
@@ -222,9 +222,7 @@ require __DIR__ . '/../../includes/layout_header.php';
     </div>
 
     <div style="margin-top:1.5rem;display:flex;gap:.75rem;align-items:center">
-        <button type="submit"
-                style="background:#1a3a6b;color:#fff;border:none;padding:.5rem 1.25rem;
-                       border-radius:.375rem;cursor:pointer;font-weight:600">
+        <button type="submit" class="btn">
             Avvia importazione &rarr;
         </button>
         <a href="<?= $base ?>/importazioni/upload.php"

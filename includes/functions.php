@@ -71,12 +71,29 @@ function generate_csrf_token(): string
  * BLOCCA la richiesta se il token non è valido: le pagine che la invocano
  * come semplice istruzione devono essere protette davvero.
  */
-function verify_csrf_token(?string $token): void
+function verify_csrf_token(mixed $token): void
 {
     if (!csrf_verify($token)) {
-        http_response_code(403);
-        die('Sessione scaduta o token non valido. Torna alla pagina precedente e riprova.');
+        render_error_page('Sessione da aggiornare', 'Il modulo è scaduto o non è valido. Torna alla sezione e ricarica la pagina prima di riprovare.', 403);
     }
+}
+
+/** Errori leggibili, con gli stessi percorsi di navigazione del sito. */
+function render_error_page(string $title, string $message, int $status = 404, bool $public = false): void
+{
+    http_response_code($status);
+    if ($public) {
+        require_once __DIR__ . '/public_layout.php';
+        public_header($title, $message);
+        echo '<main id="contenuto" class="section privacy-page"><span class="eyebrow">INTER CLUB / ' . $status . '</span><h1>' . h($title) . '</h1><p>' . h($message) . '</p><a class="text-link" href="' . u('/index.php') . '#contatti">Torna al sito e ricarica il modulo ↗</a></main>';
+        public_footer();
+    } else {
+        $page_title = $title;
+        require __DIR__ . '/layout_header.php';
+        echo '<section class="admin-panel"><div class="admin-eyebrow">INTER CLUB / ' . $status . '</div><h1>' . h($title) . '</h1><p>' . h($message) . '</p><a class="btn" href="' . u('/dashboard.php') . '">Torna alla dashboard</a></section>';
+        require __DIR__ . '/layout_footer.php';
+    }
+    exit;
 }
 
 // -------------------------------------------------------------------------
@@ -244,10 +261,11 @@ function wa_phone(?string $phone): ?string
     if (str_starts_with($p, '+')) {
         $digits = substr($p, 1);
     } else {
-        // nessun prefisso internazionale: assume numero italiano
-        $digits = '39' . $p;
+        // Accetta anche il formato italiano canonico già normalizzato (wa.me),
+        // senza raddoppiare 39 ad ogni passaggio nella coda.
+        $digits = str_starts_with($p, '39') && strlen($p) >= 11 ? $p : '39' . $p;
     }
-    if (!preg_match('/^\d{8,15}$/', $digits)) {
+    if (!preg_match('/^[1-9]\d{7,14}$/', $digits)) {
         return null;
     }
     return $digits;

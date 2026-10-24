@@ -8,12 +8,12 @@ require_login();
 $pdo = get_db_connection();
 
 $id_socio = (int)($_GET['id'] ?? 0);
-if ($id_socio <= 0) { http_response_code(404); die('Socio non trovato.'); }
+if ($id_socio <= 0) render_error_page('Socio non trovato', 'Controlla il nominativo nell’archivio soci.');
 
 $stmt = $pdo->prepare('SELECT * FROM soci WHERE id_socio = :id');
 $stmt->execute(['id' => $id_socio]);
 $socio = $stmt->fetch();
-if (!$socio) { http_response_code(404); die('Socio non trovato.'); }
+if (!$socio) render_error_page('Socio non trovato', 'Controlla il nominativo nell’archivio soci.');
 
 // Stagione attiva
 $stagione_attiva = $pdo->query(

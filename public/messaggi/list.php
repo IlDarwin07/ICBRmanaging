@@ -14,9 +14,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $id_msg = (int)($_POST['id_messaggio'] ?? 0);
 
     if (($_POST['azione'] ?? '') === 'inviato') {
-        $pdo->prepare("UPDATE messaggi_whatsapp SET stato_messaggio = 'inviato', data_invio = NOW() WHERE id_messaggio = :id")
+        $pdo->prepare("UPDATE messaggi_whatsapp SET stato_messaggio = 'inviato', data_invio = COALESCE(data_invio,NOW()) WHERE id_messaggio = :id")
             ->execute(['id' => $id_msg]);
         redirect_with_message('/messaggi/list.php', 'Messaggio segnato come inviato.');
+    }
+    if (in_array($_POST['azione'] ?? '', ['fallito','riprova'], true)) {
+        $newState = $_POST['azione'] === 'fallito' ? 'fallito' : 'preparato';
+        $pdo->prepare('UPDATE messaggi_whatsapp SET stato_messaggio = ?, data_invio = NULL WHERE id_messaggio = ?')->execute([$newState, $id_msg]);
+        redirect_with_message('/messaggi/list.php', 'Stato aggiornato manualmente.');
     }
     if (($_POST['azione'] ?? '') === 'elimina') {
         $pdo->prepare('DELETE FROM messaggi_whatsapp WHERE id_messaggio = :id')
@@ -28,10 +33,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 $f_stato = $_GET['stato'] ?? '';
 if (!in_array($f_stato, ['bozza', 'preparato', 'inviato', 'fallito'], true)) $f_stato = '';
 
-$sql = 'SELECT m.*, s.cognome, s.nome, t.nome_template
+$contactColumn = $pdo->query("SHOW COLUMNS FROM messaggi_whatsapp LIKE 'id_richiesta'")->fetch();
+$sql = 'SELECT m.*, s.cognome, s.nome, t.nome_template' . ($contactColumn ? ', r.nome AS nome_contatto' : ', NULL AS nome_contatto') . '
         FROM messaggi_whatsapp m
         LEFT JOIN soci s ON s.id_socio = m.id_socio
-        LEFT JOIN template_whatsapp t ON t.id_template = m.id_template';
+        LEFT JOIN template_whatsapp t ON t.id_template = m.id_template' . ($contactColumn ? ' LEFT JOIN richieste_contatto r ON r.id_richiesta = m.id_richiesta' : '');
 $params = [];
 if ($f_stato !== '') { $sql .= ' WHERE m.stato_messaggio = :stato'; $params['stato'] = $f_stato; }
 $sql .= ' ORDER BY m.data_creazione DESC LIMIT 200';
@@ -49,9 +55,11 @@ $page_title = 'Messaggi generati';
 require __DIR__ . '/../../includes/layout_header.php';
 ?>
 <div class="page-header">
-    <h1>Messaggi generati</h1>
+    <h1>Coda e storico WhatsApp</h1>
     <div style="display:flex;gap:.5rem;flex-wrap:wrap;">
         <a class="btn" href="<?= u('/messaggi/compose.php') ?>">✎ Componi invio</a>
+        <a class="btn btn-secondary" href="<?= u('/messaggi/direct.php') ?>">Messaggio singolo</a>
+        <a class="btn btn-secondary" href="<?= u('/messaggi/index.php') ?>">Centro WhatsApp</a>
         <a class="btn btn-secondary" href="<?= u('/messaggi/template_list.php') ?>">Template</a>
     </div>
 </div>
@@ -77,7 +85,7 @@ require __DIR__ . '/../../includes/layout_header.php';
     <thead>
     <tr>
         <th>Creazione</th>
-        <th>Socio</th>
+        <th>Destinatario</th>
         <th>Telefono</th>
         <th>Template</th>
         <th>Messaggio</th>
@@ -93,7 +101,9 @@ require __DIR__ . '/../../includes/layout_header.php';
         <?php $wa = wa_phone($m['telefono_destinatario']); ?>
         <tr>
             <td><?= date('d/m/Y H:i', strtotime($m['data_creazione'])) ?></td>
-            <td><?= h(trim(($m['cognome'] ?? '') . ' ' . ($m['nome'] ?? ''))) ?: '—' ?></td>
+            <td><?= h($m['nome_contatto'] ?? trim(($m['cognome'] ?? '') . ' ' . ($m['nome'] ?? ''))) ?: 'Contatto singolo' ?>
+                <?php if (!empty($m['id_richiesta'])): ?><br><a href="<?= u('/richieste/view.php') ?>?id=<?= (int)$m['id_richiesta'] ?>">Richiesta #<?= (int)$m['id_richiesta'] ?></a><?php endif; ?>
+            </td>
             <td><?= h($m['telefono_destinatario']) ?><?= $wa ? '' : ' <span class="badge badge-red" title="Numero non valido per wa.me">!</span>' ?></td>
             <td><?= h($m['nome_template'] ?? '') ?: '—' ?></td>
             <td style="max-width:420px;">
@@ -123,14 +133,21 @@ require __DIR__ . '/../../includes/layout_header.php';
                     <input type="hidden" name="csrf_token" value="<?= h($csrf) ?>">
                     <input type="hidden" name="id_messaggio" value="<?= (int)$m['id_messaggio'] ?>">
                     <input type="hidden" name="azione" value="inviato">
-                    <button type="submit" class="btn btn-sm" title="Segna come inviato dopo averlo inviato manualmente">✓ Inviato</button>
+                    <button type="submit" class="btn btn-sm" title="Segna come inviato dopo averlo inviato manualmente">Conferma inviato</button>
                 </form>
+                <a class="btn btn-sm btn-secondary" href="<?= u('/messaggi/edit.php') ?>?id=<?= (int)$m['id_messaggio'] ?>">Modifica</a>
                 <?php endif; ?>
                 <form method="post" style="display:inline">
                     <input type="hidden" name="csrf_token" value="<?= h($csrf) ?>">
                     <input type="hidden" name="id_messaggio" value="<?= (int)$m['id_messaggio'] ?>">
+                    <input type="hidden" name="azione" value="<?= $m['stato_messaggio'] === 'fallito' ? 'riprova' : 'fallito' ?>">
+                    <button class="btn btn-sm btn-secondary"><?= $m['stato_messaggio'] === 'fallito' ? 'Rimetti in coda' : 'Segna problema' ?></button>
+                </form>
+                <form method="post" style="display:inline" data-confirm="Eliminare questo messaggio dallo storico?">
+                    <input type="hidden" name="csrf_token" value="<?= h($csrf) ?>">
+                    <input type="hidden" name="id_messaggio" value="<?= (int)$m['id_messaggio'] ?>">
                     <input type="hidden" name="azione" value="elimina">
-                    <button type="submit" class="btn btn-sm btn-danger" title="Elimina messaggio">✕</button>
+                    <button type="submit" class="btn btn-sm btn-danger" title="Elimina messaggio">Elimina</button>
                 </form>
             </td>
         </tr>
@@ -140,21 +157,8 @@ require __DIR__ . '/../../includes/layout_header.php';
 
 <p style="color:#888;font-size:.82rem;">
     Nota: l'apertura di WhatsApp NON segna automaticamente il messaggio come inviato;
-    usa il pulsante "✓ Inviato" dopo averlo effettivamente inviato. L'invio automatico
+    usa il pulsante "Conferma inviato" dopo averlo effettivamente inviato. L'invio automatico
     via WhatsApp Business API (fase 8 della roadmap) richiede configurazione Meta esterna.
 </p>
-
-<script>
-document.querySelectorAll('.js-copia').forEach(function (btn) {
-    btn.addEventListener('click', function () {
-        var ta = btn.closest('td').querySelector('[data-copy]');
-        ta.select();
-        document.execCommand('copy');
-        var old = btn.textContent;
-        btn.textContent = 'Copiato ✓';
-        setTimeout(function () { btn.textContent = old; }, 1200);
-    });
-});
-</script>
 
 <?php require __DIR__ . '/../../includes/layout_footer.php'; ?>

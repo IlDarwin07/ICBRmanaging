@@ -1,0 +1,15 @@
+/* Logo originale fornito dal club: proporzioni, colori e fondo invariati. */
+.club-logo{display:block;object-fit:contain;flex-shrink:0;background:#000}
+.public-site .wordmark{flex-direction:row;align-items:center;gap:16px}
+.wordmark-copy{display:flex;flex-direction:column}
+.public-site .wordmark>.club-logo{width:76px;height:76px}
+.footer-club-logo{width:100px;height:100px;object-fit:contain;margin-bottom:35px}
+.admin-body .topbar-brand{flex-direction:row;align-items:center;gap:16px;padding:12px 0}
+.admin-brand-copy{display:flex;flex-direction:column}
+.admin-body .topbar-brand>.club-logo{width:68px;height:68px}
+.login-brand{display:flex;align-items:center;gap:20px}
+.login-brand>.club-logo{width:84px;height:84px}
+.login-brand-copy{display:block}
+.login-brand-copy>span{color:#b5c7ff}
+@media(max-width:1050px){.public-site .wordmark>.club-logo{width:62px;height:62px}.admin-body .topbar-brand>.club-logo{width:54px;height:54px}.admin-body .topbar-brand{gap:12px}}
+@media(max-width:650px){.public-site .public-header{height:90px}.public-site .wordmark{gap:12px}.public-site .wordmark>.club-logo{width:56px;height:56px}.public-site .wordmark-top{font-size:25px}.public-site .wordmark-bottom{margin-top:4px;font-size:12px!important}.public-site .wordmark-bottom b{display:block;margin:4px 0 0}.admin-body .topbar-brand{gap:9px}.admin-body .topbar-brand>.club-logo{width:44px;height:44px}.admin-body .topbar-brand strong{font-size:20px}.admin-body .topbar-brand small{font-size:12px;letter-spacing:.025em}.admin-body .brand-area{display:none}.login-brand{gap:15px;font-size:23px}.login-brand>.club-logo{width:68px;height:68px}.login-brand-copy{max-width:200px}.footer-club-logo{width:85px;height:85px}}

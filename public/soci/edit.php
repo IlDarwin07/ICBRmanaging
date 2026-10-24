@@ -9,8 +9,7 @@ $pdo = get_db_connection();
 
 $id_socio = (int)($_GET['id'] ?? $_POST['id'] ?? 0);
 if ($id_socio <= 0) {
-    http_response_code(404);
-    die('Socio non trovato.');
+    render_error_page('Socio non trovato', 'Controlla il nominativo nell’archivio soci.');
 }
 
 $stmt = $pdo->prepare('SELECT * FROM soci WHERE id_socio = :id');
@@ -18,8 +17,7 @@ $stmt->execute(['id' => $id_socio]);
 $socio = $stmt->fetch();
 
 if (!$socio) {
-    http_response_code(404);
-    die('Socio non trovato.');
+    render_error_page('Socio non trovato', 'Controlla il nominativo nell’archivio soci.');
 }
 
 $errori = [];

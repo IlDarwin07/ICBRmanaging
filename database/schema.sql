@@ -211,11 +211,27 @@ CREATE TABLE IF NOT EXISTS template_whatsapp (
 -- ---------------------------------------------------------------------
 -- 11. messaggi_whatsapp
 -- ---------------------------------------------------------------------
+-- Richieste provenienti dalla vetrina pubblica. Non sono tesseramenti.
+CREATE TABLE IF NOT EXISTS richieste_contatto (
+    id_richiesta INT AUTO_INCREMENT PRIMARY KEY,
+    nome VARCHAR(100) NOT NULL,
+    email VARCHAR(190) NOT NULL,
+    telefono VARCHAR(30) NULL,
+    oggetto VARCHAR(60) NOT NULL,
+    messaggio TEXT NOT NULL,
+    stato ENUM('nuova','in_gestione','chiusa') NOT NULL DEFAULT 'nuova',
+    data_creazione DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    data_aggiornamento DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    privacy_versione VARCHAR(20) NOT NULL DEFAULT '2026-10',
+    INDEX idx_richieste_stato_data (stato, data_creazione)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
 CREATE TABLE IF NOT EXISTS messaggi_whatsapp (
     id_messaggio INT AUTO_INCREMENT PRIMARY KEY,
     id_socio INT NULL,
     id_tesseramento INT NULL,
     id_template INT NULL,
+    id_richiesta INT NULL,
     telefono_destinatario VARCHAR(30) NOT NULL,
     testo_finale TEXT NOT NULL,
     stato_messaggio ENUM('bozza','preparato','inviato','fallito') NOT NULL DEFAULT 'bozza',
@@ -224,7 +240,8 @@ CREATE TABLE IF NOT EXISTS messaggi_whatsapp (
     risposta_api TEXT NULL,
     CONSTRAINT fk_msg_socio FOREIGN KEY (id_socio) REFERENCES soci(id_socio) ON DELETE SET NULL,
     CONSTRAINT fk_msg_tesseramento FOREIGN KEY (id_tesseramento) REFERENCES tesseramenti(id_tesseramento) ON DELETE SET NULL,
-    CONSTRAINT fk_msg_template FOREIGN KEY (id_template) REFERENCES template_whatsapp(id_template) ON DELETE SET NULL
+    CONSTRAINT fk_msg_template FOREIGN KEY (id_template) REFERENCES template_whatsapp(id_template) ON DELETE SET NULL,
+    CONSTRAINT fk_msg_richiesta FOREIGN KEY (id_richiesta) REFERENCES richieste_contatto(id_richiesta) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 SET FOREIGN_KEY_CHECKS = 1;

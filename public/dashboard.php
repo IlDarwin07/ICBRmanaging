@@ -168,6 +168,8 @@ require __DIR__ . '/../includes/layout_header.php';
     <a class="btn btn-secondary" href="<?= u('/soci/create.php') ?>">+ Nuovo socio</a>
     <a class="btn btn-secondary" href="<?= u('/tesseramenti/list.php') ?>">Tesseramenti</a>
     <a class="btn btn-secondary" href="<?= u('/importazioni/upload.php') ?>">&#8682; Importa XLSX</a>
+    <a class="btn btn-secondary" href="<?= u('/richieste/list.php') ?>">Richieste dal sito</a>
+    <a class="btn btn-secondary" href="<?= u('/messaggi/index.php') ?>">Centro WhatsApp</a>
 </div>
 
 <h2>Andamento economico

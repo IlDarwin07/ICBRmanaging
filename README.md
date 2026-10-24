@@ -1,6 +1,10 @@
 # ICBRmanaging — Gestionale Inter Club Javier Zanetti Brindisi
 
-Gestionale web per la gestione dei soci e dei tesseramenti dell'Inter Club Javier Zanetti di Brindisi.
+Sito vetrina pubblico e gestionale riservato per soci, tesseramenti, quote e comunicazioni dell'Inter Club Javier Zanetti di Brindisi.
+
+La home è pubblica; il gestionale si apre da **Area riservata**. Per fonti,
+privacy, foto d'archivio, installazione XAMPP Linux Mint e limiti dell'anteprima,
+vedi [vetrina, fonti e installazione](docs/vetrina-fonti-e-installazione.md).
 
 ## Stack tecnico
 
@@ -17,7 +21,8 @@ Gestionale web per la gestione dei soci e dei tesseramenti dell'Inter Club Javie
 | **Soci** | Anagrafica completa. La scheda di ogni socio include lo storico dei tesseramenti stagionali |
 | **Tesseramenti** | Lista con filtri (stagione, stato pagamento, attivo portale, tipologia, tessera fisica), colonna residuo, export CSV |
 | **Prima nota** | Registro contabile: entrate/uscite, conti cassa/banca, saldi, filtri per periodo, export CSV |
-| **Messaggi** | Template WhatsApp con placeholder, compositore per gruppi di soci, messaggi pronti con link wa.me |
+| **WhatsApp** | Centro messaggi: template, filtri soci, risposte singole alle richieste, coda e storico manuale |
+| **Richieste sito** | Inbox della vetrina, stato richieste, risposta email/WhatsApp e cancellazione |
 | **Importa** | Caricamento file XLSX/XLS del portale Inter Club con mappatura colonne |
 | **Configurazione** | Stagioni sportive, Tipologie tessera |
 
@@ -77,7 +82,10 @@ Gestionale web per la gestione dei soci e dei tesseramenti dell'Inter Club Javie
 2. Componi l'invio scegliendo i destinatari per filtri (stagione, stato pagamento, tipologia...).
 3. Verifica l'anteprima personalizzata, copia il testo o apri `wa.me`.
 4. I messaggi salvati restano nella lista; l'apertura di WhatsApp NON li segna come
-   inviati: usa il pulsante "✓ Inviato" (l'invio automatico è la fase 8).
+   inviati: usa il pulsante "Conferma inviato" (l'invio automatico è la fase 8).
+5. Dal Centro WhatsApp puoi creare un messaggio singolo o rispondere a una richiesta
+   della vetrina. Le risposte vengono collegate alla richiesta, restano modificabili
+   finché non confermi l'invio e possono essere rimesse in coda in caso di problemi.
 
 ## Installazione
 
@@ -98,11 +106,12 @@ php bin/reset_admin_password.php admin "PasswordSicura123!"
 
 Applica le migration **non ancora applicate** in ordine di numero; quelle già
 applicate vanno saltate (falliscono con "Duplicate key/column" se rieseguite).
-Per un database aggiornato all'ultima versione pubblicata dello schema
-(tessera_fisica ENUM, tipologie 2027, id_stagione in importazioni) è sufficiente:
+Per un database con tessera_fisica ENUM, tipologie 2027 e id_stagione in importazioni,
+ma senza 008/009, applicare entrambe. Se la 008 è già presente, eseguire solo la 009:
 
 ```bash
 mysql -u root -p icbr_gestionale < database/migrations/008_prima_nota_quota_snapshot.sql
+mysql -u root -p icbr_gestionale < database/migrations/009_richieste_vetrina.sql
 ```
 
 La 008: aggiunge lo snapshot quota ai tesseramenti esistenti (backfill
@@ -112,6 +121,12 @@ tipologia conservata, quindi nessun tesseramento perde il listino).
 
 Su un DB più vecchio applica prima anche 002, 006 e 007, verificando che
 non siano già presenti.
+
+La 009 aggiunge le richieste del sito e il collegamento alle risposte WhatsApp.
+Per una **installazione nuova** basta sempre il solo `database/schema.sql`:
+non applicare anche le migration. Eseguire un backup prima di aggiornare un DB
+con dati esistenti. La vetrina funziona senza DB, ma il modulo contatti conferma
+una richiesta soltanto se il salvataggio è riuscito.
 
 ### Limiti noti
 
@@ -126,5 +141,5 @@ non siano già presenti.
 
 ## Accesso area riservata
 
-L'applicazione richiede autenticazione. Ruoli previsti: `admin`, `segreteria`, `tesoriere`, `presidente`.
+L'area gestionale richiede autenticazione; la vetrina no. Ruoli previsti: `admin`, `segreteria`, `tesoriere`, `presidente`.
 Credenziali di default configurabili con `bin/reset_admin_password.php`.

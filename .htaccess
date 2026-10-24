@@ -1,0 +1,11 @@
+Options -Indexes
+
+# Il progetto può vivere sotto htdocs per XAMPP; i file interni non sono pubblici.
+# In produzione resta preferibile DocumentRoot sulla sola directory public/.
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteRule ^(?:\.git|config|database|docs|includes|bin|storage|tests)(?:/|$) - [F,L,NC]
+</IfModule>
+<FilesMatch "(^\.|\.sql$|\.log$|\.bak$|\.env$)">
+    Require all denied
+</FilesMatch>
