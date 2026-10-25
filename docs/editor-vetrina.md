@@ -31,11 +31,13 @@ il tuo utente di servizio prima di assegnare questi permessi:
 ```bash
 cd /opt/lampp/htdocs/ICBRmanaging
 sudo install -d -o daemon -g daemon -m 0750 storage/site
-sudo chown daemon:daemon public/assets/images
-sudo chmod 0755 public/assets/images
+sudo chgrp daemon public/assets/images
+sudo chmod 2775 public/assets/images
 ```
 
-Non usare permessi `777`. Se l’utente di Apache è diverso, sostituire `daemon`.
+La directory delle immagini conserva il proprietario del checkout: il gruppo
+`daemon` può aggiungere foto, e il proprietario può continuare a usare Git.
+Non usare permessi `777`. Se il gruppo di Apache è diverso, sostituire `daemon`.
 Per consentire tre immagini da 6 MB in un salvataggio, la configurazione PHP
 deve consentire `upload_max_filesize=6M` o maggiore e `post_max_size=20M` o maggiore;
 riavviare Apache dopo aver cambiato `php.ini`.
