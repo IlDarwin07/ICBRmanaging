@@ -117,7 +117,7 @@ public_header('Da soli si tifa. Insieme si vive.', 'Inter Club Javier Zanetti Br
                 <?php endforeach; ?>
             </section>
         <?php endforeach; ?></div>
-        <div class="faq-note"><p>Informazioni ufficiali verificate il <time datetime="<?= h($faq['verified_on']) ?>">25 ottobre 2026</time>. Le condizioni di vendita e dei benefit possono cambiare: controlla sempre la pagina Inter indicata prima di acquistare o organizzare una trasferta.</p><a href="#contatti">Non trovi la tua risposta? Scrivici ↗</a></div>
+        <div class="faq-note"><a href="#contatti">Non trovi la tua risposta? Scrivici ↗</a></div>
     </section>
 </main>
 <?php public_footer(); ?>
