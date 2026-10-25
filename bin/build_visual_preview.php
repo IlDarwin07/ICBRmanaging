@@ -69,4 +69,7 @@ foreach ($routes as $path=>$filename) {
     $html = preg_replace('/(<body[^>]*>)/', '$1<div class="visual-preview-banner">ANTEPRIMA VISIVA · dati sintetici · salvataggi e invii disabilitati · <a href="./index.html">Vetrina</a> / <a href="./dashboard.html">Gestionale</a></div>', $html, 1);
     file_put_contents($output.'/'.$filename, $html);
 }
+if (!copy(__DIR__ . '/preview-assets/preview.js', $output . '/preview.js')) {
+    throw new RuntimeException('Impossibile aggiornare i controlli della sola anteprima.');
+}
 echo "Esportate ".count($routes)." pagine in sola lettura. Copiare public/assets nell’output.\n";
