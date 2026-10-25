@@ -143,3 +143,10 @@ una richiesta soltanto se il salvataggio è riuscito.
 
 L'area gestionale richiede autenticazione; la vetrina no. Ruoli previsti: `admin`, `segreteria`, `tesoriere`, `presidente`.
 Credenziali di default configurabili con `bin/reset_admin_password.php`.
+
+## Editor del sito vetrina
+
+Gli utenti `admin` possono modificare testi, sede, social e fotografie dal menu
+**Sito vetrina**. Nessuna nuova migrazione SQL per questa funzione:
+vedi [installazione, permessi e backup](docs/editor-vetrina.md).
+Le immagini iniziali sono locali e versionate in `public/assets/images/`.

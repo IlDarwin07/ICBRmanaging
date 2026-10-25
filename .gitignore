@@ -5,3 +5,4 @@
 .DS_Store
 Thumbs.db
 storage/import/*.xlsx
+storage/site/

@@ -1,0 +1,73 @@
+/* Un racconto fotografico del club, non una landing commerciale. */
+.public-site{--site-display:clamp(3rem,6.7vw,7.5rem);--site-title:clamp(2.5rem,4.9vw,5rem);--site-body:clamp(1rem,1.15vw,1.15rem);background:#f5f4ef}
+.public-site .public-header{background:#0b0d10;color:#fff;border-bottom-color:#ffffff1f;height:104px}
+.public-site .wordmark-bottom b{color:#95b2ff}
+.public-site .public-nav .admin-link{color:#c4cad5;border-color:#ffffff3d}
+.public-site .hero{display:block;position:relative;min-height:760px;isolation:isolate;background:#111820;overflow:hidden}
+.public-site .hero-photo{position:absolute;inset:0;z-index:-1;min-height:0}
+.public-site .hero-photo>img{filter:brightness(.75) saturate(.85);object-position:60% 52%}
+.public-site .hero-photo::after{inset:0;background:linear-gradient(90deg,#070c14ee 0%,#070c14ba 37%,#070c1433 75%),linear-gradient(0deg,#070c14c4,transparent 40%)}
+.public-site .hero-copy{background:transparent;min-height:760px;width:76%;padding:65px clamp(24px,6vw,110px) 30px;position:relative}
+.public-site .hero .eyebrow{color:#d1ddff;font-size:12px;letter-spacing:.12em}
+.public-site .hero h1{font-size:var(--site-display);line-height:.96;font-weight:700;text-transform:uppercase;max-width:900px;margin:56px 0 26px;letter-spacing:-.025em;text-wrap:balance}
+.public-site .hero p{max-width:440px;font-size:var(--site-body);line-height:1.7;color:#e3e6ed}
+.public-site .hero .public-button{background:#fff;color:#011ea0;padding-inline:25px;min-height:60px}
+.public-site .hero .public-button:hover{background:#dce7ff}
+.public-site .hero-bottom{max-width:470px;padding-top:45px;border-top:0;font-size:12px;letter-spacing:.03em}
+.public-site .hero-photo>figcaption{left:auto;right:6vw;bottom:92px;max-width:250px;gap:25px;align-items:flex-end;flex-direction:column;text-align:right}
+.public-site .hero-photo>figcaption>span:first-child{font-size:12px;text-transform:uppercase}
+.public-site .hero-photo>figcaption>span:last-child{font-size:36px;color:#c2d0e8}
+.public-site .photo-credit{font-size:12px;right:6vw;bottom:30px}
+.public-site .manifesto-strip{background:#011ea0;padding:24px;font-size:24px}
+.public-site .strip-mark{color:#88a4ff}
+.public-site h2{text-transform:uppercase;font-size:var(--site-title);line-height:1}
+.public-site .section-intro{gap:35px;margin-bottom:55px}
+.public-site .section-intro h2{max-width:900px}
+.public-site .club-layout{grid-template-columns:.85fr 1.15fr;gap:8vw;align-items:start}
+.public-site .club-story>p:not(.source-note){font-size:var(--site-body);line-height:1.8;color:#4f5561}
+.public-site .club-story>.large-copy{color:#111722!important;font-size:30px!important;line-height:1.3!important}
+.club-memory{margin:0;position:relative;padding-top:7px;min-width:0}
+.club-memory>img{width:100%;aspect-ratio:1.3;object-fit:cover;display:block}
+.club-memory figcaption{padding:22px 0;border-bottom:1px solid #cbd1d8}
+.club-memory figcaption>span{display:block;font:700 30px/1.1 var(--display-font);text-transform:uppercase;margin-bottom:8px}
+.club-memory small{font-size:12px;color:#6e7685}
+.public-site .membership-section{background:#0e1118;position:relative}
+.public-site .membership-heading .eyebrow{color:#a9c2ff}
+.public-site .membership-card{background:#191f2a;color:white;border:1px solid #3e4655;min-height:340px;transition:transform .2s,border-color .2s}
+.public-site .membership-card:hover{transform:translateY(-5px);border-color:#7297ff}
+.public-site .membership-card h3{font-size:clamp(32px,3.6vw,58px);color:#b2c7ff;text-transform:uppercase;overflow-wrap:anywhere}
+.public-site .membership-card p,.public-site .membership-tag{color:#b8c0cf;font-size:16px}
+.public-site .membership-tag{font-size:12px}
+.public-site .membership-card a{border-color:#414c63;color:#fff}
+.public-site .membership-card-outline{background:#011ea0;border-color:#345bd0}
+.public-site .membership-card-outline h3{color:#fff}
+.public-site .membership-footnote p{color:#969fb2;line-height:1.8}
+.public-site .joining-steps{border-color:#374155}
+.public-site .joining-steps strong{margin-bottom:6px}
+.public-site .joining-steps p{color:#b8c1d2}
+.public-site .venue-section{background:#e7e8e2}
+.public-site .venue-copy h2{font-size:var(--site-title)}
+.public-site .venue-photo img{filter:none}
+.public-site .venue-copy address{color:#011ea0}
+.public-site .contact-section{background:#f9f9f5}
+.public-site .contact-copy h2{font-size:var(--site-title)}
+.public-site .contact-form-panel{background:#fff;padding:32px;border:1px solid #e2e4e9;border-top:3px solid #011ea0}
+.public-site .public-form input:not([type=checkbox]),.public-site .public-form textarea,.public-site .public-form select{background:#f8f9fc;border-color:#d4d9e3}
+.public-site .public-form input:focus,.public-site .public-form textarea:focus,.public-site .public-form select:focus{outline:2px solid #011ea0;outline-offset:2px}
+.public-site .faq-section>h2{font-size:clamp(32px,4vw,56px)}
+.public-site .public-footer{background:#080b10;padding-top:65px}
+.footer-social-heading{display:grid;grid-template-columns:1fr 2fr;gap:20px 45px;align-items:start;margin-bottom:35px}
+.footer-social-heading .eyebrow{color:#b4c8ff}
+.footer-social-heading h2{font-size:clamp(32px,4.4vw,64px)}
+.footer-social-heading p{grid-column:2;font-size:16px;color:#9fa9ba;line-height:1.8}
+.footer-socials{border-top:1px solid #333e50;display:grid;grid-template-columns:repeat(auto-fit,minmax(min(260px,100%),1fr));margin-bottom:70px}
+.footer-socials>a{display:flex;align-items:center;gap:20px;min-height:120px;border-bottom:1px solid #333e50;padding:22px 15px 22px 0;text-decoration:none!important;transition:background .2s}
+.footer-socials>a:hover{background:#151e2e}
+.footer-socials>a>span:nth-child(2){font-family:var(--display-font);font-size:32px;line-height:1.1}
+.footer-socials small{display:block;font:400 13px/1.5 var(--body-font);color:#98a9c5;margin-top:8px}
+.footer-socials>a>span:last-child{font-size:36px;margin-left:auto;color:#9ab6ff}
+.social-monogram{border:1px solid #607492;width:48px;height:48px;display:grid;place-items:center;font-size:14px;letter-spacing:.03em;color:#b2c7ff}
+.public-site .footer-heading{font-size:clamp(32px,5.4vw,75px);border-top:1px solid #333e50;padding-top:35px}
+@media(max-width:1050px){.public-site .public-nav{background:#111722;color:white}.public-site .public-header{height:90px}.public-site .hero-copy{width:90%;min-height:680px}.public-site .hero{min-height:680px}.public-site .hero-photo>figcaption{display:none}.public-site .hero h1{font-size:clamp(64px,9vw,100px)}.public-site .club-layout{gap:40px}.public-site .section-intro h2{width:100%}.public-site .footer-social-heading{grid-template-columns:1fr}.public-site .footer-social-heading p{grid-column:1}}
+@media(max-width:650px){.public-site .public-header{height:90px}.public-site .hero-copy{width:100%;min-height:660px;padding:42px 24px 52px}.public-site .hero{min-height:660px}.public-site .hero h1{font-size:clamp(48px,14vw,72px);margin:55px 0 26px;overflow-wrap:anywhere}.public-site .hero .eyebrow{font-size:12px;letter-spacing:.035em}.public-site .hero p{max-width:330px;font-size:16px}.public-site .hero-photo{height:auto}.public-site .hero-photo>img{object-position:62% 50%;filter:brightness(.68)}.public-site .hero-photo::after{background:linear-gradient(90deg,#070c14e8,#070c1480),linear-gradient(0deg,#070c14aa,transparent)}.public-site .photo-credit{right:24px;left:24px;bottom:14px;text-align:left;font-size:12px}.public-site .hero-bottom{font-size:12px;gap:12px;flex-wrap:wrap;margin-top:25px;padding-top:20px}.public-site .hero-bottom a{font-size:12px}.public-site .hero .public-button{max-width:none}.public-site .club-layout{grid-template-columns:minmax(0,1fr);gap:35px}.public-site .section-intro{margin-bottom:30px}.public-site .club-memory>img{aspect-ratio:1.2}.public-site .club-story>p:not(.source-note){font-size:16px}.public-site .membership-card{min-height:280px;padding:26px}.public-site .membership-card h3{font-size:44px}.public-site .contact-form-panel{padding:24px 18px;margin-inline:-6px}.public-site .venue-copy h2,.public-site .contact-copy h2{font-size:clamp(42px,12vw,58px)}.public-site .footer-social-heading h2{font-size:42px}.public-site .footer-socials{margin-bottom:40px}.public-site .footer-heading{font-size:36px;line-height:1.2}}
+@media(prefers-reduced-motion:reduce){.public-site .membership-card:hover{transform:none}}

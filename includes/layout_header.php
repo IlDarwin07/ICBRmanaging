@@ -18,10 +18,11 @@ $nav_nota     = str_contains($current_path, '/prima_nota');
 $nav_msg      = str_contains($current_path, '/messaggi');
 $nav_contatti = str_contains($current_path, '/richieste');
 $nav_import   = str_contains($current_path, '/importazioni');
+$nav_sito     = str_contains($current_path, '/sito/');
 $nav_config   = str_contains($current_path, '/stagioni')
                || str_contains($current_path, '/tipologie');
 $nav_dash     = !$nav_soci && !$nav_tess && !$nav_nota && !$nav_msg
-                && !$nav_config && !$nav_import && !$nav_contatti;
+                && !$nav_config && !$nav_import && !$nav_contatti && !$nav_sito;
 
 // Percorso base (definito in config.php, default sicuro per XAMPP)
 if (!defined('BASE_URL')) {
@@ -49,6 +50,7 @@ $base = rtrim(BASE_URL, '/');
     <link rel="stylesheet" href="<?= $base ?>/assets/css/accessibility.css">
     <link rel="stylesheet" href="<?= $base ?>/assets/css/details.css">
     <link rel="stylesheet" href="<?= $base ?>/assets/css/brand.css">
+    <link rel="stylesheet" href="<?= $base ?>/assets/css/editor.css">
     <link rel="icon" type="image/jpeg" href="<?= u('/assets/images/logo-inter-club-brindisi.jpg') ?>">
     <script src="<?= $base ?>/assets/js/site.js" defer></script>
     <script src="<?= $base ?>/assets/js/admin.js" defer></script>
@@ -74,6 +76,7 @@ $base = rtrim(BASE_URL, '/');
            <?= $nav_contatti ? 'class="active"' : '' ?>>Richieste sito</a>
         <a href="<?= $base ?>/importazioni/upload.php"
            <?= $nav_import ? 'class="active"' : '' ?>>Importa</a>
+        <?php if (($utente['ruolo'] ?? '') === 'admin'): ?><a href="<?= $base ?>/sito/edit.php" <?= $nav_sito ? 'class="active"' : '' ?>>Sito vetrina</a><?php endif; ?>
         <div class="nav-dropdown <?= $nav_config ? 'active' : '' ?>">
             <button class="nav-dropdown-toggle" type="button"
                     aria-haspopup="true" aria-expanded="false">

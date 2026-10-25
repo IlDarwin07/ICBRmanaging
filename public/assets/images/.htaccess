@@ -1,0 +1,7 @@
+Options -Indexes -ExecCGI
+<FilesMatch "\.(?:jpg|jpeg|png|webp)$">
+    SetHandler default-handler
+</FilesMatch>
+<FilesMatch "\.(?:php[0-9]?|phtml|phar|html|svg|js)$">
+    Require all denied
+</FilesMatch>
