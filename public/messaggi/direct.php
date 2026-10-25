@@ -7,6 +7,7 @@ $pdo = get_db_connection();
 $requestId = (int)($_GET['richiesta'] ?? $_POST['id_richiesta'] ?? 0);
 $request = null;
 if ($requestId) {
+    require_permission('richieste.view');
     $stmt = $pdo->prepare('SELECT * FROM richieste_contatto WHERE id_richiesta = ?');
     $stmt->execute([$requestId]);
     $request = $stmt->fetch();

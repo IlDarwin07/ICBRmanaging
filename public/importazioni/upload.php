@@ -19,6 +19,8 @@ $stagioni = $pdo->query(
 $error = '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    verify_csrf_token($_POST['csrf_token'] ?? null);
+    unset($_SESSION['import_confirmed'],$_SESSION['import_mapping']);
     $id_stagione = (int)($_POST['id_stagione'] ?? 0);
 
     if (!$id_stagione) {
@@ -107,6 +109,7 @@ require __DIR__ . '/../../includes/layout_header.php';
 
 <div class="admin-panel" style="max-width:720px;margin-bottom:1.5rem">
     <form method="post" enctype="multipart/form-data">
+        <input type="hidden" name="csrf_token" value="<?= h(csrf_token()) ?>">
         <div style="margin-bottom:1rem">
             <label for="id_stagione" style="display:block;font-weight:600;margin-bottom:.35rem">
                 Stagione di riferimento *

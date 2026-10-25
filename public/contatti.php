@@ -24,13 +24,10 @@ if (!empty($_POST['website'])) $errors[] = 'Richiesta non valida.';
 if (time() - (int)($_SESSION['contact_last_sent'] ?? 0) < 60) $errors[] = 'Hai già inviato una richiesta. Attendi almeno un minuto prima di inviarne un’altra.';
 
 if (!$errors) {
-    // Connessione separata: se il DB/migrazione non è disponibile non mostrare
-    // una falsa conferma e non bloccare il resto del sito pubblico.
+    // Connessione aperta soltanto all'invio: la vetrina resta indipendente dal DB.
+    // La factory include l'audit nella stessa transazione dell'inserimento.
     try {
-        $db = new PDO('mysql:host=' . DB_HOST . ';dbname=' . DB_NAME . ';charset=utf8mb4', DB_USER, DB_PASS, [
-            PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
-            PDO::ATTR_EMULATE_PREPARES => false,
-        ]);
+        $db = get_db_connection(true);
         // Limite server aggiuntivo, indipendente dal cookie di sessione.
         $recent = $db->prepare('SELECT COUNT(*) FROM richieste_contatto WHERE email = ? AND data_creazione > DATE_SUB(NOW(), INTERVAL 1 HOUR)');
         $recent->execute([$data['email']]);

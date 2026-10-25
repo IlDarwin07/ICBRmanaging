@@ -17,11 +17,13 @@ require_once __DIR__ . '/../../includes/xlsx_reader.php';
 start_secure_session();
 require_login();
 
-if (empty($_SESSION['import_file']) || !file_exists($_SESSION['import_file'])
+if (empty($_SESSION['import_confirmed']) || empty($_SESSION['import_file']) || !file_exists($_SESSION['import_file'])
     || empty($_SESSION['import_mapping'])) {
     header('Location: ' . base_path('/importazioni/upload.php'));
     exit;
 }
+// Autorizzazione monouso, generata solo dal POST di conferma protetto da CSRF.
+unset($_SESSION['import_confirmed']);
 
 $file        = $_SESSION['import_file'];
 $ext         = $_SESSION['import_ext'];

@@ -141,12 +141,17 @@ una richiesta soltanto se il salvataggio è riuscito.
 
 ## Accesso area riservata
 
-L'area gestionale richiede autenticazione; la vetrina no. Ruoli previsti: `admin`, `segreteria`, `tesoriere`, `presidente`.
+L'area gestionale richiede autenticazione; la vetrina no. Gli amministratori gestiscono account personali con etichetta ruolo e permessi per modulo; i ruoli tecnici storici restano compatibili con il database.
 Credenziali di default configurabili con `bin/reset_admin_password.php`.
 
 ## Editor del sito vetrina
 
-Gli utenti `admin` possono modificare testi, sede, social e fotografie dal menu
+Gli utenti `admin` e gli account con permesso `sito.write` possono modificare testi, sede, social e fotografie dal menu
 **Sito vetrina**. Nessuna nuova migrazione SQL per questa funzione:
 vedi [installazione, permessi e backup](docs/editor-vetrina.md).
 Le immagini iniziali sono locali e versionate in `public/assets/images/`.
+
+## Account del direttivo e registro
+
+Gestione account personali, etichette ruolo, permessi per modulo e registro attività: [guida completa](docs/direttivo-permessi-attivita.md).
+Su database già esistenti serve la migrazione `010_direttivo_permessi_log.sql`; una nuova installazione usa il solo `database/schema.sql`.

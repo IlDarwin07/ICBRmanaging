@@ -126,25 +126,16 @@ foreach ($headers as $i => $h) {
     }
 }
 
-// Skip automatico se ha identificatore
-$valori_auto = array_values($auto_map);
-$ha_id_auto  = in_array('numero_tessera', $valori_auto)
-               || in_array('codice_fiscale', $valori_auto)
-               || (in_array('cognome', $valori_auto) && in_array('nome', $valori_auto));
-
-if ($ha_id_auto && ($_GET['force'] ?? '') !== '1') {
-    $_SESSION['import_mapping'] = $auto_map;
-    header('Location: ' . $base . '/importazioni/process.php');
-    exit;
-}
+// Mostrare sempre l'anteprima: nessuna importazione automatica su una GET.
 
 // POST: mapping manuale
 $error = '';
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    verify_csrf_token($_POST['csrf_token'] ?? null);
     $mapping = [];
     foreach ($headers as $i => $h) {
         $campo = $_POST['map'][$i] ?? '';
-        if ($campo !== '') $mapping[$i] = $campo;
+        if (is_string($campo) && $campo !== '' && array_key_exists($campo,$campi_db)) $mapping[$i] = $campo;
     }
     $valori_mapping    = array_values($mapping);
     $ha_identificatore = in_array('numero_tessera', $valori_mapping)
@@ -155,6 +146,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $error = 'Devi mappare almeno un identificatore: Numero tessera, Codice Fiscale, oppure Cognome + Nome.';
     } else {
         $_SESSION['import_mapping'] = $mapping;
+        $_SESSION['import_confirmed'] = true;
         header('Location: ' . $base . '/importazioni/process.php');
         exit;
     }
@@ -183,6 +175,7 @@ require __DIR__ . '/../../includes/layout_header.php';
 <?php endif; ?>
 
 <form method="post">
+    <input type="hidden" name="csrf_token" value="<?= h(csrf_token()) ?>">
     <div style="overflow-x:auto">
         <table class="data-table">
             <thead>

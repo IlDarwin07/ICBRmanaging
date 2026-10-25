@@ -41,6 +41,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     // Prima nota: registrazione opzionale, con conto scelto esplicitamente
     $registra_prima_nota = isset($_POST['registra_prima_nota']);
+    if ($registra_prima_nota) require_permission('prima_nota.write');
     $conto_pn            = $_POST['conto_prima_nota'] ?? 'cassa';
     if (!in_array($conto_pn, ['cassa', 'banca', 'altro'], true)) {
         $conto_pn = 'cassa';
@@ -184,7 +185,7 @@ require __DIR__ . '/../../includes/layout_header.php';
         <textarea name="note" rows="2"><?= h($_POST['note'] ?? '') ?></textarea>
     </div>
 
-    <div class="form-group form-checks">
+    <?php if (can('prima_nota.write')): ?><div class="form-group form-checks">
         <label class="checkbox-inline">
             <input type="checkbox" name="registra_prima_nota" value="1" <?= isset($_POST['registra_prima_nota']) ? 'checked' : '' ?>>
             Registra anche il movimento in prima nota
@@ -200,6 +201,7 @@ require __DIR__ . '/../../includes/layout_header.php';
         <small style="color:#888">Il tipo di movimento è determinato automaticamente:
         entrata per acconto/saldo/integrazione, uscita per rimborso.</small>
     </div>
+    <?php else: ?><p class="note">Il tuo account può registrare il pagamento, ma non creare il movimento collegato in prima nota.</p><?php endif; ?>
 
     <div class="form-actions">
         <button type="submit" class="btn">Registra pagamento</button>

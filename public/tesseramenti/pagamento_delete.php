@@ -28,6 +28,12 @@ if (!$pag) {
 
 try {
     $pdo->beginTransaction();
+    $linked = $pdo->prepare('SELECT id_movimento FROM prima_nota WHERE id_pagamento=? FOR UPDATE');
+    $linked->execute([$id_pagamento]);
+    if ($linked->fetch() && !can('prima_nota.delete')) {
+        $pdo->rollBack();
+        require_permission('prima_nota.delete');
+    }
 
     // Elimina prima il movimento di prima nota collegato (FK ON DELETE SET NULL
     // lo staccherebbe, ma un movimento orfano con lo stesso importo sarebbe fuorviante)

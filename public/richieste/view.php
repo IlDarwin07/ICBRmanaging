@@ -14,6 +14,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (($_POST['azione'] ?? '') === 'elimina') {
         $pdo->beginTransaction();
         try {
+            $linked = $pdo->prepare('SELECT id_messaggio FROM messaggi_whatsapp WHERE id_richiesta=? FOR UPDATE');
+            $linked->execute([$id]);
+            if ($linked->fetch() && !can('whatsapp.delete')) {
+                $pdo->rollBack();
+                require_permission('whatsapp.delete');
+            }
             $pdo->prepare('DELETE FROM messaggi_whatsapp WHERE id_richiesta = ?')->execute([$id]);
             $pdo->prepare('DELETE FROM richieste_contatto WHERE id_richiesta = ?')->execute([$id]);
             $pdo->commit();

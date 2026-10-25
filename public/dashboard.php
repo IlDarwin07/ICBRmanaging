@@ -4,6 +4,10 @@ require_once __DIR__ . '/../includes/functions.php';
 
 start_secure_session();
 require_login();
+if ((current_user()['ruolo'] ?? '') !== 'admin') {
+    require __DIR__ . '/../includes/dashboard_limited.php';
+    exit;
+}
 
 $pdo = get_db_connection();
 

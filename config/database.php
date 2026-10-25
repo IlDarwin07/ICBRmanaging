@@ -12,13 +12,14 @@ define('DB_NAME', getenv('ICBR_DB_NAME') ?: 'icbr_gestionale');
 define('DB_USER', getenv('ICBR_DB_USER') ?: 'root');
 define('DB_PASS', getenv('ICBR_DB_PASS') ?: '');
 define('DB_CHARSET', 'utf8mb4');
+require_once __DIR__ . '/../includes/activity_pdo.php';
 
 /**
  * Restituisce una connessione PDO condivisa (singleton) al database.
  *
  * @return PDO
  */
-function get_db_connection(): PDO
+function get_db_connection(bool $throwOnError = false): PDO
 {
     static $pdo = null;
 
@@ -32,8 +33,10 @@ function get_db_connection(): PDO
         ];
 
         try {
-            $pdo = new PDO($dsn, DB_USER, DB_PASS, $options);
+            $pdo = new ActivityPDO($dsn, DB_USER, DB_PASS, $options);
+            $pdo->setAttribute(PDO::ATTR_STATEMENT_CLASS,[ActivityStatement::class,[$pdo]]);
         } catch (PDOException $e) {
+            if ($throwOnError) throw $e;
             // Non esporre mai i dettagli di connessione all'utente finale.
             error_log('Errore connessione database: ' . $e->getMessage());
             http_response_code(500);

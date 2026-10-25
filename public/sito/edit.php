@@ -3,9 +3,6 @@ require_once __DIR__ . '/../../includes/auth.php';
 require_once __DIR__ . '/../../includes/functions.php';
 require_once __DIR__ . '/../../includes/site_content.php';
 require_login();
-if ((current_user()['ruolo'] ?? '') !== 'admin') {
-    render_error_page('Questa sezione è riservata agli admin', 'Solo un amministratore può modificare i contenuti pubblici del club.', 403);
-}
 $values = site_content();
 $revision = site_revision();
 $errors = [];
@@ -89,6 +86,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (!$errors) {
         try {
             site_save($candidate,$postedRevision);
+            $newFiles = []; // Le foto sono già referenziate dal file pubblicato: non rimuoverle.
+            try { audit_event('sito',$reset ? 'ripristino_vetrina' : 'pubblicazione_vetrina'); }
+            catch (Throwable $auditError) {
+                error_log('ICBR: vetrina salvata, registro attività non disponibile.');
+                $_SESSION['flash'] = ['type'=>'error','message'=>'Il sito è stato aggiornato, ma non è stato possibile scrivere il registro attività. Segnala il problema a un amministratore prima di proseguire.'];
+                header('Location: ' . u('/sito/edit.php'),true,303); exit;
+            }
             $_SESSION['flash'] = ['type'=>'success','message'=>$reset ? 'Contenuti iniziali ripristinati.' : 'Sito aggiornato. Le modifiche sono già visibili nella vetrina.'];
             header('Location: ' . u('/sito/edit.php'),true,303); exit;
         } catch (Throwable $e) { $errors[] = $e instanceof RuntimeException ? $e->getMessage() : 'Non è stato possibile salvare. Riprova.'; }

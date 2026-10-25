@@ -32,6 +32,7 @@ $sql .= ' ORDER BY pn.data_movimento ASC, pn.id_movimento ASC';
 $stmt = $pdo->prepare($sql);
 $stmt->execute($params);
 $movimenti = $stmt->fetchAll();
+audit_event('prima_nota','esportazione_csv');
 
 header('Content-Type: text/csv; charset=utf-8');
 header('Content-Disposition: attachment; filename="prima_nota_' . date('Ymd_His') . '.csv"');

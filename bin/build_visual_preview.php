@@ -40,12 +40,15 @@ $routes = [
     '/richieste/view.php?id=1'=>'richiesta.html','/importazioni/upload.php'=>'importazioni.html',
     '/stagioni/list.php'=>'stagioni.html','/tipologie/list.php'=>'tipologie.html',
     '/sito/edit.php'=>'sito-vetrina.html',
+    '/utenti/list.php'=>'direttivo.html','/utenti/edit.php'=>'nuovo-account.html',
+    '/utenti/edit.php?id=2'=>'account-direttivo.html','/utenti/edit.php?id=1'=>'account-admin.html',
+    '/attivita/list.php'=>'attivita.html',
 ];
 if (!is_dir($output)) mkdir($output, 0755, true);
 foreach ($routes as $path=>$filename) {
     $html = $path === '/login.php' ? $anonymousLogin : request($path);
     if ($html === '' || !str_contains($html, '</html>')) throw new RuntimeException("Pagina incompleta: $path");
-    $html = preg_replace('/<input[^>]*name="(?:csrf_token|nonce|revision)"[^>]*>/', '', $html);
+    $html = preg_replace('/<input[^>]*name="(?:csrf_token|nonce|revision|versione)"[^>]*>/', '', $html);
     $html = preg_replace('/<div class="(?:preview-notice|admin-demo-note)">.*?<\/div>/s', '', $html);
     if ($path === '/login.php') {
         $html = preg_replace('/<form\b.*?<\/form>/s', '<p>Questa è un’anteprima visiva in sola lettura, non un accesso al gestionale reale.</p><a class="btn preview-enter" href="./dashboard.html">Esplora il gestionale dimostrativo ↗</a>', $html);

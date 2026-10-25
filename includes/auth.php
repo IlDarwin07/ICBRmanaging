@@ -4,6 +4,7 @@
  */
 
 require_once __DIR__ . '/../config/database.php';
+require_once __DIR__ . '/permissions.php';
 
 function start_secure_session(): void
 {
@@ -35,10 +36,12 @@ function attempt_login(string $username, string $password): bool
     $utente = $stmt->fetch();
 
     if (!$utente || (int)$utente['attivo'] !== 1) {
+        audit_event('accessi','login_fallito',null,null,[],mb_substr($username,0,80));
         return false;
     }
 
     if (!password_verify($password, $utente['password_hash'])) {
+        audit_event('accessi','login_fallito',null,null,[],mb_substr($username,0,80));
         return false;
     }
 
@@ -52,6 +55,8 @@ function attempt_login(string $username, string $password): bool
         'username'  => $utente['username'],
         'ruolo'     => $utente['ruolo'],
     ];
+    load_user_access($pdo,$utente);
+    audit_event('accessi','login');
 
     $update = $pdo->prepare('UPDATE utenti_admin SET ultimo_accesso = NOW() WHERE id_utente = :id');
     $update->execute(['id' => $utente['id_utente']]);
@@ -82,6 +87,41 @@ function require_login(): void
         header('Location: ' . $login);
         exit;
     }
+    static $checked = false;
+    if (!$checked) {
+        $pdo = get_db_connection();
+        $stmt = $pdo->prepare('SELECT id_utente,nome,cognome,username,ruolo,attivo FROM utenti_admin WHERE id_utente = ?');
+        $stmt->execute([$_SESSION['user']['id_utente']]);
+        $row = $stmt->fetch();
+        $previousVersion = $_SESSION['user']['versione_sessione'] ?? 0;
+        if ($row) load_user_access($pdo,$row);
+        if (!$row || !(int)$row['attivo'] || (security_ready() && $previousVersion !== $_SESSION['user']['versione_sessione'])) {
+            audit_event('accessi','sessione_revocata');
+            do_logout();
+            header('Location: ' . (function_exists('base_path') ? base_path('/login.php') : '/login.php'));
+            exit;
+        }
+        $checked = true;
+        enforce_route_permission();
+    }
+}
+
+function load_user_access(PDO $pdo, array $row): void
+{
+    $profile = null;
+    if (security_ready()) {
+        $stmt = $pdo->prepare('SELECT * FROM utenti_accessi WHERE id_utente = ?');
+        $stmt->execute([$row['id_utente']]);
+        $profile = $stmt->fetch();
+    }
+    $decoded = json_decode($profile['permessi_json'] ?? '[]',true);
+    $_SESSION['user'] = [
+        'id_utente'=>(int)$row['id_utente'],'nome'=>$row['nome'],'cognome'=>$row['cognome'],
+        'username'=>$row['username'],'ruolo'=>$row['ruolo'],
+        'etichetta_ruolo'=>$profile['etichetta_ruolo'] ?? ucfirst($row['ruolo']),
+        'permessi'=>normalise_permissions(is_array($decoded) ? $decoded : []),
+        'versione_sessione'=>(int)($profile['versione_sessione'] ?? 0),
+    ];
 }
 
 /**
@@ -102,6 +142,7 @@ function require_role(array $ruoli_ammessi): void
 function do_logout(): void
 {
     start_secure_session();
+    if (is_logged_in()) audit_event('accessi','logout');
     $_SESSION = [];
     if (ini_get('session.use_cookies')) {
         $params = session_get_cookie_params();
