@@ -1,5 +1,5 @@
 .cms-layout{display:grid;grid-template-columns:260px minmax(0,1fr);gap:28px;align-items:start}
-.cms-guide{position:sticky;top:30px}
+.cms-guide{position:static}
 .cms-guide h2{font-family:var(--display-font);font-size:27px;line-height:1.1;margin:18px 0}
 .cms-guide p{font-size:14px;line-height:1.8;color:#626d83;margin-bottom:18px}
 .cms-guide .text-link{display:inline-block;color:var(--blue);padding-block:10px;font-size:14px;text-decoration:underline}

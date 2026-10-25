@@ -151,6 +151,8 @@ Gli utenti `admin` e gli account con permesso `sito.write` possono modificare te
 vedi [installazione, permessi e backup](docs/editor-vetrina.md).
 Le immagini iniziali sono locali e versionate in `public/assets/images/`.
 
+La vetrina spiega tutte le formule di tesseramento: Fedelissimo, Sostenitore, Fuori sede, Family, Junior e Quota Plus. Nomi, presentazioni, quote e spiegazioni sono editabili; i rinnovi agevolati scaduti sono distinti dalle quote di riferimento. Vedi [contenuti, fonti e gestione delle quote](docs/tesseramenti-vetrina.md).
+
 ## Account del direttivo e registro
 
 Gestione account personali, etichette ruolo, permessi per modulo e registro attività: [guida completa](docs/direttivo-permessi-attivita.md).

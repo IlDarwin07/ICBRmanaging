@@ -21,6 +21,7 @@ function public_header(string $title, string $description): void
     <link rel="stylesheet" href="<?= u('/assets/css/accessibility.css') ?>">
     <link rel="stylesheet" href="<?= u('/assets/css/brand.css') ?>">
     <link rel="stylesheet" href="<?= u('/assets/css/modern.css') ?>">
+    <link rel="stylesheet" href="<?= u('/assets/css/membership.css') ?>">
     <link rel="icon" type="image/jpeg" href="<?= u('/assets/images/logo-inter-club-brindisi.jpg') ?>">
     <script src="<?= u('/assets/js/site.js') ?>" defer></script>
 </head>

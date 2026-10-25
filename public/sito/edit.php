@@ -17,9 +17,7 @@ $groups = [
     ],
     'Tesseramento' => [
         'tesseramento_titolo'=>['Titolo tesseramento',150],
-        'tessera_1_titolo'=>['Prima tessera: nome',40], 'tessera_1_testo'=>['Prima tessera: descrizione',400],
-        'tessera_2_titolo'=>['Seconda tessera: nome',40], 'tessera_2_testo'=>['Seconda tessera: descrizione',400],
-        'tessera_3_titolo'=>['Terza tessera: nome',40], 'tessera_3_testo'=>['Terza tessera: descrizione',400],
+        'tessera_quote_nota'=>['Nota sulle quote e sulla conferma con il direttivo',1000],
     ],
     'La sede e i contatti' => [
         'sede_titolo'=>['Titolo sede',150], 'sede_testo'=>['Come venire a trovarci',600],
@@ -32,6 +30,16 @@ $groups = [
         'youtube'=>['YouTube: URL del canale',500], 'tiktok'=>['TikTok: URL del profilo',500],
     ],
 ];
+$membershipGroups = [];
+foreach (site_membership_types() as $i=>$membership) {
+    $membershipGroups['Tessera '.$membership['nome']] = [
+        "tessera_{$i}_titolo"=>['Nome della formula',40],
+        "tessera_{$i}_testo"=>['Presentazione breve',400],
+        "tessera_{$i}_quota"=>['Quota di riferimento, compreso il simbolo €',40],
+        "tessera_{$i}_dettagli"=>['Spiegazione, requisiti e servizi da confermare',1200],
+    ];
+}
+$groups = array_merge(array_slice($groups,0,3,true),$membershipGroups,array_slice($groups,3,null,true));
 $photos = ['hero_foto'=>'Foto principale','sede_foto'=>'Foto della sede','ricordi_foto'=>'Foto del racconto'];
 $availablePhotos = array_values(array_filter(array_map('basename', glob(__DIR__ . '/../assets/images/*') ?: []),
     fn($name) => site_image_valid($name) && $name !== 'logo-inter-club-brindisi.jpg'));
@@ -111,14 +119,14 @@ require __DIR__ . '/../../includes/layout_header.php';
 <div class="page-header"><div><span class="admin-eyebrow">SITO PUBBLICO / CONTENUTI</span><h1>La vetrina del club</h1><p class="muted">La vostra voce, senza mettere mano al codice.</p></div><a class="btn btn-secondary" href="<?= u('/index.php') ?>" target="_blank" rel="noopener">Apri il sito ↗</a></div>
 <?php if ($errors): ?><div class="flash flash-error" role="alert"><ul><?php foreach ($errors as $error): ?><li><?= h($error) ?></li><?php endforeach; ?></ul></div><?php endif; ?>
 <div class="cms-layout">
-<aside class="admin-panel cms-guide"><span class="admin-eyebrow">PICCOLA GUIDA</span><h2>Parlate come al club.</h2><p>Frasi semplici, informazioni utili e un po’ della vostra passione. Per andare a capo nei titoli, premi Invio.</p><p>Il salvataggio aggiorna subito il sito pubblico. I social lasciati vuoti non compaiono nel footer.</p><p>Le foto restano sul server, senza dipendere da Instagram. Caricate solo immagini che avete il diritto di utilizzare.</p><p class="muted">Niente HTML o codice: i testi sono mostrati come testo, non eseguiti.</p><a class="text-link" href="#foto-sito">Vai alle fotografie ↓</a></aside>
+<aside class="admin-panel cms-guide"><span class="admin-eyebrow">PICCOLA GUIDA</span><h2>Parlate come al club.</h2><p>Frasi semplici, informazioni utili e un po’ della vostra passione. Per andare a capo nei titoli, premi Invio.</p><p>Il salvataggio aggiorna subito il sito pubblico. I social lasciati vuoti non compaiono nel footer.</p><p>Per ogni tessera puoi aggiornare nome, presentazione, quota e spiegazione. Le quote della vetrina non modificano i listini del gestionale: tienili coerenti quando cambiano gli importi.</p><p>Le foto restano sul server, senza dipendere da Instagram. Caricate solo immagini che avete il diritto di utilizzare.</p><p class="muted">Niente HTML o codice: i testi sono mostrati come testo, non eseguiti.</p><a class="text-link" href="#tesseramento-sito">Vai alle tessere ↓</a><a class="text-link" href="#foto-sito">Vai alle fotografie ↓</a></aside>
 <form method="post" enctype="multipart/form-data" class="cms-form">
 <input type="hidden" name="csrf_token" value="<?= h(csrf_token()) ?>"><input type="hidden" name="revision" value="<?= h($revision) ?>">
 <?php foreach ($groups as $title=>$fields): ?>
-<section class="admin-panel cms-section"><h2><?= h($title) ?></h2><div class="cms-fields">
+<section class="admin-panel cms-section" <?= $title==='Tesseramento' ? 'id="tesseramento-sito"' : '' ?>><h2><?= h($title) ?></h2><div class="cms-fields">
 <?php foreach ($fields as $key=>[$label,$limit]): ?><div class="cms-field"><label for="<?= h($key) ?>"><?= h($label) ?></label>
-<?php if (str_ends_with($key,'titolo') || str_ends_with($key,'testo') || $key === 'club_intro'): ?>
-<textarea id="<?= h($key) ?>" name="<?= h($key) ?>" rows="<?= $key === 'club_testo' ? 7 : 3 ?>" maxlength="<?= $limit ?>" required><?= h($values[$key]) ?></textarea>
+<?php if ((str_ends_with($key,'titolo') && !preg_match('/^tessera_\d+_titolo$/',$key)) || str_ends_with($key,'testo') || str_ends_with($key,'dettagli') || $key === 'tessera_quote_nota' || $key === 'club_intro'): ?>
+<textarea id="<?= h($key) ?>" name="<?= h($key) ?>" rows="<?= $key === 'club_testo' ? 7 : (str_ends_with($key,'dettagli') ? 6 : 3) ?>" maxlength="<?= $limit ?>" required><?= h($values[$key]) ?></textarea>
 <?php else: ?><input id="<?= h($key) ?>" name="<?= h($key) ?>" type="<?= in_array($key,['instagram','facebook','youtube','tiktok','mappe'],true) ? 'url' : 'text' ?>" maxlength="<?= $limit ?>" value="<?= h($values[$key]) ?>" <?= in_array($key,['instagram','facebook','youtube','tiktok'],true) ? '' : 'required' ?>><?php endif; ?>
 </div><?php endforeach; ?></div></section><?php endforeach; ?>
 <section class="admin-panel cms-section" id="foto-sito"><h2>Le fotografie</h2><p class="muted">Scegli dall’archivio o carica una foto nuova. JPEG, PNG o WebP, massimo 6 MB, almeno 640×360 px.</p>

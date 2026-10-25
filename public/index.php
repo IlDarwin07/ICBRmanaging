@@ -1,6 +1,7 @@
 <?php
 require_once __DIR__ . '/../includes/public_layout.php';
 start_secure_session();
+$memberships = site_membership_types();
 $errors = $_SESSION['contact_errors'] ?? [];
 $old = $_SESSION['contact_old'] ?? [];
 $sent = $_SESSION['contact_sent'] ?? false;
@@ -38,8 +39,32 @@ public_header('Da soli si tifa. Insieme si vive.', 'Inter Club Javier Zanetti Br
 
     <section class="membership-section section" id="tesseramento" aria-labelledby="membership-title">
         <div class="membership-heading"><div><span class="eyebrow">TESSERAMENTO <?= h($site['stagione']) ?></span><h2 id="membership-title"><?= nl2br(h($site['tesseramento_titolo'])) ?></h2></div><p>Ci sei anche tu?<br>Ti aspettiamo.</p></div>
-        <div class="membership-grid">
-            <?php foreach ([1,2,3] as $i): ?><article class="membership-card <?= $i === 3 ? 'membership-card-outline' : '' ?>"><span class="membership-tag">LA TUA TESSERA / 0<?= $i ?></span><h3><?= h($site["tessera_{$i}_titolo"]) ?></h3><p><?= h($site["tessera_{$i}_testo"]) ?></p><a href="#contatti" data-topic="Tesseramento" data-message="<?= h('Ciao! Mi dite qualcosa in più sulla tessera ' . $site["tessera_{$i}_titolo"] . '?') ?>">Parliamone <span aria-hidden="true">↗</span></a></article><?php endforeach; ?>
+        <p class="membership-lead">Non c’è un solo modo di vivere questi colori. Qui trovi tutte le formule del nostro listino: scegli quella di cui vuoi parlare con noi.</p>
+        <div class="membership-grid membership-grid-complete">
+            <?php foreach ($memberships as $i=>$membership): ?>
+            <article class="membership-card <?= $i===6 ? 'membership-card-outline' : '' ?>" id="tessera-<?= h($membership['tipo']) ?>">
+                <div class="membership-card-top"><span class="membership-tag">0<?= $i ?> / <?= $i===6 ? 'UPGRADE SENIOR' : 'IL TUO MODO DI ESSERCI' ?></span><span class="membership-index" aria-hidden="true">↗</span></div>
+                <h3><?= h($site["tessera_{$i}_titolo"]) ?></h3>
+                <p class="membership-audience"><?= h($site["tessera_{$i}_testo"]) ?></p>
+                <div class="membership-price"><strong><?= h($site["tessera_{$i}_quota"]) ?></strong><span><?= h($i===6 ? 'in aggiunta alla tessera Senior' : 'quota nuovo socio · '.$site['stagione']) ?></span></div>
+                <p class="membership-description"><?= h($site["tessera_{$i}_dettagli"]) ?></p>
+                <?php if ($i===6): ?><p class="membership-plus-benefit">La <a href="https://www.inter.it/it/notizie/inter-club-campagna-tesseramenti-2026-2027" target="_blank" rel="noopener noreferrer">campagna ufficiale Inter Club 2026/27</a> prevede per i soci Plus una fase di vendita dedicata per le partite casalinghe.</p><?php endif; ?>
+                <a class="membership-cta" href="#contatti" data-topic="Tesseramento" data-message="<?= h('Ciao! Vorrei informazioni sulla '.($i===6 ? '' : 'tessera ').$site["tessera_{$i}_titolo"].' per la stagione '.$site['stagione'].': potete confermarmi quota, requisiti e servizi inclusi?') ?>">Info <?= h($site["tessera_{$i}_titolo"]) ?><span aria-hidden="true">↗</span></a>
+            </article>
+            <?php endforeach; ?>
+        </div>
+        <p class="membership-quote-note"><?= h($site['tessera_quote_nota']) ?></p>
+        <div class="membership-info">
+            <div class="membership-benefits"><span class="eyebrow">COSA SIGNIFICA ESSERE SOCIO</span><h3>Una famiglia.<br>Tanti modi di esserci.</h3>
+                <p>La <a href="https://www.inter.it/it/notizie/inter-club-campagna-tesseramenti-2026-2027" target="_blank" rel="noopener noreferrer">campagna ufficiale Inter Club 2026/27</a> prevede Welcome Kit Senior o Junior fino a esaurimento scorte, agevolazioni e prelazioni per partite selezionate e iniziative dedicate ai soci.</p>
+                <p>Non considerare biglietti, trasferte o altri costi inclusi nella quota senza una conferma del direttivo: ti spieghiamo tutto prima dell’iscrizione.</p>
+            </div>
+            <div class="membership-questions" aria-label="Domande sulle formule di tesseramento">
+                <details><summary>Cosa cambia tra le formule?</summary><div class="membership-answer"><p>Le formule identificano modi diversi di aderire al club. Il nome della tessera, da solo, non promette posti allo stadio o servizi aggiuntivi: per accesso alla sede, attività comprese e requisiti ti confermiamo le condizioni della stagione.</p><a href="#contatti" data-topic="Tesseramento" data-message="Ciao! Vorrei capire quale formula di tesseramento è più adatta a me e quali servizi comprende.">Aiutatemi a scegliere ↗</a></div></details>
+                <details><summary>Family e Junior: chi può iscriversi?</summary><div class="membership-answer"><p>Per Family vanno verificati gli abbinamenti e i requisiti del nucleo familiare; non presumere che una sola quota copra tutte le persone. Per Junior confermiamo con te il limite di età applicato alla stagione e la procedura per iscrivere un minore.</p></div></details>
+                <details><summary>La Quota Plus comprende un biglietto?</summary><div class="membership-answer"><p>No: è un upgrade del tesseramento Senior, non un biglietto o una tessera autonoma. La <a href="https://www.inter.it/it/notizie/inter-club-campagna-tesseramenti-2026-2027" target="_blank" rel="noopener noreferrer">campagna ufficiale Inter Club 2026/27</a> indica una fase di vendita dedicata ai soci Plus, non un posto garantito allo stadio.</p></div></details>
+                <details><summary>E se devo rinnovare la tessera?</summary><div class="membership-answer"><p>Contattaci per la quota applicabile oggi al tuo rinnovo. Il listino conserva anche le voci agevolate entro il <strong>30 giugno 2026</strong>: quella scadenza è passata e non è una promozione attualmente aperta.</p><dl class="membership-renewals"><?php foreach ($memberships as $membership): if ($membership['rinnovo']===null) continue; ?><div><dt><?= h($membership['nome']) ?></dt><dd><?= h($membership['rinnovo']) ?></dd></div><?php endforeach; ?></dl><p class="membership-history-note">Importi storici riservati ai rinnovi entro la scadenza indicata, non quote da versare oggi.</p></div></details>
+            </div>
         </div>
         <div class="membership-footnote"><p>Quote, scadenze, kit e disponibilità sono confermati dal direttivo per la stagione in corso. La richiesta di informazioni non costituisce tesseramento né prenotazione di biglietti.</p><a href="<?= h($site['fonte_inter']) ?>" target="_blank" rel="noopener noreferrer">Il mondo Inter Club su inter.it ↗</a></div>
         <div class="joining-steps"><div><span>01</span><p><strong>Scrivici.</strong> Dicci se vuoi iscriverti o rinnovare.</p></div><div><span>02</span><p><strong>Conosciamoci.</strong> Il direttivo ti spiega quote e modalità.</p></div><div><span>03</span><p><strong>Vivi il club.</strong> Completa l’adesione con il direttivo.</p></div></div>

@@ -1,6 +1,19 @@
 <?php
 require_once __DIR__ . '/functions.php';
 
+/** Formule del listino locale; nessuna connessione pubblica al database. */
+function site_membership_types(): array
+{
+    return [
+        1=>['tipo'=>'fedelissimo','nome'=>'Fedelissimo','rinnovo'=>'90 €'],
+        2=>['tipo'=>'sostenitore','nome'=>'Sostenitore','rinnovo'=>'50 €'],
+        3=>['tipo'=>'fuori_sede','nome'=>'Fuori sede','rinnovo'=>'45 €'],
+        4=>['tipo'=>'family','nome'=>'Family','rinnovo'=>'45 €'],
+        5=>['tipo'=>'junior','nome'=>'Junior','rinnovo'=>'25 €'],
+        6=>['tipo'=>'quota_plus','nome'=>'Quota Plus','rinnovo'=>null],
+    ];
+}
+
 function site_store_dir(): string
 {
     return __DIR__ . '/../storage/site';

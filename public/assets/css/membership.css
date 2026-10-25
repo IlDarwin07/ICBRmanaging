@@ -1,0 +1,40 @@
+/* Formule ICBR: quote leggibili, dettagli accessibili, stessi colori del club. */
+.public-site .membership-lead{max-width:660px;color:#c4ccda;font-size:18px;line-height:1.8;margin:-14px 0 40px}
+.public-site .membership-grid-complete{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:24px}
+.public-site .membership-grid-complete .membership-card{min-width:0;min-height:0;padding:30px;display:flex;flex-direction:column}
+.membership-card-top{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:30px}
+.public-site .membership-card-top .membership-tag{font-size:11px;letter-spacing:.07em;line-height:1.6}
+.membership-index{font-size:24px;color:#8094bf}
+.public-site .membership-grid-complete h3{font-size:clamp(32px,3.2vw,49px);line-height:1.02;margin:0 0 16px}
+.public-site .membership-card .membership-audience{font-size:17px;font-weight:600;color:#eef2fa;line-height:1.6;min-height:100px;margin:0 0 24px}
+.membership-price{display:flex;flex-direction:column;gap:8px;border-block:1px solid #465166;padding:22px 0;margin-bottom:24px}
+.membership-price strong{font:600 48px/1.1 var(--display-font);color:#fff;letter-spacing:-.02em;overflow-wrap:anywhere}
+.membership-price>span{font-size:12px;line-height:1.6;color:#c7d1e3}
+.public-site .membership-card .membership-description{line-height:1.8;font-size:16px;color:#c1cadb;margin:0 0 28px}
+.public-site .membership-card .membership-plus-benefit{line-height:1.8;font-size:14px;color:#d6e1ff;margin-bottom:24px}
+.public-site .membership-card .membership-plus-benefit a{display:inline;border:0;padding:0;color:#fff;text-decoration:underline;overflow-wrap:anywhere}
+.public-site .membership-card a.membership-cta{display:flex;justify-content:space-between;gap:16px;font-size:14px;font-weight:600;align-items:center;margin-top:auto;padding:18px 0 0;border-top:1px solid #52617b}
+.public-site .membership-card-outline .membership-index{color:#c6d7ff}
+.public-site .membership-card-outline .membership-description{color:#e1e8ff}
+.public-site .membership-quote-note{max-width:930px;color:#bac5d8;font-size:14px;line-height:1.9;padding-left:20px;border-left:2px solid #607ad1;margin:32px 0 0}
+.membership-info{display:grid;grid-template-columns:.85fr 1.15fr;gap:7vw;border-top:1px solid #3d495e;margin-top:64px;padding-top:48px}
+.public-site .membership-benefits>.eyebrow{color:#aec5ff;margin-bottom:20px;font-size:11px}
+.public-site .membership-benefits>h3{color:#fff;text-transform:uppercase;font-size:clamp(28px,3vw,40px);line-height:1.12;margin-bottom:25px}
+.public-site .membership-benefits>p,.public-site .membership-answer>p{color:#bfc9db;font-size:15px;line-height:1.9}
+.public-site .membership-info a{color:#c4d5ff;text-decoration:underline;text-underline-offset:4px;line-height:1.8}
+.membership-questions{min-width:0}
+.membership-questions details{border-bottom:1px solid #3d495e}
+.membership-questions details:first-child{border-top:1px solid #3d495e}
+.membership-questions summary{display:flex;justify-content:space-between;gap:24px;align-items:center;list-style:none;padding:24px 0;cursor:pointer;font:600 18px/1.5 var(--body-font);color:#fff}
+.membership-questions summary::-webkit-details-marker{display:none}
+.membership-questions summary::after{content:"+";font:400 26px/1 var(--body-font);color:#adc5ff;flex-shrink:0}
+.membership-questions details[open] summary::after{content:"−"}
+.membership-questions summary:focus-visible,.public-site .membership-info a:focus-visible,.public-site .membership-card a:focus-visible{outline:2px solid #adc5ff;outline-offset:5px}
+.membership-answer{padding:0 0 24px}
+.membership-answer a{font-size:14px}
+.membership-renewals{margin:16px 0 20px;color:#e0e7f3}
+.membership-renewals>div{display:flex;justify-content:space-between;gap:20px;padding:10px 0;border-bottom:1px solid #364258;font-size:14px}
+.membership-renewals dd{margin:0;font-weight:600}
+.public-site .membership-answer p.membership-history-note{font-size:13px;color:#aabbd5}
+@media(max-width:1150px){.public-site .membership-grid-complete{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:750px){.membership-info{grid-template-columns:minmax(0,1fr);gap:32px}.public-site .membership-grid-complete{grid-template-columns:minmax(0,1fr)}.public-site .membership-grid-complete .membership-card{padding:28px}.public-site .membership-card .membership-audience{min-height:0}.public-site .membership-grid-complete h3{font-size:42px}.membership-card-top{margin-bottom:24px}.public-site .membership-lead{font-size:16px;margin-top:0}.membership-questions summary{font-size:16px;gap:16px}.membership-info{margin-top:44px;padding-top:36px}}

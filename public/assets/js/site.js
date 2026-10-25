@@ -11,11 +11,15 @@ document.querySelectorAll('.menu-toggle').forEach(button => {
     document.addEventListener('keydown', e => { if (e.key === 'Escape') { close(); button.focus(); } });
     window.matchMedia('(min-width: 1051px)').addEventListener('change', close);
 });
+let automaticContactMessage = '';
 document.querySelectorAll('[data-topic]').forEach(link => {
     link.addEventListener('click', () => {
         const topic = document.getElementById('contact-topic');
         const message = document.getElementById('contact-message');
         if (topic) topic.value = link.dataset.topic;
-        if (message && !message.value.trim()) message.value = link.dataset.message || '';
+        if (message && (!message.value.trim() || message.value === automaticContactMessage)) {
+            automaticContactMessage = link.dataset.message || '';
+            message.value = automaticContactMessage;
+        }
     });
 });
