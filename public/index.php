@@ -31,7 +31,7 @@ public_header('Da soli si tifa. Insieme si vive.', 'Inter Club Javier Zanetti Br
         <div class="club-layout">
             <div class="club-story"><p class="large-copy"><?= h($site['club_intro']) ?></p>
                 <?php foreach (preg_split('/\n\s*\n/', $site['club_testo']) as $paragraph): ?><p><?= nl2br(h($paragraph)) ?></p><?php endforeach; ?>
-                <a class="text-link" href="#contatti">Facciamo due chiacchiere <span aria-hidden="true">↗</span></a>
+                <a class="text-link" href="#contatti">Contatta il direttivo <span aria-hidden="true">↗</span></a>
             </div>
             <figure class="club-memory"><img src="<?= u('/assets/images/' . $site['ricordi_foto']) ?>" width="1024" height="576" loading="eager" alt="La sede e i ricordi nerazzurri del club."><figcaption><span>Un posto, tante storie.</span><small><?= h(site_image_credit($site['ricordi_foto'])) ?></small></figcaption></figure>
         </div>
@@ -56,7 +56,7 @@ public_header('Da soli si tifa. Insieme si vive.', 'Inter Club Javier Zanetti Br
                         <h3><?= h($site["tessera_{$i}_titolo"]) ?></h3>
                         <p class="membership-description"><?= h($site["tessera_{$i}_dettagli"]) ?></p>
                         <?php if ($i===6): ?><p class="membership-plus-benefit">La <a href="https://www.inter.it/it/inter-club" target="_blank" rel="noopener noreferrer">pagina ufficiale Inter Club</a> prevede per i soci Plus una vendita anticipata per le partite casalinghe di Campionato e Champions League, subordinata al programma Loyalty INTERISTA e ai relativi termini. <a href="#faq-plus" data-faq-link>Leggi le condizioni nelle FAQ ↗</a></p><?php endif; ?>
-                        <a class="membership-cta" href="#contatti" data-topic="Tesseramento" data-message="<?= h('Ciao! Vorrei informazioni sulla '.($i===6 ? '' : 'tessera ').$site["tessera_{$i}_titolo"].' per la stagione '.$site['stagione'].': potete confermarmi quota, requisiti e servizi inclusi?') ?>">Parliamone insieme <span aria-hidden="true">↗</span></a>
+                        <a class="membership-cta" href="#contatti" data-topic="Tesseramento" data-message="<?= h('Ciao! Vorrei informazioni sulla '.($i===6 ? '' : 'tessera ').$site["tessera_{$i}_titolo"].' per la stagione '.$site['stagione'].': potete confermarmi quota, requisiti e servizi inclusi?') ?>">Contatta il direttivo <span aria-hidden="true">↗</span></a>
                     </div>
                 </div>
             </article>
@@ -69,7 +69,7 @@ public_header('Da soli si tifa. Insieme si vive.', 'Inter Club Javier Zanetti Br
                 <p>Non considerare biglietti, trasferte o altri costi inclusi nella quota senza una conferma del direttivo: ti spieghiamo tutto prima dell’iscrizione.</p>
             </div>
             <div class="membership-questions" aria-label="Domande sulle formule di tesseramento">
-                <details><summary>Chi può scegliere Fuori sede?</summary><div class="membership-answer"><p>La formula è riservata a chi risiede fuori dal Comune di Brindisi, anche in un comune vicino. Conta la residenza fuori dal territorio comunale, non quanto sei lontano dalla sede.</p><a href="#contatti" data-topic="Tesseramento" data-message="Ciao! Risiedo fuori dal Comune di Brindisi e vorrei informazioni sulla formula Fuori sede.">Parliamone insieme ↗</a></div></details>
+                <details><summary>Chi può scegliere Fuori sede?</summary><div class="membership-answer"><p>La formula è riservata a chi risiede fuori dal Comune di Brindisi, anche in un comune vicino. Conta la residenza fuori dal territorio comunale, non quanto sei lontano dalla sede.</p><a href="#contatti" data-topic="Tesseramento" data-message="Ciao! Risiedo fuori dal Comune di Brindisi e vorrei informazioni sulla formula Fuori sede.">Contatta il direttivo ↗</a></div></details>
                 <details><summary>Family e Junior: chi può iscriversi?</summary><div class="membership-answer"><p>La tessera Family è attivabile in abbinamento a un tesseramento Fedelissimo: la quota Family non comprende automaticamente tutto il nucleo familiare. Tutti i soci under 14, cioè con meno di 14 anni, possono scegliere la Junior. Scrivici per organizzare l’iscrizione di un minore, senza inviare i suoi documenti nel modulo pubblico.</p></div></details>
                 <details><summary>La Quota Plus comprende un biglietto?</summary><div class="membership-answer"><p>No: è un upgrade del tesseramento Senior, non un biglietto o una tessera autonoma. I benefit della <a href="https://www.inter.it/it/inter-club" target="_blank" rel="noopener noreferrer">pagina ufficiale Inter Club</a> prevedono una vendita anticipata, subordinata al programma Loyalty INTERISTA e ai relativi termini, non un posto garantito allo stadio.</p><a href="#faq-due-plus" data-faq-link>Non confonderla con il biglietto PLUS ↗</a></div></details>
                 <details><summary>E se devo rinnovare la tessera?</summary><div class="membership-answer"><p>Contattaci per la quota applicabile oggi al tuo rinnovo. Il listino conserva anche le voci agevolate entro il <strong>30 giugno 2026</strong>: quella scadenza è passata e non è una promozione attualmente aperta.</p><dl class="membership-renewals"><?php foreach ($memberships as $membership): if ($membership['rinnovo']===null) continue; ?><div><dt><?= h($membership['nome']) ?></dt><dd><?= h($membership['rinnovo']) ?></dd></div><?php endforeach; ?></dl><p class="membership-history-note">Importi storici riservati ai rinnovi entro la scadenza indicata, non quote da versare oggi.</p></div></details>
@@ -77,7 +77,7 @@ public_header('Da soli si tifa. Insieme si vive.', 'Inter Club Javier Zanetti Br
         </div>
         <div class="membership-footnote"><p>Quote, scadenze, kit e disponibilità sono confermati dal direttivo per la stagione in corso. La richiesta di informazioni non costituisce tesseramento né prenotazione di biglietti.</p><a href="<?= h($site['fonte_inter']) ?>" target="_blank" rel="noopener noreferrer">Il mondo Inter Club su inter.it ↗</a></div>
         <a class="membership-faq-link" href="#faq">Kit, MyInter e biglietti: altre risposte nelle FAQ <span aria-hidden="true">↗</span></a>
-        <div class="joining-steps"><div><p><strong>Scrivici.</strong> Dicci se vuoi iscriverti o rinnovare.</p></div><div><p><strong>Conosciamoci.</strong> Il direttivo ti spiega quote e modalità.</p></div><div><p><strong>Vivi il club.</strong> Completa l’adesione con il direttivo.</p></div></div>
+        <div class="joining-steps"><div><p><strong>Facciamo il primo passo.</strong> Contatta il direttivo per iscriverti o rinnovare.</p></div><div><p><strong>Trova la tua tessera.</strong> Scegliamo insieme la formula più adatta a te.</p></div><div><p><strong>Ci vediamo al club.</strong> Completa l’adesione e vivi con noi la stagione nerazzurra.</p></div></div>
     </section>
 
     <section class="venue-section" id="sede" aria-labelledby="venue-title">
@@ -86,7 +86,7 @@ public_header('Da soli si tifa. Insieme si vive.', 'Inter Club Javier Zanetti Br
     </section>
 
     <section class="section contact-section" id="contatti" aria-labelledby="contact-title">
-        <div class="contact-copy"><span class="eyebrow">SCRIVICI, SIAMO QUI</span><h2 id="contact-title"><?= nl2br(h($site['contatti_titolo'])) ?></h2><p><?= nl2br(h($site['contatti_testo'])) ?></p><p class="contact-note">Lasciaci un recapito giusto e ti ricontattiamo. Non parte un’email automatica: il messaggio arriva direttamente nella nostra area riservata.</p></div>
+        <div class="contact-copy"><span class="eyebrow">IL PROSSIMO CORO, CANTIAMOLO INSIEME</span><h2 id="contact-title"><?= nl2br(h($site['contatti_titolo'])) ?></h2><p><?= nl2br(h($site['contatti_testo'])) ?></p><p class="contact-note">Lascia un recapito a cui possiamo risponderti. La richiesta arriva al direttivo nell’area riservata: l’invio del modulo non completa il tesseramento.</p></div>
         <div class="contact-form-panel">
             <?php if ($sent): ?><div class="contact-success" role="status"><span class="eyebrow">MESSAGGIO RICEVUTO</span><h3>CI SIAMO. GRAZIE!</h3><p>La tua richiesta è stata registrata nell’area riservata del club. Il direttivo potrà risponderti al recapito che hai indicato.</p><a href="#tesseramento" class="text-link">Torna al tesseramento ↑</a></div><?php endif; ?>
             <?php if ($errors): ?><div class="contact-error" role="alert"><strong>Controlla la richiesta.</strong><ul><?php foreach ($errors as $error): ?><li><?= h($error) ?></li><?php endforeach; ?></ul></div><?php endif; ?>

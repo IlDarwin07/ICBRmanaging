@@ -30,6 +30,15 @@ function site_upgrade_content(array $content): array
 {
     $defaults = require __DIR__ . '/../config/site_defaults.php';
     $previous = [
+        'hero_testo' => 'La partita sullo schermo, gli amici accanto. A Brindisi la viviamo così. Se ti va di esserci, c’è posto anche per te.',
+        'hero_pulsante' => 'Vieni a conoscerci',
+        'tesseramento_titolo' => "Nuova stagione.\nStessa voglia di esserci.",
+        'tessera_1_testo' => 'Il club è già un po’ casa tua? Scrivici e scopri come vivere insieme la nuova stagione.',
+        'tessera_2_testo' => 'Hai voglia di far parte del gruppo e dare il tuo sostegno? Ti raccontiamo come funziona.',
+        'sede_titolo' => "Qui ci sentiamo\na casa.",
+        'sede_testo' => 'Siamo in via San Benedetto, nel centro di Brindisi. Vuoi passare a salutarci? Scrivici prima, così ci mettiamo d’accordo.',
+        'contatti_titolo' => "Due chiacchiere,\npoi si parte.",
+        'contatti_testo' => 'Tesseramento, rinnovo o semplicemente voglia di conoscerci? Scrivici qui. Ti risponde il direttivo, non un bot.',
         'tessera_3_testo' => 'Lontano da Brindisi, ma sempre dei nostri. La distanza non cambia i colori.',
         'tessera_3_dettagli' => 'Vivi lontano da Brindisi e vuoi restare vicino al nostro club? Chiedici della formula Fuori sede: verifichiamo insieme i requisiti e le modalità di partecipazione previste, senza dare per scontati gli stessi servizi delle altre formule.',
         'tessera_4_testo' => 'Gli stessi colori, in famiglia. La passione nerazzurra si tramanda.',
@@ -38,7 +47,10 @@ function site_upgrade_content(array $content): array
         'tessera_5_dettagli' => 'La formula Junior è dedicata ai soci più giovani. Ti aiutiamo a verificare la fascia d’età ammessa per la stagione e ciò che serve per iscrivere un minore: scrivici senza inviare dati o documenti del bambino nel modulo pubblico.',
     ];
     foreach ($previous as $key => $value) {
-        if (($content[$key] ?? null) === $value) $content[$key] = $defaults[$key];
+        $current = $content[$key] ?? null;
+        if (is_string($current) && str_replace(["\r\n", "\r"], "\n", $current) === $value) {
+            $content[$key] = $defaults[$key];
+        }
     }
     return $content;
 }
