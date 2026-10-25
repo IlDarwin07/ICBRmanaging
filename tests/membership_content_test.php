@@ -33,4 +33,16 @@ foreach (['testo', 'dettagli'] as $field) {
 $custom = ['tessera_3_dettagli' => 'Testo personalizzato del direttivo'];
 if (site_upgrade_content($custom) !== $custom) throw new RuntimeException('Personalizzazione sovrascritta.');
 echo "OK Fuori sede: Comune di Brindisi, aggiornamento vecchi testi e conservazione personalizzazioni.\n";
+$oldMemberships = [
+    'tessera_4_testo' => 'Gli stessi colori, in famiglia. La passione nerazzurra si tramanda.',
+    'tessera_4_dettagli' => 'Family è la voce del listino dedicata alle adesioni familiari. Prima di iscrivere più persone, verifica con il direttivo abbinamenti e requisiti: la quota indicata non va considerata automaticamente un prezzo per tutto il nucleo familiare.',
+    'tessera_5_testo' => 'Piccoli tifosi, grande passione. Il nerazzurro comincia presto.',
+    'tessera_5_dettagli' => 'La formula Junior è dedicata ai soci più giovani. Ti aiutiamo a verificare la fascia d’età ammessa per la stagione e ciò che serve per iscrivere un minore: scrivici senza inviare dati o documenti del bambino nel modulo pubblico.',
+];
+foreach ($oldMemberships as $key => $oldValue) {
+        if (site_upgrade_content([$key => $oldValue])[$key] !== $defaults[$key]) throw new RuntimeException('Testo Family/Junior precedente non aggiornato.');
+        if (site_upgrade_content([$key => 'Personalizzazione'])[$key] !== 'Personalizzazione') throw new RuntimeException('Personalizzazione Family/Junior persa.');
+}
+if (!str_contains($defaults['tessera_4_dettagli'], 'Fedelissimo') || !str_contains($defaults['tessera_5_dettagli'], 'meno di 14 anni')) throw new RuntimeException('Requisiti Family/Junior mancanti.');
+echo "OK Family con Fedelissimo e Junior under 14, aggiornamento testi e personalizzazioni.\n";
 echo "Tutti i controlli sui contenuti sono superati. Nessuna connessione al database.\n";

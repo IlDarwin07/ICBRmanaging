@@ -51,9 +51,9 @@
 .membership-price{margin-bottom:0;padding:18px 0;border-bottom:0}
 .membership-back-heading{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:24px}
 .membership-info-toggle,.membership-back-toggle{display:none;border:0;border-radius:0;font:600 14px/1.5 var(--body-font);cursor:pointer}
-.membership-info-toggle{align-items:center;justify-content:space-between;gap:20px;min-height:48px;padding:12px 16px;background:#e8eeff;color:#032181;margin-top:20px;width:100%}
-.membership-info-toggle>span{font-size:24px;line-height:1}
-.membership-info-toggle:hover{background:#fff}
+.membership-info-toggle{align-items:center;justify-content:center;min-height:48px;padding:12px 16px;background:#e8eeff;color:#032181;margin-top:20px;width:100%;border:1px solid #c3d0f5;border-radius:6px;letter-spacing:.04em;transition:background .18s ease,border-color .18s ease,box-shadow .18s ease}
+.membership-info-toggle:hover{background:#fff;border-color:#fff;box-shadow:0 4px 16px #020d2726}
+.membership-info-toggle:active{background:#cddafa;box-shadow:none}
 .membership-back-toggle{align-items:center;gap:8px;flex-shrink:0;padding:4px 0;background:none;color:#d3dfff;min-height:44px}
 .membership-info-toggle:focus-visible,.membership-back-toggle:focus-visible{outline:2px solid #fff;outline-offset:5px}
 .has-flip-cards .membership-flipper{height:380px;transform-style:preserve-3d;transition:transform .52s cubic-bezier(.2,.7,.2,1),height .35s ease}
@@ -72,3 +72,6 @@
 .public-site .membership-back a.membership-cta{font-size:14px;padding-top:18px}
 @media(max-width:750px){.membership-face{padding:24px}.public-site .membership-grid-complete .membership-front h3{font-size:38px}.public-site .membership-back h3{font-size:32px}}
 @media(prefers-reduced-motion:reduce){.has-flip-cards .membership-flipper{transition:none}}
+.public-footer .footer-staff-link{font:400 12px/1.5 var(--body-font);color:#adb8cf;text-decoration:none;white-space:nowrap}
+.public-footer .footer-staff-link:hover{text-decoration:underline;color:#fff}
+.public-footer .footer-staff-link:focus-visible{outline:2px solid #fff;outline-offset:4px}

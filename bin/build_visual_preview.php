@@ -6,7 +6,8 @@
  */
 if (PHP_SAPI !== 'cli') { http_response_code(403); exit; }
 $output = $argv[1] ?? '';
-if ($output === '' || !getenv('ICBR_PREVIEW_PASSWORD')) exit("Specificare output e ICBR_PREVIEW_PASSWORD.\n");
+$publicOnly = in_array('--public-only', $argv, true);
+if ($output === '' || (!$publicOnly && !getenv('ICBR_PREVIEW_PASSWORD'))) exit("Specificare output e ICBR_PREVIEW_PASSWORD, oppure --public-only per aggiornare solo la vetrina.\n");
 $base = 'http://127.0.0.1:8082';
 $cookie = '';
 function request(string $path, ?array $post = null): string {
@@ -23,11 +24,13 @@ function request(string $path, ?array $post = null): string {
     }
     return $body === false ? '' : $body;
 }
+if (!$publicOnly) {
 $anonymousLogin = request('/login.php');
 preg_match('/name="csrf_token" value="([^"]+)"/', $anonymousLogin, $match);
 request('/login.php', ['csrf_token'=>$match[1] ?? '', 'username'=>'demo','password'=>getenv('ICBR_PREVIEW_PASSWORD')]);
 $dashboard = request('/dashboard.php');
 if (!str_contains($dashboard, 'Anteprima con soli dati sintetici')) exit("Esportazione vietata: il server non è in modalità dimostrativa.\n");
+}
 $routes = [
     '/index.php'=>'index.html','/privacy.php'=>'privacy.html','/login.php'=>'area-riservata.html',
     '/dashboard.php'=>'dashboard.html','/soci/list.php'=>'soci.html','/soci/view.php?id=1'=>'socio.html',
@@ -46,6 +49,7 @@ $routes = [
 ];
 if (!is_dir($output)) mkdir($output, 0755, true);
 foreach ($routes as $path=>$filename) {
+    if ($publicOnly && !in_array($path, ['/index.php', '/privacy.php'], true)) continue;
     $html = $path === '/login.php' ? $anonymousLogin : request($path);
     if ($html === '' || !str_contains($html, '</html>')) throw new RuntimeException("Pagina incompleta: $path");
     $html = preg_replace('/<input[^>]*name="(?:csrf_token|nonce|revision|versione)"[^>]*>/', '', $html);
@@ -72,4 +76,4 @@ foreach ($routes as $path=>$filename) {
 if (!copy(__DIR__ . '/preview-assets/preview.js', $output . '/preview.js')) {
     throw new RuntimeException('Impossibile aggiornare i controlli della sola anteprima.');
 }
-echo "Esportate ".count($routes)." pagine in sola lettura. Copiare public/assets nell’output.\n";
+echo "Esportate ".($publicOnly ? 2 : count($routes))." pagine in sola lettura. Copiare public/assets nell’output.\n";

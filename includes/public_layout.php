@@ -48,7 +48,6 @@ function public_header(string $title, string $description): void
         <a href="<?= h($home) ?>#sede">La sede</a>
         <a href="<?= h($home) ?>#contatti">Contatti</a>
         <a href="<?= h($home) ?>#faq">FAQ</a>
-        <a href="<?= u('/login.php') ?>" class="admin-link">Area riservata <span aria-hidden="true">↗</span></a>
     </nav>
 </header>
 <?php
@@ -68,9 +67,9 @@ function public_footer(): void
     <div class="footer-grid">
         <div><strong>Inter Club Javier Zanetti Brindisi</strong><p>Una città. Una passione. Una famiglia.</p></div>
         <div><a href="<?= u('/index.php') ?>#sede">Vieni a trovarci</a><a href="<?= u('/index.php') ?>#contatti">Scrivi al club</a></div>
-        <div><a href="<?= u('/privacy.php') ?>">Privacy e cookie</a><a href="<?= u('/login.php') ?>">Accesso amministratori ↗</a></div>
+        <div><a href="<?= u('/privacy.php') ?>">Privacy e cookie</a></div>
     </div>
-    <div class="footer-bottom"><span>© <?= date('Y') ?> Inter Club Javier Zanetti Brindisi</span><span>Sito del club locale, distinto dal sito di FC Internazionale Milano.</span></div>
+    <div class="footer-bottom"><span>© <?= date('Y') ?> Inter Club Javier Zanetti Brindisi</span><span>Sito del club locale, distinto dal sito di FC Internazionale Milano.</span><a class="footer-staff-link" href="<?= u('/login.php') ?>">Direttivo</a></div>
 </footer>
 </body>
 </html>

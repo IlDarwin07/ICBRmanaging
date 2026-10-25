@@ -32,6 +32,10 @@ function site_upgrade_content(array $content): array
     $previous = [
         'tessera_3_testo' => 'Lontano da Brindisi, ma sempre dei nostri. La distanza non cambia i colori.',
         'tessera_3_dettagli' => 'Vivi lontano da Brindisi e vuoi restare vicino al nostro club? Chiedici della formula Fuori sede: verifichiamo insieme i requisiti e le modalità di partecipazione previste, senza dare per scontati gli stessi servizi delle altre formule.',
+        'tessera_4_testo' => 'Gli stessi colori, in famiglia. La passione nerazzurra si tramanda.',
+        'tessera_4_dettagli' => 'Family è la voce del listino dedicata alle adesioni familiari. Prima di iscrivere più persone, verifica con il direttivo abbinamenti e requisiti: la quota indicata non va considerata automaticamente un prezzo per tutto il nucleo familiare.',
+        'tessera_5_testo' => 'Piccoli tifosi, grande passione. Il nerazzurro comincia presto.',
+        'tessera_5_dettagli' => 'La formula Junior è dedicata ai soci più giovani. Ti aiutiamo a verificare la fascia d’età ammessa per la stagione e ciò che serve per iscrivere un minore: scrivici senza inviare dati o documenti del bambino nel modulo pubblico.',
     ];
     foreach ($previous as $key => $value) {
         if (($content[$key] ?? null) === $value) $content[$key] = $defaults[$key];
