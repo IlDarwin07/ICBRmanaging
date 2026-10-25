@@ -22,4 +22,15 @@ foreach ($types as $i=>$type) {
     echo "OK {$type['nome']}: campi, fallback, quota e rinnovo storico.\n";
 }
 if (h('<script>alert(1)</script>')!=='&lt;script&gt;alert(1)&lt;/script&gt;') throw new RuntimeException('Escape HTML non corretto.');
+$legacy = site_upgrade_content([
+    'tessera_3_testo' => 'Lontano da Brindisi, ma sempre dei nostri. La distanza non cambia i colori.',
+    'tessera_3_dettagli' => 'Vivi lontano da Brindisi e vuoi restare vicino al nostro club? Chiedici della formula Fuori sede: verifichiamo insieme i requisiti e le modalità di partecipazione previste, senza dare per scontati gli stessi servizi delle altre formule.',
+]);
+foreach (['testo', 'dettagli'] as $field) {
+    if ($legacy["tessera_3_$field"] !== $defaults["tessera_3_$field"]) throw new RuntimeException('Testo standard precedente non aggiornato.');
+    if (!str_contains($defaults["tessera_3_$field"], 'Comune di Brindisi')) throw new RuntimeException('Requisito territoriale assente.');
+}
+$custom = ['tessera_3_dettagli' => 'Testo personalizzato del direttivo'];
+if (site_upgrade_content($custom) !== $custom) throw new RuntimeException('Personalizzazione sovrascritta.');
+echo "OK Fuori sede: Comune di Brindisi, aggiornamento vecchi testi e conservazione personalizzazioni.\n";
 echo "Tutti i controlli sui contenuti sono superati. Nessuna connessione al database.\n";

@@ -22,6 +22,7 @@ function public_header(string $title, string $description): void
     <link rel="stylesheet" href="<?= u('/assets/css/brand.css') ?>">
     <link rel="stylesheet" href="<?= u('/assets/css/modern.css') ?>">
     <link rel="stylesheet" href="<?= u('/assets/css/membership.css') ?>">
+    <link rel="stylesheet" href="<?= u('/assets/css/faq.css') ?>">
     <link rel="icon" type="image/jpeg" href="<?= u('/assets/images/logo-inter-club-brindisi.jpg') ?>">
     <script src="<?= u('/assets/js/site.js') ?>" defer></script>
 </head>
@@ -46,6 +47,7 @@ function public_header(string $title, string $description): void
         <a href="<?= h($home) ?>#tesseramento">Tesseramento</a>
         <a href="<?= h($home) ?>#sede">La sede</a>
         <a href="<?= h($home) ?>#contatti">Contatti</a>
+        <a href="<?= h($home) ?>#faq">FAQ</a>
         <a href="<?= u('/login.php') ?>" class="admin-link">Area riservata <span aria-hidden="true">↗</span></a>
     </nav>
 </header>

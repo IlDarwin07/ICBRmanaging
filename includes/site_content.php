@@ -25,6 +25,20 @@ function site_image_valid(string $name): bool
         && is_file(__DIR__ . '/../public/assets/images/' . $name);
 }
 
+/** Aggiorna soltanto vecchi testi standard, senza sovrascrivere personalizzazioni. */
+function site_upgrade_content(array $content): array
+{
+    $defaults = require __DIR__ . '/../config/site_defaults.php';
+    $previous = [
+        'tessera_3_testo' => 'Lontano da Brindisi, ma sempre dei nostri. La distanza non cambia i colori.',
+        'tessera_3_dettagli' => 'Vivi lontano da Brindisi e vuoi restare vicino al nostro club? Chiedici della formula Fuori sede: verifichiamo insieme i requisiti e le modalità di partecipazione previste, senza dare per scontati gli stessi servizi delle altre formule.',
+    ];
+    foreach ($previous as $key => $value) {
+        if (($content[$key] ?? null) === $value) $content[$key] = $defaults[$key];
+    }
+    return $content;
+}
+
 function site_content(): array
 {
     $defaults = require __DIR__ . '/../config/site_defaults.php';
@@ -39,7 +53,7 @@ function site_content(): array
             $defaults[$key] = $data[$key];
         }
     }
-    return $defaults;
+    return site_upgrade_content($defaults);
 }
 
 function site_revision(): string

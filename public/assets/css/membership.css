@@ -38,3 +38,37 @@
 .public-site .membership-answer p.membership-history-note{font-size:13px;color:#aabbd5}
 @media(max-width:1150px){.public-site .membership-grid-complete{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:750px){.membership-info{grid-template-columns:minmax(0,1fr);gap:32px}.public-site .membership-grid-complete{grid-template-columns:minmax(0,1fr)}.public-site .membership-grid-complete .membership-card{padding:28px}.public-site .membership-card .membership-audience{min-height:0}.public-site .membership-grid-complete h3{font-size:42px}.membership-card-top{margin-bottom:24px}.public-site .membership-lead{font-size:16px;margin-top:0}.membership-questions summary{font-size:16px;gap:16px}.membership-info{margin-top:44px;padding-top:36px}}
+
+/* Senza JS tutti i dettagli restano leggibili; con JS, vere card fronte/retro. */
+.public-site .membership-grid-complete .flip-card{padding:0;background:transparent;border:0;box-shadow:none;perspective:1400px;align-self:start}
+.membership-flipper{position:relative}
+.membership-face{padding:28px;background:#121c2c;border:1px solid #405170;min-width:0;overflow-wrap:anywhere}
+.membership-card-outline .membership-face{background:#012599;border-color:#5676df}
+.membership-back{border-top:0}
+.membership-card-top{gap:15px;margin-bottom:24px}
+.membership-season{font-size:12px;color:#b9c7df;white-space:nowrap}
+.public-site .membership-card .membership-audience{min-height:0;font-size:15px;font-weight:400;line-height:1.7;margin-bottom:20px}
+.membership-price{margin-bottom:0;padding:18px 0;border-bottom:0}
+.membership-back-heading{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:24px}
+.membership-info-toggle,.membership-back-toggle{display:none;border:0;border-radius:0;font:600 14px/1.5 var(--body-font);cursor:pointer}
+.membership-info-toggle{align-items:center;justify-content:space-between;gap:20px;min-height:48px;padding:12px 16px;background:#e8eeff;color:#032181;margin-top:20px;width:100%}
+.membership-info-toggle>span{font-size:24px;line-height:1}
+.membership-info-toggle:hover{background:#fff}
+.membership-back-toggle{align-items:center;gap:8px;flex-shrink:0;padding:4px 0;background:none;color:#d3dfff;min-height:44px}
+.membership-info-toggle:focus-visible,.membership-back-toggle:focus-visible{outline:2px solid #fff;outline-offset:5px}
+.has-flip-cards .membership-flipper{height:380px;transform-style:preserve-3d;transition:transform .52s cubic-bezier(.2,.7,.2,1),height .35s ease}
+.has-flip-cards .membership-face{position:absolute;inset:0;display:flex;flex-direction:column;min-height:350px;backface-visibility:hidden;-webkit-backface-visibility:hidden}
+.has-flip-cards .membership-face>*{flex-shrink:0}
+.has-flip-cards .membership-back{transform:rotateY(180deg);border-top:1px solid #405170}
+.has-flip-cards .membership-card-outline .membership-back{border-top-color:#5676df}
+.has-flip-cards .is-flipped .membership-flipper{transform:rotateY(180deg)}
+.has-flip-cards .membership-info-toggle,.has-flip-cards .membership-back-toggle{display:flex}
+.has-flip-cards .membership-face[inert]{pointer-events:none}
+.has-flip-cards .membership-front .membership-info-toggle{margin-top:auto}
+.has-flip-cards .membership-front .membership-price{padding-bottom:20px}
+.public-site .membership-back h3{font-size:32px}
+.public-site .membership-back .membership-description{margin-bottom:22px;font-size:15px;line-height:1.75}
+.public-site .membership-back .membership-plus-benefit{font-size:13px;line-height:1.75;margin-bottom:22px}
+.public-site .membership-back a.membership-cta{font-size:14px;padding-top:18px}
+@media(max-width:750px){.membership-face{padding:24px}.public-site .membership-grid-complete .membership-front h3{font-size:38px}.public-site .membership-back h3{font-size:32px}}
+@media(prefers-reduced-motion:reduce){.has-flip-cards .membership-flipper{transition:none}}

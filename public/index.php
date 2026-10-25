@@ -2,6 +2,7 @@
 require_once __DIR__ . '/../includes/public_layout.php';
 start_secure_session();
 $memberships = site_membership_types();
+$faq = require __DIR__ . '/../config/public_faq.php';
 $errors = $_SESSION['contact_errors'] ?? [];
 $old = $_SESSION['contact_old'] ?? [];
 $sent = $_SESSION['contact_sent'] ?? false;
@@ -31,7 +32,6 @@ public_header('Da soli si tifa. Insieme si vive.', 'Inter Club Javier Zanetti Br
             <div class="club-story"><p class="large-copy"><?= h($site['club_intro']) ?></p>
                 <?php foreach (preg_split('/\n\s*\n/', $site['club_testo']) as $paragraph): ?><p><?= nl2br(h($paragraph)) ?></p><?php endforeach; ?>
                 <a class="text-link" href="#contatti">Facciamo due chiacchiere <span aria-hidden="true">↗</span></a>
-                <p class="source-note">La storia e la sede del club sono raccontate da <a href="<?= h($site['fonte_club']) ?>" target="_blank" rel="noopener noreferrer">Agenda Brindisi ↗</a>.</p>
             </div>
             <figure class="club-memory"><img src="<?= u('/assets/images/' . $site['ricordi_foto']) ?>" width="1024" height="576" loading="eager" alt="La sede e i ricordi nerazzurri del club."><figcaption><span>Un posto, tante storie.</span><small><?= h(site_image_credit($site['ricordi_foto'])) ?></small></figcaption></figure>
         </div>
@@ -39,17 +39,26 @@ public_header('Da soli si tifa. Insieme si vive.', 'Inter Club Javier Zanetti Br
 
     <section class="membership-section section" id="tesseramento" aria-labelledby="membership-title">
         <div class="membership-heading"><div><span class="eyebrow">TESSERAMENTO <?= h($site['stagione']) ?></span><h2 id="membership-title"><?= nl2br(h($site['tesseramento_titolo'])) ?></h2></div><p>Ci sei anche tu?<br>Ti aspettiamo.</p></div>
-        <p class="membership-lead">Non c’è un solo modo di vivere questi colori. Qui trovi tutte le formule del nostro listino: scegli quella di cui vuoi parlare con noi.</p>
+        <p class="membership-lead">Gli stessi colori, modi diversi di esserci. Premi Info sulla tessera che ti interessa: ti raccontiamo come funziona.</p>
         <div class="membership-grid membership-grid-complete">
             <?php foreach ($memberships as $i=>$membership): ?>
-            <article class="membership-card <?= $i===6 ? 'membership-card-outline' : '' ?>" id="tessera-<?= h($membership['tipo']) ?>">
-                <div class="membership-card-top"><span class="membership-tag">0<?= $i ?> / <?= $i===6 ? 'UPGRADE SENIOR' : 'IL TUO MODO DI ESSERCI' ?></span><span class="membership-index" aria-hidden="true">↗</span></div>
-                <h3><?= h($site["tessera_{$i}_titolo"]) ?></h3>
-                <p class="membership-audience"><?= h($site["tessera_{$i}_testo"]) ?></p>
-                <div class="membership-price"><strong><?= h($site["tessera_{$i}_quota"]) ?></strong><span><?= h($i===6 ? 'in aggiunta alla tessera Senior' : 'quota nuovo socio · '.$site['stagione']) ?></span></div>
-                <p class="membership-description"><?= h($site["tessera_{$i}_dettagli"]) ?></p>
-                <?php if ($i===6): ?><p class="membership-plus-benefit">La <a href="https://www.inter.it/it/notizie/inter-club-campagna-tesseramenti-2026-2027" target="_blank" rel="noopener noreferrer">campagna ufficiale Inter Club 2026/27</a> prevede per i soci Plus una fase di vendita dedicata per le partite casalinghe.</p><?php endif; ?>
-                <a class="membership-cta" href="#contatti" data-topic="Tesseramento" data-message="<?= h('Ciao! Vorrei informazioni sulla '.($i===6 ? '' : 'tessera ').$site["tessera_{$i}_titolo"].' per la stagione '.$site['stagione'].': potete confermarmi quota, requisiti e servizi inclusi?') ?>">Info <?= h($site["tessera_{$i}_titolo"]) ?><span aria-hidden="true">↗</span></a>
+            <article class="membership-card flip-card <?= $i===6 ? 'membership-card-outline' : '' ?>" id="tessera-<?= h($membership['tipo']) ?>" aria-label="<?= h($site["tessera_{$i}_titolo"]) ?>">
+                <div class="membership-flipper">
+                    <div class="membership-face membership-front">
+                        <div class="membership-card-top"><span class="membership-tag"><?= $i===6 ? 'UPGRADE SENIOR' : 'IL TUO MODO DI ESSERCI' ?></span><span class="membership-season"><?= h($site['stagione']) ?></span></div>
+                        <h3><?= h($site["tessera_{$i}_titolo"]) ?></h3>
+                        <p class="membership-audience"><?= h($site["tessera_{$i}_testo"]) ?></p>
+                        <div class="membership-price"><strong><?= h($site["tessera_{$i}_quota"]) ?></strong><span><?= h($i===6 ? 'in aggiunta alla tessera Senior' : 'quota nuovo socio') ?></span></div>
+                        <button class="membership-info-toggle" type="button" data-flip-open aria-expanded="false" aria-controls="retro-<?= h($membership['tipo']) ?>" aria-label="<?= h('Info su '.$site["tessera_{$i}_titolo"]) ?>">Info <span aria-hidden="true">↻</span></button>
+                    </div>
+                    <div class="membership-face membership-back" id="retro-<?= h($membership['tipo']) ?>" role="region" aria-label="<?= h('Dettagli '.$site["tessera_{$i}_titolo"]) ?>">
+                        <div class="membership-back-heading"><span class="membership-tag">LA TESSERA, DA VICINO</span><button class="membership-back-toggle" type="button" data-flip-close aria-label="<?= h('Torna alla tessera '.$site["tessera_{$i}_titolo"]) ?>"><span aria-hidden="true">↶</span> Indietro</button></div>
+                        <h3><?= h($site["tessera_{$i}_titolo"]) ?></h3>
+                        <p class="membership-description"><?= h($site["tessera_{$i}_dettagli"]) ?></p>
+                        <?php if ($i===6): ?><p class="membership-plus-benefit">La <a href="https://www.inter.it/it/inter-club" target="_blank" rel="noopener noreferrer">pagina ufficiale Inter Club</a> prevede per i soci Plus una vendita anticipata per le partite casalinghe di Campionato e Champions League, subordinata al programma Loyalty INTERISTA e ai relativi termini. <a href="#faq-plus" data-faq-link>Leggi le condizioni nelle FAQ ↗</a></p><?php endif; ?>
+                        <a class="membership-cta" href="#contatti" data-topic="Tesseramento" data-message="<?= h('Ciao! Vorrei informazioni sulla '.($i===6 ? '' : 'tessera ').$site["tessera_{$i}_titolo"].' per la stagione '.$site['stagione'].': potete confermarmi quota, requisiti e servizi inclusi?') ?>">Parliamone insieme <span aria-hidden="true">↗</span></a>
+                    </div>
+                </div>
             </article>
             <?php endforeach; ?>
         </div>
@@ -60,14 +69,15 @@ public_header('Da soli si tifa. Insieme si vive.', 'Inter Club Javier Zanetti Br
                 <p>Non considerare biglietti, trasferte o altri costi inclusi nella quota senza una conferma del direttivo: ti spieghiamo tutto prima dell’iscrizione.</p>
             </div>
             <div class="membership-questions" aria-label="Domande sulle formule di tesseramento">
-                <details><summary>Cosa cambia tra le formule?</summary><div class="membership-answer"><p>Le formule identificano modi diversi di aderire al club. Il nome della tessera, da solo, non promette posti allo stadio o servizi aggiuntivi: per accesso alla sede, attività comprese e requisiti ti confermiamo le condizioni della stagione.</p><a href="#contatti" data-topic="Tesseramento" data-message="Ciao! Vorrei capire quale formula di tesseramento è più adatta a me e quali servizi comprende.">Aiutatemi a scegliere ↗</a></div></details>
+                <details><summary>Chi può scegliere Fuori sede?</summary><div class="membership-answer"><p>La formula è riservata a chi risiede fuori dal Comune di Brindisi, anche in un comune vicino. Conta la residenza fuori dal territorio comunale, non quanto sei lontano dalla sede.</p><a href="#contatti" data-topic="Tesseramento" data-message="Ciao! Risiedo fuori dal Comune di Brindisi e vorrei informazioni sulla formula Fuori sede.">Parliamone insieme ↗</a></div></details>
                 <details><summary>Family e Junior: chi può iscriversi?</summary><div class="membership-answer"><p>Per Family vanno verificati gli abbinamenti e i requisiti del nucleo familiare; non presumere che una sola quota copra tutte le persone. Per Junior confermiamo con te il limite di età applicato alla stagione e la procedura per iscrivere un minore.</p></div></details>
-                <details><summary>La Quota Plus comprende un biglietto?</summary><div class="membership-answer"><p>No: è un upgrade del tesseramento Senior, non un biglietto o una tessera autonoma. La <a href="https://www.inter.it/it/notizie/inter-club-campagna-tesseramenti-2026-2027" target="_blank" rel="noopener noreferrer">campagna ufficiale Inter Club 2026/27</a> indica una fase di vendita dedicata ai soci Plus, non un posto garantito allo stadio.</p></div></details>
+                <details><summary>La Quota Plus comprende un biglietto?</summary><div class="membership-answer"><p>No: è un upgrade del tesseramento Senior, non un biglietto o una tessera autonoma. I benefit della <a href="https://www.inter.it/it/inter-club" target="_blank" rel="noopener noreferrer">pagina ufficiale Inter Club</a> prevedono una vendita anticipata, subordinata al programma Loyalty INTERISTA e ai relativi termini, non un posto garantito allo stadio.</p><a href="#faq-due-plus" data-faq-link>Non confonderla con il biglietto PLUS ↗</a></div></details>
                 <details><summary>E se devo rinnovare la tessera?</summary><div class="membership-answer"><p>Contattaci per la quota applicabile oggi al tuo rinnovo. Il listino conserva anche le voci agevolate entro il <strong>30 giugno 2026</strong>: quella scadenza è passata e non è una promozione attualmente aperta.</p><dl class="membership-renewals"><?php foreach ($memberships as $membership): if ($membership['rinnovo']===null) continue; ?><div><dt><?= h($membership['nome']) ?></dt><dd><?= h($membership['rinnovo']) ?></dd></div><?php endforeach; ?></dl><p class="membership-history-note">Importi storici riservati ai rinnovi entro la scadenza indicata, non quote da versare oggi.</p></div></details>
             </div>
         </div>
         <div class="membership-footnote"><p>Quote, scadenze, kit e disponibilità sono confermati dal direttivo per la stagione in corso. La richiesta di informazioni non costituisce tesseramento né prenotazione di biglietti.</p><a href="<?= h($site['fonte_inter']) ?>" target="_blank" rel="noopener noreferrer">Il mondo Inter Club su inter.it ↗</a></div>
-        <div class="joining-steps"><div><span>01</span><p><strong>Scrivici.</strong> Dicci se vuoi iscriverti o rinnovare.</p></div><div><span>02</span><p><strong>Conosciamoci.</strong> Il direttivo ti spiega quote e modalità.</p></div><div><span>03</span><p><strong>Vivi il club.</strong> Completa l’adesione con il direttivo.</p></div></div>
+        <a class="membership-faq-link" href="#faq">Kit, MyInter e biglietti: altre risposte nelle FAQ <span aria-hidden="true">↗</span></a>
+        <div class="joining-steps"><div><p><strong>Scrivici.</strong> Dicci se vuoi iscriverti o rinnovare.</p></div><div><p><strong>Conosciamoci.</strong> Il direttivo ti spiega quote e modalità.</p></div><div><p><strong>Vivi il club.</strong> Completa l’adesione con il direttivo.</p></div></div>
     </section>
 
     <section class="venue-section" id="sede" aria-labelledby="venue-title">
@@ -92,10 +102,22 @@ public_header('Da soli si tifa. Insieme si vive.', 'Inter Club Javier Zanetti Br
             </form>
         </div>
     </section>
-    <section class="section faq-section" aria-labelledby="faq-title"><span class="eyebrow">PRIMA DI SCRIVERCI</span><h2 id="faq-title">DUE COSE DA SAPERE.</h2>
-        <details><summary>Posso iscrivermi direttamente online?</summary><p>Qui puoi chiedere informazioni e lasciare il tuo recapito. L’adesione effettiva, la verifica dei dati e il pagamento vengono concordati con il direttivo: questo sito non incassa pagamenti.</p></details>
-        <details><summary>La tessera garantisce i biglietti per le partite?</summary><p>No. Eventuali opportunità per i soci dipendono dalle regole di vendita, dalle disponibilità e dalle condizioni comunicate per ciascuna partita. Chiedi sempre conferma al direttivo prima di organizzare una trasferta.</p></details>
-        <details><summary>Come faccio a conoscere gli orari della sede?</summary><p>Scrivici selezionando “Visita alla sede”. Ci mettiamo d’accordo prima di vederci in <?= h($site['indirizzo']) ?>, <?= h($site['citta']) ?>.</p></details>
+    <section class="section faq-section" id="faq" aria-labelledby="faq-title">
+        <div class="faq-heading"><div><span class="eyebrow">FACCIAMO CHIAREZZA</span><h2 id="faq-title">Il dubbio ci sta.<br>La risposta è qui.</h2></div><p>Dal kit alla prima volta a San Siro.<br>Risposte semplici, fonti ufficiali, niente promesse a metà.</p></div>
+        <nav class="faq-index" aria-label="Argomenti delle domande frequenti"><?php foreach ($faq['groups'] as $group): ?><a href="#<?= h($group['id']) ?>"><?= h($group['title']) ?><span aria-hidden="true">↓</span></a><?php endforeach; ?></nav>
+        <div class="faq-groups"><?php foreach ($faq['groups'] as $group): ?>
+            <section class="faq-group" id="<?= h($group['id']) ?>" aria-labelledby="<?= h($group['id']) ?>-title">
+                <header class="faq-group-heading"><h3 id="<?= h($group['id']) ?>-title"><?= h($group['title']) ?></h3><p><?= h($group['intro']) ?></p></header>
+                <?php foreach ($group['items'] as $item): ?>
+                <details id="<?= h($item['id']) ?>"><summary><?= h($item['question']) ?></summary><div class="faq-answer">
+                    <span class="faq-kind"><?= $item['kind'] === 'official' ? 'INFORMAZIONI UFFICIALI INTER' : 'INDICAZIONI ICBR' ?></span>
+                    <p><?= h($item['answer']) ?><?php foreach ($item['sources'] as $source): ?> <a class="faq-source" href="<?= h($source['url']) ?>" target="_blank" rel="noopener noreferrer"><?= h($source['label']) ?><span aria-hidden="true"> ↗</span></a><?php endforeach; ?></p>
+                    <?php if ($item['kind'] === 'local'): ?><a class="faq-contact" href="#contatti" data-topic="<?= $item['id'] === 'faq-visita' ? 'Visita alla sede' : 'Tesseramento' ?>">Chiedi al direttivo <span aria-hidden="true">↗</span></a><?php endif; ?>
+                </div></details>
+                <?php endforeach; ?>
+            </section>
+        <?php endforeach; ?></div>
+        <div class="faq-note"><p>Informazioni ufficiali verificate il <time datetime="<?= h($faq['verified_on']) ?>">25 ottobre 2026</time>. Le condizioni di vendita e dei benefit possono cambiare: controlla sempre la pagina Inter indicata prima di acquistare o organizzare una trasferta.</p><a href="#contatti">Non trovi la tua risposta? Scrivici ↗</a></div>
     </section>
 </main>
 <?php public_footer(); ?>

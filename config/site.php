@@ -8,7 +8,6 @@ return [
     'indirizzo' => 'Via San Benedetto, 8',
     'citta' => '72100 Brindisi',
     'fondazione' => '2003',
-    'fonte_club' => 'https://www.agendabrindisi.it/in-via-san-benedetto-la-ritrovata-sede-dellinter-club-javier-zanetti/',
     'fonte_inter' => 'https://www.inter.it/it/inter-club',
     'mappe' => 'https://www.google.com/maps/search/?api=1&query=Via+San+Benedetto+8+Brindisi',
 ];

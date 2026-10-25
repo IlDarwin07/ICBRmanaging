@@ -67,10 +67,10 @@ $csrf = csrf_token();
     <form method="post" action="<?= u('/login.php') ?>">
         <input type="hidden" name="csrf_token" value="<?= h($csrf) ?>">
 
-        <label for="username">01 / USERNAME</label>
+        <label for="username">USERNAME</label>
         <input type="text" id="username" name="username" autocomplete="username" placeholder="Il tuo username" required>
 
-        <label for="password">02 / PASSWORD</label>
+        <label for="password">PASSWORD</label>
         <div class="password-field">
         <input type="password" id="password" name="password" autocomplete="current-password" required>
         <button class="password-toggle" type="button" aria-controls="password" aria-pressed="false">Mostra</button>
