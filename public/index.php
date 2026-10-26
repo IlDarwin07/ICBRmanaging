@@ -77,12 +77,11 @@ public_header('Da soli si tifa. Insieme si vive.', 'Inter Club Javier Zanetti Br
         </div>
         <div class="membership-footnote"><p>Quote, scadenze, kit e disponibilità sono confermati dal direttivo per la stagione in corso. La richiesta di informazioni non costituisce tesseramento né prenotazione di biglietti.</p><a href="<?= h($site['fonte_inter']) ?>" target="_blank" rel="noopener noreferrer">Il mondo Inter Club su inter.it ↗</a></div>
         <a class="membership-faq-link" href="#faq">Kit, MyInter e biglietti: altre risposte nelle FAQ <span aria-hidden="true">↗</span></a>
-        <div class="joining-steps"><div><p><strong>Facciamo il primo passo.</strong> Contatta il direttivo per iscriverti o rinnovare.</p></div><div><p><strong>Trova la tua tessera.</strong> Scegliamo insieme la formula più adatta a te.</p></div><div><p><strong>Ci vediamo al club.</strong> Completa l’adesione e vivi con noi la stagione nerazzurra.</p></div></div>
     </section>
 
     <section class="venue-section" id="sede" aria-labelledby="venue-title">
         <figure class="venue-photo"><img src="<?= u('/assets/images/' . $site['sede_foto']) ?>" width="1024" height="576" loading="eager" alt="La sede dell’Inter Club Javier Zanetti Brindisi."><figcaption><?= h(site_image_credit($site['sede_foto'])) ?></figcaption></figure>
-        <div class="venue-copy"><span class="eyebrow">CI VEDIAMO AL CLUB</span><h2 id="venue-title"><?= nl2br(h($site['sede_titolo'])) ?></h2><address><?= h($site['indirizzo']) ?><br><?= h($site['citta']) ?></address><p><?= nl2br(h($site['sede_testo'])) ?></p><a class="public-button button-blue" href="<?= h($site['mappe']) ?>" target="_blank" rel="noopener noreferrer">Portami al club <span aria-hidden="true">↗</span></a><p class="source-note">Le aperture si concordano con il direttivo.</p></div>
+        <div class="venue-copy"><span class="eyebrow">DOVE TROVARCI</span><h2 id="venue-title"><?= nl2br(h($site['sede_titolo'])) ?></h2><address><?= h($site['indirizzo']) ?><br><?= h($site['citta']) ?></address><p><?= nl2br(h($site['sede_testo'])) ?></p><a class="public-button button-blue" href="<?= h($site['mappe']) ?>" target="_blank" rel="noopener noreferrer">Portami al club <span aria-hidden="true">↗</span></a></div>
     </section>
 
     <section class="section contact-section" id="contatti" aria-labelledby="contact-title">

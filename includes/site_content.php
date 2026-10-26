@@ -35,8 +35,8 @@ function site_upgrade_content(array $content): array
         'tesseramento_titolo' => "Nuova stagione.\nStessa voglia di esserci.",
         'tessera_1_testo' => 'Il club è già un po’ casa tua? Scrivici e scopri come vivere insieme la nuova stagione.',
         'tessera_2_testo' => 'Hai voglia di far parte del gruppo e dare il tuo sostegno? Ti raccontiamo come funziona.',
-        'sede_titolo' => "Qui ci sentiamo\na casa.",
-        'sede_testo' => 'Siamo in via San Benedetto, nel centro di Brindisi. Vuoi passare a salutarci? Scrivici prima, così ci mettiamo d’accordo.',
+        'sede_titolo' => ["Qui ci sentiamo\na casa.", 'Ci vediamo al club.'],
+        'sede_testo' => ['Siamo in via San Benedetto, nel centro di Brindisi. Vuoi passare a salutarci? Scrivici prima, così ci mettiamo d’accordo.', 'Una partita, due chiacchiere e gli stessi colori nel cuore. Vieni a conoscere la tua famiglia nerazzurra in via San Benedetto, nel centro di Brindisi. Contatta il direttivo prima di passare: ci mettiamo d’accordo e ci vediamo in sede.'],
         'contatti_titolo' => "Due chiacchiere,\npoi si parte.",
         'contatti_testo' => 'Tesseramento, rinnovo o semplicemente voglia di conoscerci? Scrivici qui. Ti risponde il direttivo, non un bot.',
         'tessera_3_testo' => 'Lontano da Brindisi, ma sempre dei nostri. La distanza non cambia i colori.',
@@ -46,9 +46,9 @@ function site_upgrade_content(array $content): array
         'tessera_5_testo' => 'Piccoli tifosi, grande passione. Il nerazzurro comincia presto.',
         'tessera_5_dettagli' => 'La formula Junior è dedicata ai soci più giovani. Ti aiutiamo a verificare la fascia d’età ammessa per la stagione e ciò che serve per iscrivere un minore: scrivici senza inviare dati o documenti del bambino nel modulo pubblico.',
     ];
-    foreach ($previous as $key => $value) {
+    foreach ($previous as $key => $values) {
         $current = $content[$key] ?? null;
-        if (is_string($current) && str_replace(["\r\n", "\r"], "\n", $current) === $value) {
+        if (is_string($current) && in_array(str_replace(["\r\n", "\r"], "\n", $current), (array) $values, true)) {
             $content[$key] = $defaults[$key];
         }
     }
