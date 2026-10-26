@@ -30,7 +30,7 @@ function site_upgrade_content(array $content): array
 {
     $defaults = require __DIR__ . '/../config/site_defaults.php';
     $previous = [
-        'hero_testo' => 'La partita sullo schermo, gli amici accanto. A Brindisi la viviamo così. Se ti va di esserci, c’è posto anche per te.',
+        'hero_testo' => ['La partita sullo schermo, gli amici accanto. A Brindisi la viviamo così. Se ti va di esserci, c’è posto anche per te.', 'La partita sullo schermo, gli amici accanto e un coro che ci unisce. A Brindisi l’Inter si vive insieme. Il prossimo coro, cantiamolo insieme.'],
         'hero_pulsante' => 'Vieni a conoscerci',
         'tesseramento_titolo' => "Nuova stagione.\nStessa voglia di esserci.",
         'tessera_1_testo' => 'Il club è già un po’ casa tua? Scrivici e scopri come vivere insieme la nuova stagione.',
@@ -45,6 +45,7 @@ function site_upgrade_content(array $content): array
         'tessera_4_dettagli' => 'Family è la voce del listino dedicata alle adesioni familiari. Prima di iscrivere più persone, verifica con il direttivo abbinamenti e requisiti: la quota indicata non va considerata automaticamente un prezzo per tutto il nucleo familiare.',
         'tessera_5_testo' => 'Piccoli tifosi, grande passione. Il nerazzurro comincia presto.',
         'tessera_5_dettagli' => 'La formula Junior è dedicata ai soci più giovani. Ti aiutiamo a verificare la fascia d’età ammessa per la stagione e ciò che serve per iscrivere un minore: scrivici senza inviare dati o documenti del bambino nel modulo pubblico.',
+        'tessera_quote_nota' => 'Le quote mostrate sono i riferimenti del listino ICBR 2026/27 per i nuovi soci; Plus è un’aggiunta alla quota Senior. Conferma sempre importo, requisiti e servizi inclusi con il direttivo prima di versare. Da questa pagina puoi chiedere informazioni, non acquistare una tessera.',
     ];
     foreach ($previous as $key => $values) {
         $current = $content[$key] ?? null;
@@ -122,6 +123,17 @@ function site_social_valid(string $key, string $value): bool
         && in_array(strtolower($parts['host'] ?? ''), $hosts[$key] ?? [], true)
         && !isset($parts['user']) && !isset($parts['pass']) && !isset($parts['port'])
         && trim($parts['path'] ?? '', '/') !== '';
+}
+
+/** Immagine con variante WebP opzionale in assets/images/webp/ (generata per le foto d’archivio). */
+function site_picture(string $filename, string $alt, int $width, int $height, bool $priority = false): string
+{
+    $src = base_path('/assets/images/' . $filename);
+    $webp = 'webp/' . pathinfo($filename, PATHINFO_FILENAME) . '.webp';
+    $loading = $priority ? 'fetchpriority="high"' : 'loading="lazy"';
+    $img = '<img src="' . h($src) . '" width="' . $width . '" height="' . $height . '" ' . $loading . ' decoding="async" alt="' . h($alt) . '">';
+    if (!is_file(__DIR__ . '/../public/assets/images/' . $webp)) return $img;
+    return '<picture><source srcset="' . h(base_path('/assets/images/' . $webp)) . '" type="image/webp">' . $img . '</picture>';
 }
 
 function site_image_credit(string $filename): string

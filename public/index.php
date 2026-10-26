@@ -19,7 +19,7 @@ public_header('Da soli si tifa. Insieme si vive.', 'Inter Club Javier Zanetti Br
             <div class="hero-bottom"><span>DAL <?= h($site['fondazione']) ?>, INSIEME.</span><a href="#club" aria-label="Scopri il club">SCOPRI IL CLUB <span aria-hidden="true">↓</span></a></div>
         </div>
         <figure class="hero-photo">
-            <img src="<?= u('/assets/images/' . $site['hero_foto']) ?>" width="1430" height="804" fetchpriority="high" alt="Un angolo della vita dell’Inter Club Brindisi.">
+            <?= site_picture($site['hero_foto'], 'Un angolo della vita dell’Inter Club Brindisi.', 1600, 900, true) ?>
             <figcaption><span><?= h($site['indirizzo']) ?><br><?= h($site['citta']) ?></span><span>IL NOSTRO POSTO<br>NEL MONDO.</span></figcaption>
             <span class="photo-credit"><?= h(site_image_credit($site['hero_foto'])) ?></span>
         </figure>
@@ -33,7 +33,7 @@ public_header('Da soli si tifa. Insieme si vive.', 'Inter Club Javier Zanetti Br
                 <?php foreach (preg_split('/\n\s*\n/', $site['club_testo']) as $paragraph): ?><p><?= nl2br(h($paragraph)) ?></p><?php endforeach; ?>
                 <a class="text-link" href="#contatti">Contatta il direttivo <span aria-hidden="true">↗</span></a>
             </div>
-            <figure class="club-memory"><img src="<?= u('/assets/images/' . $site['ricordi_foto']) ?>" width="1024" height="576" loading="eager" alt="La sede e i ricordi nerazzurri del club."><figcaption><span>Un posto, tante storie.</span><small><?= h(site_image_credit($site['ricordi_foto'])) ?></small></figcaption></figure>
+            <figure class="club-memory"><?= site_picture($site['ricordi_foto'], 'La sede e i ricordi nerazzurri del club.', 1600, 900) ?><figcaption><span>Un posto, tante storie.</span><small><?= h(site_image_credit($site['ricordi_foto'])) ?></small></figcaption></figure>
         </div>
     </section>
 
@@ -66,26 +66,21 @@ public_header('Da soli si tifa. Insieme si vive.', 'Inter Club Javier Zanetti Br
         <div class="membership-info">
             <div class="membership-benefits"><span class="eyebrow">COSA SIGNIFICA ESSERE SOCIO</span><h3>Una famiglia.<br>Tanti modi di esserci.</h3>
                 <p>La <a href="https://www.inter.it/it/notizie/inter-club-campagna-tesseramenti-2026-2027" target="_blank" rel="noopener noreferrer">campagna ufficiale Inter Club 2026/27</a> prevede Welcome Kit Senior o Junior fino a esaurimento scorte, agevolazioni e prelazioni per partite selezionate e iniziative dedicate ai soci.</p>
-                <p>Non considerare biglietti, trasferte o altri costi inclusi nella quota senza una conferma del direttivo: ti spieghiamo tutto prima dell’iscrizione.</p>
             </div>
-            <div class="membership-questions" aria-label="Domande sulle formule di tesseramento">
-                <details><summary>Chi può scegliere Fuori sede?</summary><div class="membership-answer"><p>La formula è riservata a chi risiede fuori dal Comune di Brindisi, anche in un comune vicino. Conta la residenza fuori dal territorio comunale, non quanto sei lontano dalla sede.</p><a href="#contatti" data-topic="Tesseramento" data-message="Ciao! Risiedo fuori dal Comune di Brindisi e vorrei informazioni sulla formula Fuori sede.">Contatta il direttivo ↗</a></div></details>
-                <details><summary>Family e Junior: chi può iscriversi?</summary><div class="membership-answer"><p>La tessera Family è attivabile in abbinamento a un tesseramento Fedelissimo: la quota Family non comprende automaticamente tutto il nucleo familiare. Tutti i soci under 14, cioè con meno di 14 anni, possono scegliere la Junior. Scrivici per organizzare l’iscrizione di un minore, senza inviare i suoi documenti nel modulo pubblico.</p></div></details>
-                <details><summary>La Quota Plus comprende un biglietto?</summary><div class="membership-answer"><p>No: è un upgrade del tesseramento Senior, non un biglietto o una tessera autonoma. I benefit della <a href="https://www.inter.it/it/inter-club" target="_blank" rel="noopener noreferrer">pagina ufficiale Inter Club</a> prevedono una vendita anticipata, subordinata al programma Loyalty INTERISTA e ai relativi termini, non un posto garantito allo stadio.</p><a href="#faq-due-plus" data-faq-link>Non confonderla con il biglietto PLUS ↗</a></div></details>
-                <details><summary>E se devo rinnovare la tessera?</summary><div class="membership-answer"><p>Contattaci per la quota applicabile oggi al tuo rinnovo. Il listino conserva anche le voci agevolate entro il <strong>30 giugno 2026</strong>: quella scadenza è passata e non è una promozione attualmente aperta.</p><dl class="membership-renewals"><?php foreach ($memberships as $membership): if ($membership['rinnovo']===null) continue; ?><div><dt><?= h($membership['nome']) ?></dt><dd><?= h($membership['rinnovo']) ?></dd></div><?php endforeach; ?></dl><p class="membership-history-note">Importi storici riservati ai rinnovi entro la scadenza indicata, non quote da versare oggi.</p></div></details>
+            <div class="membership-questions" aria-label="Rinnovo della tessera">
+                <details><summary>E se devo rinnovare la tessera?</summary><div class="membership-answer"><p>Contattaci per la quota applicabile oggi al tuo rinnovo. Il listino conserva anche le voci agevolate entro il <strong>30 giugno 2026</strong>: quella scadenza è passata e non è una promozione attualmente aperta.</p><dl class="membership-renewals"><?php foreach ($memberships as $membership): if ($membership['rinnovo']===null) continue; ?><div><dt><?= h($membership['nome']) ?></dt><dd><?= h($membership['rinnovo']) ?></dd></div><?php endforeach; ?></dl><p class="membership-history-note">Importi storici riservati ai rinnovi entro la scadenza indicata, non quote da versare oggi.</p><a href="#contatti" data-topic="Rinnovo" data-message="Ciao! Vorrei rinnovare la tessera per la stagione <?= h($site['stagione']) ?>: qual è la quota applicabile?">Contatta il direttivo ↗</a></div></details>
             </div>
         </div>
-        <div class="membership-footnote"><p>Quote, scadenze, kit e disponibilità sono confermati dal direttivo per la stagione in corso. La richiesta di informazioni non costituisce tesseramento né prenotazione di biglietti.</p><a href="<?= h($site['fonte_inter']) ?>" target="_blank" rel="noopener noreferrer">Il mondo Inter Club su inter.it ↗</a></div>
         <a class="membership-faq-link" href="#faq">Kit, MyInter e biglietti: altre risposte nelle FAQ <span aria-hidden="true">↗</span></a>
     </section>
 
     <section class="venue-section" id="sede" aria-labelledby="venue-title">
-        <figure class="venue-photo"><img src="<?= u('/assets/images/' . $site['sede_foto']) ?>" width="1024" height="576" loading="eager" alt="La sede dell’Inter Club Javier Zanetti Brindisi."><figcaption><?= h(site_image_credit($site['sede_foto'])) ?></figcaption></figure>
+        <figure class="venue-photo"><?= site_picture($site['sede_foto'], 'La sede dell’Inter Club Javier Zanetti Brindisi.', 1024, 576) ?><figcaption><?= h(site_image_credit($site['sede_foto'])) ?></figcaption></figure>
         <div class="venue-copy"><span class="eyebrow">DOVE TROVARCI</span><h2 id="venue-title"><?= nl2br(h($site['sede_titolo'])) ?></h2><address><?= h($site['indirizzo']) ?><br><?= h($site['citta']) ?></address><p><?= nl2br(h($site['sede_testo'])) ?></p><a class="public-button button-blue" href="<?= h($site['mappe']) ?>" target="_blank" rel="noopener noreferrer">Portami al club <span aria-hidden="true">↗</span></a></div>
     </section>
 
     <section class="section contact-section" id="contatti" aria-labelledby="contact-title">
-        <div class="contact-copy"><span class="eyebrow">IL PROSSIMO CORO, CANTIAMOLO INSIEME</span><h2 id="contact-title"><?= nl2br(h($site['contatti_titolo'])) ?></h2><p><?= nl2br(h($site['contatti_testo'])) ?></p><p class="contact-note">Lascia un recapito a cui possiamo risponderti. La richiesta arriva al direttivo nell’area riservata: l’invio del modulo non completa il tesseramento.</p></div>
+        <div class="contact-copy"><span class="eyebrow">IL PROSSIMO CORO, CANTIAMOLO INSIEME</span><h2 id="contact-title"><?= nl2br(h($site['contatti_titolo'])) ?></h2><p><?= nl2br(h($site['contatti_testo'])) ?></p><p class="contact-note">Lascia un recapito: ti risponde il direttivo. L’invio del modulo non completa il tesseramento.</p></div>
         <div class="contact-form-panel">
             <?php if ($sent): ?><div class="contact-success" role="status"><span class="eyebrow">MESSAGGIO RICEVUTO</span><h3>CI SIAMO. GRAZIE!</h3><p>La tua richiesta è stata registrata nell’area riservata del club. Il direttivo potrà risponderti al recapito che hai indicato.</p><a href="#tesseramento" class="text-link">Torna al tesseramento ↑</a></div><?php endif; ?>
             <?php if ($errors): ?><div class="contact-error" role="alert"><strong>Controlla la richiesta.</strong><ul><?php foreach ($errors as $error): ?><li><?= h($error) ?></li><?php endforeach; ?></ul></div><?php endif; ?>

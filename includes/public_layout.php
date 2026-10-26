@@ -4,6 +4,13 @@ require_once __DIR__ . '/functions.php';
 require_once __DIR__ . '/site_content.php';
 $site = array_replace(require __DIR__ . '/../config/site.php', site_content());
 
+/** URL di un asset con versione basata sulla data di modifica, per una cache lunga e sicura. */
+function asset_url(string $path): string
+{
+    $file = __DIR__ . '/../public' . $path;
+    return u($path . (is_file($file) ? '?v=' . filemtime($file) : ''));
+}
+
 function public_header(string $title, string $description): void
 {
     $home = base_path('/index.php');
@@ -16,15 +23,17 @@ function public_header(string $title, string $description): void
     <meta name="theme-color" content="#011ea0">
     <meta name="description" content="<?= h($description) ?>">
     <title><?= h($title) ?> | Inter Club Javier Zanetti Brindisi</title>
-    <link rel="stylesheet" href="<?= u('/assets/css/base.css') ?>">
-    <link rel="stylesheet" href="<?= u('/assets/css/public.css') ?>">
-    <link rel="stylesheet" href="<?= u('/assets/css/accessibility.css') ?>">
-    <link rel="stylesheet" href="<?= u('/assets/css/brand.css') ?>">
-    <link rel="stylesheet" href="<?= u('/assets/css/modern.css') ?>">
-    <link rel="stylesheet" href="<?= u('/assets/css/membership.css') ?>">
-    <link rel="stylesheet" href="<?= u('/assets/css/faq.css') ?>">
+    <link rel="preload" href="<?= u('/assets/fonts/barlow-condensed-bold.woff2') ?>" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="<?= u('/assets/fonts/barlow-regular.woff2') ?>" as="font" type="font/woff2" crossorigin>
+    <link rel="stylesheet" href="<?= asset_url('/assets/css/base.css') ?>">
+    <link rel="stylesheet" href="<?= asset_url('/assets/css/public.css') ?>">
+    <link rel="stylesheet" href="<?= asset_url('/assets/css/accessibility.css') ?>">
+    <link rel="stylesheet" href="<?= asset_url('/assets/css/brand.css') ?>">
+    <link rel="stylesheet" href="<?= asset_url('/assets/css/modern.css') ?>">
+    <link rel="stylesheet" href="<?= asset_url('/assets/css/membership.css') ?>">
+    <link rel="stylesheet" href="<?= asset_url('/assets/css/faq.css') ?>">
     <link rel="icon" type="image/jpeg" href="<?= u('/assets/images/logo-inter-club-brindisi.jpg') ?>">
-    <script src="<?= u('/assets/js/site.js') ?>" defer></script>
+    <script src="<?= asset_url('/assets/js/site.js') ?>" defer></script>
 </head>
 <body class="public-site">
 <a href="#contenuto" class="skip-link">Salta al contenuto</a>
@@ -55,7 +64,7 @@ function public_header(string $title, string $description): void
 
 function public_footer(): void
 {
-    $content = site_content();
+    $content = $GLOBALS['site'] ?? site_content();
     ?>
 <footer class="public-footer">
     <?php $socials = array_filter(array_intersect_key($content,array_flip(['instagram','facebook','youtube','tiktok']))); if ($socials): ?>

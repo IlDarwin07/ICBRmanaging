@@ -3,7 +3,7 @@
 return [
     'stagione' => '2026/27',
     'hero_titolo' => "Da soli si tifa.\nInsieme si vive.",
-    'hero_testo' => 'La partita sullo schermo, gli amici accanto e un coro che ci unisce. A Brindisi l’Inter si vive insieme. Il prossimo coro, cantiamolo insieme.',
+    'hero_testo' => 'La partita sullo schermo, gli amici accanto e un coro che ci unisce. A Brindisi l’Inter si vive così.',
     'hero_pulsante' => 'Entra nella famiglia nerazzurra',
     'club_titolo' => "La partita è una scusa.\nIl bello è ritrovarsi.",
     'club_intro' => 'Ci vediamo al club?',
@@ -33,7 +33,7 @@ return [
     'tessera_6_testo' => 'Un upgrade della tessera Senior, non una tessera a sé.',
     'tessera_6_quota' => '+35 €',
     'tessera_6_dettagli' => 'La Quota Plus si aggiunge a un tesseramento Senior: non sostituisce la quota della tessera scelta. Se ti interessa, chiedici come abbinarla alla tua iscrizione e quali condizioni sono previste.',
-    'tessera_quote_nota' => 'Le quote mostrate sono i riferimenti del listino ICBR 2026/27 per i nuovi soci; Plus è un’aggiunta alla quota Senior. Conferma sempre importo, requisiti e servizi inclusi con il direttivo prima di versare. Da questa pagina puoi chiedere informazioni, non acquistare una tessera.',
+    'tessera_quote_nota' => 'Quote del listino ICBR 2026/27 per i nuovi soci. Importo, requisiti e servizi inclusi si confermano con il direttivo prima di versare: da qui chiedi informazioni, non acquisti la tessera.',
     'sede_titolo' => 'La nostra casa nerazzurra.',
     'sede_testo' => 'Una partita, due chiacchiere e gli stessi colori nel cuore, nel centro di Brindisi. Scrivi al direttivo prima di passare: le aperture si concordano insieme.',
     'indirizzo' => 'Via San Benedetto, 8',
