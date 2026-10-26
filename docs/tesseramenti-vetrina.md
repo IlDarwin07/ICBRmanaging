@@ -26,7 +26,7 @@ Da **Sito vetrina** si possono modificare nome, presentazione, quota e spiegazio
 
 I nuovi campi usano valori iniziali versionati se il file privato dei contenuti non li contiene ancora. Tutti i valori sono mostrati come testo con escape HTML, mai eseguiti come codice. La vetrina continua a funzionare senza interrogare il database; questa aggiunta non richiede migrazioni SQL.
 
-Le sei card mostrano nome, breve presentazione e quota sul fronte: **Info** gira la card e mostra spiegazione e condizioni sul retro, **Indietro** ripristina il fronte e **Parliamone insieme** prepara il contatto per quella formula. Non ci sono numerazioni decorative. L'altezza segue il contenuto anche per descrizioni lunghe del CMS; non viene imposto un riquadro con testo tagliato.
+Le sei card mostrano nome, breve presentazione e quota sul fronte: **Info** gira la card e mostra spiegazione e condizioni sul retro, **Indietro** ripristina il fronte e **Contatta il direttivo** prepara il contatto per quella formula. Non ci sono numerazioni decorative. L'altezza segue il contenuto anche per descrizioni lunghe del CMS; non viene imposto un riquadro con testo tagliato.
 
 La faccia nascosta è esclusa dal focus e dall'albero accessibile; Invio, Spazio e il pulsante Indietro funzionano da tastiera, Escape torna al fronte e la preferenza di movimento ridotto disattiva l'animazione. Senza JavaScript le descrizioni restano leggibili. Cambiare formula aggiorna un messaggio automatico ancora intatto, ma non cancella un testo personalizzato dal visitatore. Le FAQ utilizzano elementi HTML `details` e i collegamenti alle singole risposte aprono l'accordion corrispondente.
 
