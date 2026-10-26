@@ -104,7 +104,6 @@ public_header('Da soli si tifa. Insieme si vive.', 'Inter Club Javier Zanetti Br
     </section>
     <section class="section faq-section" id="faq" aria-labelledby="faq-title">
         <div class="faq-heading"><div><span class="eyebrow">FACCIAMO CHIAREZZA</span><h2 id="faq-title">Il dubbio ci sta.<br>La risposta è qui.</h2></div><p>Dal kit alla prima volta a San Siro.<br>Risposte semplici, fonti ufficiali, niente promesse a metà.</p></div>
-        <nav class="faq-index" aria-label="Argomenti delle domande frequenti"><?php foreach ($faq['groups'] as $group): ?><a href="#<?= h($group['id']) ?>"><?= h($group['title']) ?><span aria-hidden="true">↓</span></a><?php endforeach; ?></nav>
         <div class="faq-groups"><?php foreach ($faq['groups'] as $group): ?>
             <section class="faq-group" id="<?= h($group['id']) ?>" aria-labelledby="<?= h($group['id']) ?>-title">
                 <header class="faq-group-heading"><h3 id="<?= h($group['id']) ?>-title"><?= h($group['title']) ?></h3><p><?= h($group['intro']) ?></p></header>
