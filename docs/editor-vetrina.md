@@ -56,7 +56,6 @@ https://www.instagram.com/inter.club.brindisi.jz/
 I nomi iniziali Fedelissimo, Sostenitore e Fuori sede riprendono la campagna
 pubblicata su quel profilo. Non sono state inventate quote o promesse di biglietti.
 Facebook, YouTube e TikTok restano vuoti finché il club non inserisce i propri
-collegamenti effettivi. Le foto d’archivio e i crediti sono descritti in
-`public/assets/images/README.md`.
+collegamenti effettivi. Le foto si caricano dall’editor; senza foto la vetrina mostra il logo del club.
 
 Il database di produzione non viene modificato da questa funzionalità.

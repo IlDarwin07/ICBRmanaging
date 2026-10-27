@@ -71,3 +71,5 @@
 .public-site .footer-grid address{font-style:normal;color:#9398a8;font-size:13px;margin-top:8px;line-height:1.6}
 .public-site .hero-bottom{justify-content:flex-start}
 .public-site .hero p.eyebrow{margin:0}
+.public-site img.photo-placeholder{object-fit:contain!important;padding:18%;background:#0b0d12;filter:none!important}
+.public-site .footer-grid p{margin:4px 0 0}

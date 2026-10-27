@@ -11,14 +11,9 @@
 
 ## Fonti dei contenuti
 
-La fondazione nel 2003 e la sede in via San Benedetto 8 sono riportate nell’articolo
-[Agenda Brindisi del 23 aprile 2022](https://www.agendabrindisi.it/in-via-san-benedetto-la-ritrovata-sede-dellinter-club-javier-zanetti/).
-Le tre fotografie d’archivio provengono dal medesimo articolo, con attribuzione
-visibile. Non sono presentate come fotografie recenti.
-Prima di una pubblicazione esterna definitiva, far confermare al direttivo sede,
-contenuti, utilizzo delle fotografie e informativa privacy.
-Le fotografie rimangono attribuite all’editore; nessuna licenza di riuso viene
-presunta. Sostituirle con foto autorizzate del club se il riuso non è autorizzato.
+Fondazione (2003), sede e testi sono forniti dal direttivo del club.
+Le fotografie pubbliche sono soltanto quelle caricate dal direttivo dall’editor;
+senza foto la vetrina mostra il logo del club.
 
 Il riferimento cromatico e tipografico-editoriale è la
 [sezione Inter Club di inter.it](https://www.inter.it/it/inter-club).

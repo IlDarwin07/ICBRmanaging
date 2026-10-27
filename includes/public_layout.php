@@ -33,7 +33,7 @@ function public_header(string $title, string $description, string $path = '/', a
     $home = base_path('/index.php');
     $content = $GLOBALS['site'] ?? site_content();
     $canonical = site_absolute_url($path);
-    $image = site_absolute_url('/assets/images/' . (site_image_valid($content['hero_foto'] ?? '') ? $content['hero_foto'] : 'club-sede.jpg'));
+    $image = site_absolute_url('/assets/images/' . (site_image_valid($content['hero_foto'] ?? '') ? $content['hero_foto'] : 'logo-inter-club-brindisi.jpg'));
     $logo = site_absolute_url('/assets/images/logo-inter-club-brindisi.jpg');
     $sameAs = array_values(array_filter(array_intersect_key($content, array_flip(['instagram','facebook','youtube','tiktok'])), fn($url, $key) => $url !== '' && site_social_valid($key, $url), ARRAY_FILTER_USE_BOTH));
     $club = [
@@ -134,11 +134,11 @@ function public_footer(): void
     <nav class="footer-socials" aria-label="I social del club"><?php foreach ($socials as $key=>$url): if (!site_social_valid($key,$url)) continue; ?><a href="<?= h($url) ?>" target="_blank" rel="noopener noreferrer"><span class="social-monogram" aria-hidden="true"><?= h(['instagram'=>'IG','facebook'=>'FB','youtube'=>'YT','tiktok'=>'TT'][$key]) ?></span><span><?= h(['instagram'=>'Instagram','facebook'=>'Facebook','youtube'=>'YouTube','tiktok'=>'TikTok'][$key]) ?></span><span aria-hidden="true">↗</span></a><?php endforeach; ?></nav>
     <?php endif; ?>
     <div class="footer-grid">
-        <div><img class="footer-club-logo" src="<?= u('/assets/images/logo-inter-club-brindisi.jpg') ?>" alt="Logo Inter Club Javier Zanetti Brindisi" width="100" height="100" loading="lazy"><strong>Inter Club Javier Zanetti Brindisi</strong><address><?= h($content['indirizzo']) ?>, <?= h($content['citta']) ?></address></div>
+        <div><img class="footer-club-logo" src="<?= u('/assets/images/logo-inter-club-brindisi.jpg') ?>" alt="Logo Inter Club Javier Zanetti Brindisi" width="100" height="100" loading="lazy"><strong>Inter Club Javier Zanetti Brindisi</strong><p>Associazione culturale</p><address><?= h($content['indirizzo']) ?>, <?= h($content['citta']) ?></address></div>
         <div><a href="<?= u('/index.php') ?>#tesseramento">Tesseramento <?= h($content['stagione']) ?></a><a href="<?= u('/index.php') ?>#contatti">Contatti</a></div>
         <div><a href="<?= u('/privacy.php') ?>">Privacy e cookie</a></div>
     </div>
-    <div class="footer-bottom"><span>© <?= date('Y') ?> Inter Club Javier Zanetti Brindisi · Club locale, distinto da FC Internazionale Milano.</span><a class="footer-staff-link" href="<?= u('/login.php') ?>" rel="nofollow">Direttivo</a></div>
+    <div class="footer-bottom"><span>© <?= date('Y') ?> Inter Club Javier Zanetti Brindisi · Associazione culturale</span><a class="footer-staff-link" href="<?= u('/login.php') ?>" rel="nofollow">Direttivo</a></div>
 </footer>
 </body>
 </html>

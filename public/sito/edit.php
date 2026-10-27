@@ -64,7 +64,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             || isset($map['user']) || isset($map['pass']) || isset($map['port'])) $errors[] = 'Usa un collegamento Google Maps HTTPS valido.';
         foreach ($photos as $key=>$label) {
             $photo = is_string($_POST[$key] ?? null) ? $_POST[$key] : '';
-            if (!in_array($photo,$availablePhotos,true)) $errors[] = "$label: scegli una foto presente nell’archivio.";
+            if ($photo !== '' && !in_array($photo,$availablePhotos,true)) $errors[] = "$label: scegli una foto presente nell’archivio.";
             else $candidate[$key] = $photo;
         }
     }
@@ -130,7 +130,7 @@ require __DIR__ . '/../../includes/layout_header.php';
 <?php else: ?><input id="<?= h($key) ?>" name="<?= h($key) ?>" type="<?= in_array($key,['instagram','facebook','youtube','tiktok','mappe'],true) ? 'url' : 'text' ?>" maxlength="<?= $limit ?>" value="<?= h($values[$key]) ?>" <?= in_array($key,['instagram','facebook','youtube','tiktok'],true) ? '' : 'required' ?>><?php endif; ?>
 </div><?php endforeach; ?></div></section><?php endforeach; ?>
 <section class="admin-panel cms-section" id="foto-sito"><h2>Le fotografie</h2><p class="muted">Scegli dall’archivio o carica una foto nuova. JPEG, PNG o WebP, massimo 6 MB, almeno 640×360 px.</p>
-<?php foreach ($photos as $key=>$label): ?><div class="cms-photo"><img src="<?= u('/assets/images/' . (site_image_valid($values[$key]) ? $values[$key] : 'club-sede.jpg')) ?>" alt="Anteprima <?= h(mb_strtolower($label)) ?>" width="320" height="180"><div><label for="<?= h($key) ?>"><?= h($label) ?></label><select id="<?= h($key) ?>" name="<?= h($key) ?>"><?php foreach ($availablePhotos as $photo): ?><option value="<?= h($photo) ?>" <?= $values[$key] === $photo ? 'selected' : '' ?>><?= h($photo) ?></option><?php endforeach; ?></select><label for="<?= h($key) ?>_upload">Oppure carica una nuova foto</label><input id="<?= h($key) ?>_upload" name="<?= h($key) ?>_upload" type="file" accept="image/jpeg,image/png,image/webp"></div></div><?php endforeach; ?>
+<?php foreach ($photos as $key=>$label): ?><div class="cms-photo"><img src="<?= u('/assets/images/' . (site_image_valid($values[$key]) ? $values[$key] : 'logo-inter-club-brindisi.jpg')) ?>" alt="Anteprima <?= h(mb_strtolower($label)) ?>" width="320" height="180"><div><label for="<?= h($key) ?>"><?= h($label) ?></label><select id="<?= h($key) ?>" name="<?= h($key) ?>"><option value="" <?= $values[$key] === '' ? 'selected' : '' ?>>Nessuna foto (mostra il logo)</option><?php foreach ($availablePhotos as $photo): ?><option value="<?= h($photo) ?>" <?= $values[$key] === $photo ? 'selected' : '' ?>><?= h($photo) ?></option><?php endforeach; ?></select><label for="<?= h($key) ?>_upload">Oppure carica una nuova foto</label><input id="<?= h($key) ?>_upload" name="<?= h($key) ?>_upload" type="file" accept="image/jpeg,image/png,image/webp"></div></div><?php endforeach; ?>
 </section>
 <div class="cms-save"><p>Il salvataggio rende pubblici testi, social e foto.</p><button class="btn" type="submit" name="azione" value="salva">Salva e aggiorna il sito</button></div>
 </form>

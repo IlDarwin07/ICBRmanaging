@@ -129,20 +129,19 @@ function site_social_valid(string $key, string $value): bool
         && trim($parts['path'] ?? '', '/') !== '';
 }
 
-/** Immagine con variante WebP opzionale in assets/images/webp/ (generata per le foto d’archivio). */
+/**
+ * Immagine con variante WebP opzionale in assets/images/webp/.
+ * Senza foto caricata mostra il logo del club come segnaposto.
+ */
 function site_picture(string $filename, string $alt, int $width, int $height, bool $priority = false): string
 {
+    $loading = $priority ? 'fetchpriority="high"' : 'loading="lazy"';
+    if ($filename === '' || !site_image_valid($filename)) {
+        return '<img class="photo-placeholder" src="' . h(base_path('/assets/images/logo-inter-club-brindisi.jpg')) . '" width="400" height="400" ' . $loading . ' decoding="async" alt="Logo Inter Club Javier Zanetti Brindisi">';
+    }
     $src = base_path('/assets/images/' . $filename);
     $webp = 'webp/' . pathinfo($filename, PATHINFO_FILENAME) . '.webp';
-    $loading = $priority ? 'fetchpriority="high"' : 'loading="lazy"';
     $img = '<img src="' . h($src) . '" width="' . $width . '" height="' . $height . '" ' . $loading . ' decoding="async" alt="' . h($alt) . '">';
     if (!is_file(__DIR__ . '/../public/assets/images/' . $webp)) return $img;
     return '<picture><source srcset="' . h(base_path('/assets/images/' . $webp)) . '" type="image/webp">' . $img . '</picture>';
-}
-
-function site_image_credit(string $filename): string
-{
-    return in_array($filename, ['club-sede.jpg','club-interno.jpg','club-ricordi.jpg'], true)
-        ? 'Foto d’archivio: Agenda Brindisi, 2022'
-        : 'Foto caricata dal direttivo';
 }

@@ -28,8 +28,7 @@ public_header(
             <div class="hero-bottom"><a href="#club">SCOPRI IL CLUB <span aria-hidden="true">↓</span></a></div>
         </div>
         <figure class="hero-photo">
-            <?= site_picture($site['hero_foto'], 'Tifosi nella sede dell’Inter Club Javier Zanetti Brindisi', 1600, 900, true) ?>
-            <span class="photo-credit"><?= h(site_image_credit($site['hero_foto'])) ?></span>
+            <?php if (site_image_valid($site['hero_foto'])): ?><?= site_picture($site['hero_foto'], 'Tifosi nella sede dell’Inter Club Javier Zanetti Brindisi', 1600, 900, true) ?><?php endif; ?>
         </figure>
     </section>
 
@@ -40,7 +39,7 @@ public_header(
                 <?php foreach (preg_split('/\n\s*\n/', $site['club_testo']) as $paragraph): ?><p><?= nl2br(h($paragraph)) ?></p><?php endforeach; ?>
                 <a class="text-link" href="#tesseramento">Scegli la tua tessera <span aria-hidden="true">↗</span></a>
             </div>
-            <figure class="club-memory"><?= site_picture($site['ricordi_foto'], 'Cimeli e ricordi nerazzurri nella sede dell’Inter Club Brindisi', 1600, 900) ?><figcaption><small><?= h(site_image_credit($site['ricordi_foto'])) ?></small></figcaption></figure>
+            <figure class="club-memory"><?= site_picture($site['ricordi_foto'], 'Cimeli e ricordi nerazzurri nella sede dell’Inter Club Brindisi', 1600, 900) ?></figure>
         </div>
     </section>
 
@@ -80,7 +79,7 @@ public_header(
     </section>
 
     <section class="venue-section" id="sede" aria-labelledby="venue-title">
-        <figure class="venue-photo"><?= site_picture($site['sede_foto'], 'Sede dell’Inter Club Javier Zanetti in ' . $site['indirizzo'] . ', Brindisi', 1024, 576) ?><figcaption><?= h(site_image_credit($site['sede_foto'])) ?></figcaption></figure>
+        <figure class="venue-photo"><?= site_picture($site['sede_foto'], 'Sede dell’Inter Club Javier Zanetti in ' . $site['indirizzo'] . ', Brindisi', 1024, 576) ?></figure>
         <div class="venue-copy"><span class="eyebrow">DOVE TROVARCI</span><h2 id="venue-title"><?= nl2br(h($site['sede_titolo'])) ?></h2><address><?= h($site['indirizzo']) ?><br><?= h($site['citta']) ?></address><p><?= nl2br(h($site['sede_testo'])) ?></p><a class="public-button button-blue" href="<?= h($site['mappe']) ?>" target="_blank" rel="noopener noreferrer">Portami al club <span aria-hidden="true">↗</span></a></div>
     </section>
 
