@@ -1,6 +1,6 @@
 <?php
 require_once __DIR__ . '/../includes/public_layout.php';
-public_header('Privacy e cookie', 'Informazioni sul trattamento delle richieste di contatto inviate al club e sui cookie tecnici del sito.');
+public_header('Privacy e cookie | Inter Club Javier Zanetti Brindisi', 'Informativa privacy e cookie del sito dell’Inter Club Javier Zanetti Brindisi: dati del modulo contatti, conservazione e diritti.', '/privacy.php');
 ?>
 <main id="contenuto" class="section privacy-page">
     <span class="eyebrow">INFORMATIVA · VERSIONE OTTOBRE 2026</span>

@@ -7,56 +7,62 @@ $errors = $_SESSION['contact_errors'] ?? [];
 $old = $_SESSION['contact_old'] ?? [];
 $sent = $_SESSION['contact_sent'] ?? false;
 unset($_SESSION['contact_errors'], $_SESSION['contact_old'], $_SESSION['contact_sent']);
-public_header('Da soli si tifa. Insieme si vive.', 'Inter Club Javier Zanetti Brindisi: partite, amicizie e passione nerazzurra. Scopri il club, il tesseramento e la nostra sede a ' . $site['indirizzo'] . '.');
+$faqSchema = ['@context' => 'https://schema.org', '@type' => 'FAQPage', 'mainEntity' => []];
+foreach ($faq['groups'] as $group) foreach ($group['items'] as $item) {
+    $faqSchema['mainEntity'][] = ['@type' => 'Question', 'name' => $item['question'], 'acceptedAnswer' => ['@type' => 'Answer', 'text' => $item['answer']]];
+}
+public_header(
+    'Inter Club Brindisi · Tesseramento ' . $site['stagione'] . ' | Inter Club Javier Zanetti',
+    'Inter Club Javier Zanetti Brindisi: partite dell’Inter in sede, trasferte e tesseramento ' . $site['stagione'] . ' da ' . $site['tessera_5_quota'] . '. Vieni a trovarci in ' . $site['indirizzo'] . '.',
+    '/',
+    [$faqSchema]
+);
 ?>
 <main id="contenuto">
     <section class="hero" aria-labelledby="hero-title">
         <div class="hero-copy">
-            <div class="eyebrow"><span class="tiny-square"></span> BRINDISI NERAZZURRA · STAGIONE <?= h($site['stagione']) ?></div>
+            <p class="eyebrow"><span class="tiny-square" aria-hidden="true"></span> INTER CLUB BRINDISI · DAL <?= h($site['fondazione']) ?></p>
             <h1 id="hero-title"><?= nl2br(h($site['hero_titolo'])) ?></h1>
             <p><?= nl2br(h($site['hero_testo'])) ?></p>
             <a class="public-button button-white" href="#tesseramento"><?= h($site['hero_pulsante']) ?> <span aria-hidden="true">↗</span></a>
-            <div class="hero-bottom"><span>DAL <?= h($site['fondazione']) ?>, INSIEME.</span><a href="#club" aria-label="Scopri il club">SCOPRI IL CLUB <span aria-hidden="true">↓</span></a></div>
+            <div class="hero-bottom"><a href="#club">SCOPRI IL CLUB <span aria-hidden="true">↓</span></a></div>
         </div>
         <figure class="hero-photo">
-            <?= site_picture($site['hero_foto'], 'Un angolo della vita dell’Inter Club Brindisi.', 1600, 900, true) ?>
-            <figcaption><span><?= h($site['indirizzo']) ?><br><?= h($site['citta']) ?></span><span>IL NOSTRO POSTO<br>NEL MONDO.</span></figcaption>
+            <?= site_picture($site['hero_foto'], 'Tifosi nella sede dell’Inter Club Javier Zanetti Brindisi', 1600, 900, true) ?>
             <span class="photo-credit"><?= h(site_image_credit($site['hero_foto'])) ?></span>
         </figure>
     </section>
-    <div class="manifesto-strip" aria-label="Il nostro spirito"><span>BRINDISI NEL CUORE.</span><span class="strip-mark" aria-hidden="true">/</span><span>L’INTER NELL’ANIMA.</span><span class="strip-mark" aria-hidden="true">/</span><span>INSIEME, SEMPRE.</span></div>
 
     <section class="section club-section" id="club" aria-labelledby="club-title">
-        <div class="section-intro"><span class="eyebrow">QUESTI SIAMO NOI</span><h2 id="club-title"><?= nl2br(h($site['club_titolo'])) ?></h2></div>
+        <div class="section-intro"><span class="eyebrow">IL CLUB</span><h2 id="club-title"><?= nl2br(h($site['club_titolo'])) ?></h2></div>
         <div class="club-layout">
             <div class="club-story"><p class="large-copy"><?= h($site['club_intro']) ?></p>
                 <?php foreach (preg_split('/\n\s*\n/', $site['club_testo']) as $paragraph): ?><p><?= nl2br(h($paragraph)) ?></p><?php endforeach; ?>
-                <a class="text-link" href="#contatti">Contatta il direttivo <span aria-hidden="true">↗</span></a>
+                <a class="text-link" href="#tesseramento">Scegli la tua tessera <span aria-hidden="true">↗</span></a>
             </div>
-            <figure class="club-memory"><?= site_picture($site['ricordi_foto'], 'La sede e i ricordi nerazzurri del club.', 1600, 900) ?><figcaption><span>Un posto, tante storie.</span><small><?= h(site_image_credit($site['ricordi_foto'])) ?></small></figcaption></figure>
+            <figure class="club-memory"><?= site_picture($site['ricordi_foto'], 'Cimeli e ricordi nerazzurri nella sede dell’Inter Club Brindisi', 1600, 900) ?><figcaption><small><?= h(site_image_credit($site['ricordi_foto'])) ?></small></figcaption></figure>
         </div>
     </section>
 
     <section class="membership-section section" id="tesseramento" aria-labelledby="membership-title">
-        <div class="membership-heading"><div><span class="eyebrow">TESSERAMENTO <?= h($site['stagione']) ?></span><h2 id="membership-title"><?= nl2br(h($site['tesseramento_titolo'])) ?></h2></div><p>Ci sei anche tu?<br>Ti aspettiamo.</p></div>
-        <p class="membership-lead">Gli stessi colori, modi diversi di esserci. Premi Info sulla tessera che ti interessa: ti raccontiamo come funziona.</p>
+        <div class="membership-heading"><div><span class="eyebrow">TESSERAMENTO <?= h($site['stagione']) ?></span><h2 id="membership-title"><?= nl2br(h($site['tesseramento_titolo'])) ?></h2></div></div>
         <div class="membership-grid membership-grid-complete">
             <?php foreach ($memberships as $i=>$membership): ?>
             <article class="membership-card flip-card <?= $i===6 ? 'membership-card-outline' : '' ?>" id="tessera-<?= h($membership['tipo']) ?>" aria-label="<?= h($site["tessera_{$i}_titolo"]) ?>">
                 <div class="membership-flipper">
                     <div class="membership-face membership-front">
-                        <div class="membership-card-top"><span class="membership-tag"><?= $i===6 ? 'UPGRADE SENIOR' : 'IL TUO MODO DI ESSERCI' ?></span><span class="membership-season"><?= h($site['stagione']) ?></span></div>
+                        <div class="membership-card-top"><span class="membership-tag"><?= $i===6 ? 'UPGRADE SENIOR' : 'TESSERA' ?></span><span class="membership-season"><?= h($site['stagione']) ?></span></div>
                         <h3><?= h($site["tessera_{$i}_titolo"]) ?></h3>
                         <p class="membership-audience"><?= h($site["tessera_{$i}_testo"]) ?></p>
                         <div class="membership-price"><strong><?= h($site["tessera_{$i}_quota"]) ?></strong><span><?= h($i===6 ? 'in aggiunta alla tessera Senior' : 'quota nuovo socio') ?></span></div>
                         <button class="membership-info-toggle" type="button" data-flip-open aria-expanded="false" aria-controls="retro-<?= h($membership['tipo']) ?>" aria-label="<?= h('Info su '.$site["tessera_{$i}_titolo"]) ?>">Info</button>
                     </div>
                     <div class="membership-face membership-back" id="retro-<?= h($membership['tipo']) ?>" role="region" aria-label="<?= h('Dettagli '.$site["tessera_{$i}_titolo"]) ?>">
-                        <div class="membership-back-heading"><span class="membership-tag">LA TESSERA, DA VICINO</span><button class="membership-back-toggle" type="button" data-flip-close aria-label="<?= h('Torna alla tessera '.$site["tessera_{$i}_titolo"]) ?>">Indietro</button></div>
+                        <div class="membership-back-heading"><span class="membership-tag">DETTAGLI</span><button class="membership-back-toggle" type="button" data-flip-close aria-label="<?= h('Torna alla tessera '.$site["tessera_{$i}_titolo"]) ?>">Indietro</button></div>
                         <h3><?= h($site["tessera_{$i}_titolo"]) ?></h3>
                         <p class="membership-description"><?= h($site["tessera_{$i}_dettagli"]) ?></p>
-                        <?php if ($i===6): ?><p class="membership-plus-benefit">La <a href="https://www.inter.it/it/inter-club" target="_blank" rel="noopener noreferrer">pagina ufficiale Inter Club</a> prevede per i soci Plus una vendita anticipata per le partite casalinghe di Campionato e Champions League, subordinata al programma Loyalty INTERISTA e ai relativi termini. <a href="#faq-plus" data-faq-link>Leggi le condizioni nelle FAQ ↗</a></p><?php endif; ?>
-                        <a class="membership-cta" href="#contatti" data-topic="Tesseramento" data-message="<?= h('Ciao! Vorrei informazioni sulla '.($i===6 ? '' : 'tessera ').$site["tessera_{$i}_titolo"].' per la stagione '.$site['stagione'].': potete confermarmi quota, requisiti e servizi inclusi?') ?>">Contatta il direttivo <span aria-hidden="true">↗</span></a>
+                        <?php if ($i===6): ?><p class="membership-plus-benefit">Vendita anticipata per le gare casalinghe di Campionato e Champions League. <a href="#faq-plus" data-faq-link>Condizioni ↗</a></p><?php endif; ?>
+                        <a class="membership-cta" href="#contatti" data-topic="Tesseramento" data-message="<?= h('Ciao! Vorrei informazioni sulla '.($i===6 ? '' : 'tessera ').$site["tessera_{$i}_titolo"].' per la stagione '.$site['stagione'].'.') ?>">Richiedi la tessera <span aria-hidden="true">↗</span></a>
                     </div>
                 </div>
             </article>
@@ -64,25 +70,24 @@ public_header('Da soli si tifa. Insieme si vive.', 'Inter Club Javier Zanetti Br
         </div>
         <p class="membership-quote-note"><?= h($site['tessera_quote_nota']) ?></p>
         <div class="membership-info">
-            <div class="membership-benefits"><span class="eyebrow">COSA SIGNIFICA ESSERE SOCIO</span><h3>Una famiglia.<br>Tanti modi di esserci.</h3>
-                <p>La <a href="https://www.inter.it/it/notizie/inter-club-campagna-tesseramenti-2026-2027" target="_blank" rel="noopener noreferrer">campagna ufficiale Inter Club 2026/27</a> prevede Welcome Kit Senior o Junior fino a esaurimento scorte, agevolazioni e prelazioni per partite selezionate e iniziative dedicate ai soci.</p>
+            <div class="membership-benefits"><span class="eyebrow">VANTAGGI DEI SOCI</span><h3>Welcome Kit, prelazioni<br>e sconti Inter Store.</h3>
+                <p>Con la <a href="https://www.inter.it/it/notizie/inter-club-campagna-tesseramenti-2026-2027" target="_blank" rel="noopener noreferrer">tessera ufficiale Inter Club <?= h($site['stagione']) ?></a> ricevi il Welcome Kit (fino a esaurimento scorte), accedi a prelazioni su partite selezionate e alle iniziative riservate ai soci. <a href="#faq-soci">Tutti i dettagli ↗</a></p>
             </div>
             <div class="membership-questions" aria-label="Rinnovo della tessera">
-                <details><summary>E se devo rinnovare la tessera?</summary><div class="membership-answer"><p>Contattaci per la quota applicabile oggi al tuo rinnovo. Il listino conserva anche le voci agevolate entro il <strong>30 giugno 2026</strong>: quella scadenza è passata e non è una promozione attualmente aperta.</p><dl class="membership-renewals"><?php foreach ($memberships as $membership): if ($membership['rinnovo']===null) continue; ?><div><dt><?= h($membership['nome']) ?></dt><dd><?= h($membership['rinnovo']) ?></dd></div><?php endforeach; ?></dl><p class="membership-history-note">Importi storici riservati ai rinnovi entro la scadenza indicata, non quote da versare oggi.</p><a href="#contatti" data-topic="Rinnovo" data-message="Ciao! Vorrei rinnovare la tessera per la stagione <?= h($site['stagione']) ?>: qual è la quota applicabile?">Contatta il direttivo ↗</a></div></details>
+                <details><summary>E se devo rinnovare la tessera?</summary><div class="membership-answer"><p>Quote agevolate valide per i rinnovi entro il <strong>30 giugno 2026</strong> (promozione chiusa). Scrivici per la quota attuale.</p><dl class="membership-renewals"><?php foreach ($memberships as $membership): if ($membership['rinnovo']===null) continue; ?><div><dt><?= h($membership['nome']) ?></dt><dd><?= h($membership['rinnovo']) ?></dd></div><?php endforeach; ?></dl><a href="#contatti" data-topic="Rinnovo" data-message="Ciao! Vorrei rinnovare la tessera per la stagione <?= h($site['stagione']) ?>: qual è la quota applicabile?">Contatta il direttivo ↗</a></div></details>
             </div>
         </div>
-        <a class="membership-faq-link" href="#faq">Kit, MyInter e biglietti: altre risposte nelle FAQ <span aria-hidden="true">↗</span></a>
     </section>
 
     <section class="venue-section" id="sede" aria-labelledby="venue-title">
-        <figure class="venue-photo"><?= site_picture($site['sede_foto'], 'La sede dell’Inter Club Javier Zanetti Brindisi.', 1024, 576) ?><figcaption><?= h(site_image_credit($site['sede_foto'])) ?></figcaption></figure>
+        <figure class="venue-photo"><?= site_picture($site['sede_foto'], 'Sede dell’Inter Club Javier Zanetti in ' . $site['indirizzo'] . ', Brindisi', 1024, 576) ?><figcaption><?= h(site_image_credit($site['sede_foto'])) ?></figcaption></figure>
         <div class="venue-copy"><span class="eyebrow">DOVE TROVARCI</span><h2 id="venue-title"><?= nl2br(h($site['sede_titolo'])) ?></h2><address><?= h($site['indirizzo']) ?><br><?= h($site['citta']) ?></address><p><?= nl2br(h($site['sede_testo'])) ?></p><a class="public-button button-blue" href="<?= h($site['mappe']) ?>" target="_blank" rel="noopener noreferrer">Portami al club <span aria-hidden="true">↗</span></a></div>
     </section>
 
     <section class="section contact-section" id="contatti" aria-labelledby="contact-title">
-        <div class="contact-copy"><span class="eyebrow">IL PROSSIMO CORO, CANTIAMOLO INSIEME</span><h2 id="contact-title"><?= nl2br(h($site['contatti_titolo'])) ?></h2><p><?= nl2br(h($site['contatti_testo'])) ?></p><p class="contact-note">Lascia un recapito: ti risponde il direttivo. L’invio del modulo non completa il tesseramento.</p></div>
+        <div class="contact-copy"><span class="eyebrow">CONTATTI</span><h2 id="contact-title"><?= nl2br(h($site['contatti_titolo'])) ?></h2><p><?= nl2br(h($site['contatti_testo'])) ?></p></div>
         <div class="contact-form-panel">
-            <?php if ($sent): ?><div class="contact-success" role="status"><span class="eyebrow">MESSAGGIO RICEVUTO</span><h3>CI SIAMO. GRAZIE!</h3><p>La tua richiesta è stata registrata nell’area riservata del club. Il direttivo potrà risponderti al recapito che hai indicato.</p><a href="#tesseramento" class="text-link">Torna al tesseramento ↑</a></div><?php endif; ?>
+            <?php if ($sent): ?><div class="contact-success" role="status"><span class="eyebrow">MESSAGGIO RICEVUTO</span><h3>CI SIAMO. GRAZIE!</h3><p>Il direttivo ti risponderà al recapito indicato.</p><a href="#tesseramento" class="text-link">Torna al tesseramento ↑</a></div><?php endif; ?>
             <?php if ($errors): ?><div class="contact-error" role="alert"><strong>Controlla la richiesta.</strong><ul><?php foreach ($errors as $error): ?><li><?= h($error) ?></li><?php endforeach; ?></ul></div><?php endif; ?>
             <form method="post" action="<?= u('/contatti.php') ?>" class="public-form">
                 <input type="hidden" name="csrf_token" value="<?= h(csrf_token()) ?>">
@@ -92,25 +97,24 @@ public_header('Da soli si tifa. Insieme si vive.', 'Inter Club Javier Zanetti Br
                 <div class="honeypot" aria-hidden="true"><label for="contact-website">Lascia questo campo vuoto</label><input id="contact-website" name="website" tabindex="-1" autocomplete="off"></div>
                 <label class="privacy-check"><input type="checkbox" name="privacy" value="1" required><span>Ho letto l’<a href="<?= u('/privacy.php') ?>" target="_blank" rel="noopener">informativa privacy</a> e chiedo di essere ricontattato per questa richiesta. *</span></label>
                 <button class="public-button button-blue" type="submit">Invia al direttivo <span aria-hidden="true">↗</span></button>
-                <p class="form-fineprint">* Campi obbligatori. Non inserire documenti, codici fiscali o dati di minori nel messaggio.</p>
+                <p class="form-fineprint">* Campi obbligatori. Non inserire documenti o dati di minori.</p>
             </form>
         </div>
     </section>
     <section class="section faq-section" id="faq" aria-labelledby="faq-title">
-        <div class="faq-heading"><div><span class="eyebrow">FACCIAMO CHIAREZZA</span><h2 id="faq-title">Il dubbio ci sta.<br>La risposta è qui.</h2></div><p>Dal kit alla prima volta a San Siro.<br>Risposte semplici, fonti ufficiali, niente promesse a metà.</p></div>
+        <div class="faq-heading"><div><span class="eyebrow">FAQ INTER CLUB</span><h2 id="faq-title">Domande frequenti<br>sul tesseramento.</h2></div></div>
         <div class="faq-groups"><?php foreach ($faq['groups'] as $group): ?>
             <section class="faq-group" id="<?= h($group['id']) ?>" aria-labelledby="<?= h($group['id']) ?>-title">
-                <header class="faq-group-heading"><h3 id="<?= h($group['id']) ?>-title"><?= h($group['title']) ?></h3><p><?= h($group['intro']) ?></p></header>
+                <header class="faq-group-heading"><h3 id="<?= h($group['id']) ?>-title"><?= h($group['title']) ?></h3></header>
                 <?php foreach ($group['items'] as $item): ?>
                 <details id="<?= h($item['id']) ?>"><summary><?= h($item['question']) ?></summary><div class="faq-answer">
-                    <span class="faq-kind"><?= $item['kind'] === 'official' ? 'INFORMAZIONI UFFICIALI INTER' : 'INDICAZIONI ICBR' ?></span>
+                    <span class="faq-kind"><?= $item['kind'] === 'official' ? 'FONTE UFFICIALE INTER' : 'INTER CLUB BRINDISI' ?></span>
                     <p><?= h($item['answer']) ?><?php foreach ($item['sources'] as $source): ?> <a class="faq-source" href="<?= h($source['url']) ?>" target="_blank" rel="noopener noreferrer"><?= h($source['label']) ?><span aria-hidden="true"> ↗</span></a><?php endforeach; ?></p>
                     <?php if ($item['kind'] === 'local'): ?><a class="faq-contact" href="#contatti" data-topic="<?= $item['id'] === 'faq-visita' ? 'Visita alla sede' : 'Tesseramento' ?>">Chiedi al direttivo <span aria-hidden="true">↗</span></a><?php endif; ?>
                 </div></details>
                 <?php endforeach; ?>
             </section>
         <?php endforeach; ?></div>
-        <div class="faq-note"><a href="#contatti">Non trovi la tua risposta? Scrivici ↗</a></div>
     </section>
 </main>
 <?php public_footer(); ?>

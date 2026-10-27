@@ -107,3 +107,14 @@ In produzione impostare DocumentRoot su `public/`, HTTPS e credenziali DB dedica
 Non esporre directory `config/`, `storage/`, `database/`, file di backup o `.git`.
 Il layout e la vetrina non richiedono framework, npm o servizi esterni.
 L’anteprima usa un DB separato con soli dati sintetici; non mostra l’archivio dei soci.
+
+## SEO della vetrina
+
+- Ogni pagina pubblica ha title, description, canonical, Open Graph/Twitter Card e
+  dati strutturati JSON-LD (`SportsClub` con indirizzo e social; `FAQPage` in home).
+- `robots.txt` e `sitemap.xml` sono generati da `public/robots.php` e
+  `public/sitemap.php` (rewrite in `public/.htaccess`). L’area riservata è esclusa.
+- In produzione impostare `ICBR_SITE_URL` (es. `SetEnv ICBR_SITE_URL https://dominio.it`
+  nel VirtualHost) per URL canonici stabili; senza variabile si usa l’host della richiesta.
+- Dopo la pubblicazione, inviare la sitemap a Google Search Console e collegare il
+  sito alla scheda Google Business Profile del club.

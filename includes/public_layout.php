@@ -11,18 +11,76 @@ function asset_url(string $path): string
     return u($path . (is_file($file) ? '?v=' . filemtime($file) : ''));
 }
 
-function public_header(string $title, string $description): void
+/** URL assoluto del sito: ICBR_SITE_URL (consigliato in produzione) oppure host della richiesta validato. */
+function site_absolute_url(string $path = '/'): string
+{
+    $root = rtrim((string) (getenv('ICBR_SITE_URL') ?: ''), '/');
+    if ($root === '' || !preg_match('#\Ahttps?://[a-z0-9.-]+(?::\d+)?(?:/[\w./-]*)?\z#i', $root)) {
+        $host = strtolower((string) ($_SERVER['HTTP_HOST'] ?? ''));
+        if (!preg_match('/\A[a-z0-9.-]+(?::\d+)?\z/', $host)) return '';
+        $https = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') || (int) ($_SERVER['SERVER_PORT'] ?? 0) === 443;
+        $root = ($https ? 'https://' : 'http://') . $host . base_url();
+    }
+    return $root . $path;
+}
+
+/**
+ * Intestazione pubblica con metadati SEO e social.
+ * $title è il titolo completo della pagina; $jsonLd sono i dati strutturati aggiuntivi.
+ */
+function public_header(string $title, string $description, string $path = '/', array $jsonLd = []): void
 {
     $home = base_path('/index.php');
+    $content = $GLOBALS['site'] ?? site_content();
+    $canonical = site_absolute_url($path);
+    $image = site_absolute_url('/assets/images/' . (site_image_valid($content['hero_foto'] ?? '') ? $content['hero_foto'] : 'club-sede.jpg'));
+    $logo = site_absolute_url('/assets/images/logo-inter-club-brindisi.jpg');
+    $sameAs = array_values(array_filter(array_intersect_key($content, array_flip(['instagram','facebook','youtube','tiktok'])), fn($url, $key) => $url !== '' && site_social_valid($key, $url), ARRAY_FILTER_USE_BOTH));
+    $club = [
+        '@context' => 'https://schema.org',
+        '@type' => 'SportsClub',
+        'name' => $content['nome'] ?? 'Inter Club Javier Zanetti Brindisi',
+        'alternateName' => 'Inter Club Brindisi',
+        'description' => 'Inter Club di Brindisi dal 2003: tifosi dell’Inter, partite in sede e tesseramento Inter Club.',
+        'sport' => 'Calcio',
+        'foundingDate' => $content['fondazione'] ?? '2003',
+        'address' => [
+            '@type' => 'PostalAddress',
+            'streetAddress' => $content['indirizzo'] ?? '',
+            'postalCode' => preg_replace('/\D/', '', $content['citta'] ?? '') ?: null,
+            'addressLocality' => 'Brindisi',
+            'addressRegion' => 'BR',
+            'addressCountry' => 'IT',
+        ],
+        'hasMap' => $content['mappe'] ?? null,
+    ];
+    if ($canonical !== '') { $club['url'] = site_absolute_url('/'); $club['logo'] = $logo; $club['image'] = $image; }
+    if ($sameAs) $club['sameAs'] = $sameAs;
+    $schemas = array_merge([$club], $jsonLd);
     ?>
 <!DOCTYPE html>
 <html lang="it">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="theme-color" content="#011ea0">
+    <title><?= h($title) ?></title>
     <meta name="description" content="<?= h($description) ?>">
-    <title><?= h($title) ?> | Inter Club Javier Zanetti Brindisi</title>
+    <meta name="robots" content="index,follow,max-image-preview:large">
+    <meta name="theme-color" content="#011ea0">
+<?php if ($canonical !== ''): ?>
+    <link rel="canonical" href="<?= h($canonical) ?>">
+    <meta property="og:url" content="<?= h($canonical) ?>">
+    <meta property="og:image" content="<?= h($image) ?>">
+    <meta name="twitter:image" content="<?= h($image) ?>">
+<?php endif; ?>
+    <meta property="og:type" content="website">
+    <meta property="og:locale" content="it_IT">
+    <meta property="og:site_name" content="Inter Club Javier Zanetti Brindisi">
+    <meta property="og:title" content="<?= h($title) ?>">
+    <meta property="og:description" content="<?= h($description) ?>">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="<?= h($title) ?>">
+    <meta name="twitter:description" content="<?= h($description) ?>">
     <link rel="preload" href="<?= u('/assets/fonts/barlow-condensed-bold.woff2') ?>" as="font" type="font/woff2" crossorigin>
     <link rel="preload" href="<?= u('/assets/fonts/barlow-regular.woff2') ?>" as="font" type="font/woff2" crossorigin>
     <link rel="stylesheet" href="<?= asset_url('/assets/css/base.css') ?>">
@@ -33,6 +91,10 @@ function public_header(string $title, string $description): void
     <link rel="stylesheet" href="<?= asset_url('/assets/css/membership.css') ?>">
     <link rel="stylesheet" href="<?= asset_url('/assets/css/faq.css') ?>">
     <link rel="icon" type="image/jpeg" href="<?= u('/assets/images/logo-inter-club-brindisi.jpg') ?>">
+    <link rel="apple-touch-icon" href="<?= u('/assets/images/logo-inter-club-brindisi.jpg') ?>">
+<?php foreach ($schemas as $schema): ?>
+    <script type="application/ld+json"><?= json_encode($schema, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_HEX_TAG | JSON_HEX_AMP) ?></script>
+<?php endforeach; ?>
     <script src="<?= asset_url('/assets/js/site.js') ?>" defer></script>
 </head>
 <body class="public-site">
@@ -68,17 +130,15 @@ function public_footer(): void
     ?>
 <footer class="public-footer">
     <?php $socials = array_filter(array_intersect_key($content,array_flip(['instagram','facebook','youtube','tiktok']))); if ($socials): ?>
-    <div class="footer-social-heading"><span class="eyebrow">CI TROVI ANCHE QUI</span><h2>Il club non finisce<br>al novantesimo.</h2><p>Le foto, le trasferte, le prossime cose da fare insieme.<br>Seguici e resta nel gruppo.</p></div>
-    <nav class="footer-socials" aria-label="I social del club"><?php foreach ($socials as $key=>$url): if (!site_social_valid($key,$url)) continue; ?><a href="<?= h($url) ?>" target="_blank" rel="noopener noreferrer"><span class="social-monogram" aria-hidden="true"><?= h(['instagram'=>'IG','facebook'=>'FB','youtube'=>'YT','tiktok'=>'TT'][$key]) ?></span><span><?= h(['instagram'=>'Instagram','facebook'=>'Facebook','youtube'=>'YouTube','tiktok'=>'TikTok'][$key]) ?><small>Segui il club</small></span><span aria-hidden="true">↗</span></a><?php endforeach; ?></nav>
+    <div class="footer-social-heading"><span class="eyebrow">SEGUICI</span><h2>Il club non finisce<br>al novantesimo.</h2></div>
+    <nav class="footer-socials" aria-label="I social del club"><?php foreach ($socials as $key=>$url): if (!site_social_valid($key,$url)) continue; ?><a href="<?= h($url) ?>" target="_blank" rel="noopener noreferrer"><span class="social-monogram" aria-hidden="true"><?= h(['instagram'=>'IG','facebook'=>'FB','youtube'=>'YT','tiktok'=>'TT'][$key]) ?></span><span><?= h(['instagram'=>'Instagram','facebook'=>'Facebook','youtube'=>'YouTube','tiktok'=>'TikTok'][$key]) ?></span><span aria-hidden="true">↗</span></a><?php endforeach; ?></nav>
     <?php endif; ?>
-    <img class="footer-club-logo" src="<?= u('/assets/images/logo-inter-club-brindisi.jpg') ?>" alt="Inter Club Brindisi" width="100" height="100" loading="lazy">
-    <div class="footer-heading"><span>BRINDISI.</span><span>SEMPRE NERAZZURRA.</span></div>
     <div class="footer-grid">
-        <div><strong>Inter Club Javier Zanetti Brindisi</strong><p>Una città. Una passione. Una famiglia.</p></div>
-        <div><a href="<?= u('/index.php') ?>#sede">Vieni a trovarci</a><a href="<?= u('/index.php') ?>#contatti">Scrivi al club</a></div>
+        <div><img class="footer-club-logo" src="<?= u('/assets/images/logo-inter-club-brindisi.jpg') ?>" alt="Logo Inter Club Javier Zanetti Brindisi" width="100" height="100" loading="lazy"><strong>Inter Club Javier Zanetti Brindisi</strong><address><?= h($content['indirizzo']) ?>, <?= h($content['citta']) ?></address></div>
+        <div><a href="<?= u('/index.php') ?>#tesseramento">Tesseramento <?= h($content['stagione']) ?></a><a href="<?= u('/index.php') ?>#contatti">Contatti</a></div>
         <div><a href="<?= u('/privacy.php') ?>">Privacy e cookie</a></div>
     </div>
-    <div class="footer-bottom"><span>© <?= date('Y') ?> Inter Club Javier Zanetti Brindisi</span><span>Sito del club locale, distinto dal sito di FC Internazionale Milano.</span><a class="footer-staff-link" href="<?= u('/login.php') ?>">Direttivo</a></div>
+    <div class="footer-bottom"><span>© <?= date('Y') ?> Inter Club Javier Zanetti Brindisi · Club locale, distinto da FC Internazionale Milano.</span><a class="footer-staff-link" href="<?= u('/login.php') ?>" rel="nofollow">Direttivo</a></div>
 </footer>
 </body>
 </html>

@@ -5,5 +5,7 @@ Options -Indexes
 # Lasciare così — la configurazione del percorso base avviene in config.php
 
 RewriteEngine On
+RewriteRule ^robots\.txt$ robots.php [L]
+RewriteRule ^sitemap\.xml$ sitemap.php [L]
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteCond %{REQUEST_FILENAME} !-d
