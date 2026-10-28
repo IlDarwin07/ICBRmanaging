@@ -11,6 +11,7 @@ function permission_catalog(): array
         'importazioni'=>['Importazioni',['write'=>'Importare soci e tesseramenti, consultare esiti']],
         'configurazione'=>['Stagioni e listini',['view'=>'Consultare','write'=>'Modificare']],
         'sito'=>['Sito vetrina',['write'=>'Modificare e pubblicare']],
+        'articoli'=>['Articoli ed eventi',['view'=>'Consultare','write'=>'Creare, modificare e pubblicare','delete'=>'Eliminare']],
         'attivita'=>['Registro attività',['view'=>'Consultare il registro']],
     ];
 }
@@ -52,6 +53,7 @@ function permission_routes(): array
         '/prima_nota/delete.php'=>'prima_nota.delete','/prima_nota/export.php'=>'prima_nota.export',
         '/richieste/list.php'=>'richieste.view','/richieste/view.php'=>'richieste.view',
         '/sito/edit.php'=>'sito.write','/utenti/list.php'=>'utenti.manage','/utenti/edit.php'=>'utenti.manage',
+        '/articoli/list.php'=>'articoli.view','/articoli/edit.php'=>'articoli.write','/articoli/delete.php'=>'articoli.delete',
         '/attivita/list.php'=>'attivita.view',
     ];
     foreach (['stagioni','tipologie'] as $module) foreach (['list','create','edit'] as $p) $routes["/$module/$p.php"] = $p === 'list' ? 'configurazione.view' : 'configurazione.write';

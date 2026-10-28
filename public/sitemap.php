@@ -1,5 +1,6 @@
 <?php
 require_once __DIR__ . '/../includes/public_layout.php';
+require_once __DIR__ . '/../includes/articoli.php';
 header('Content-Type: application/xml; charset=UTF-8');
 $content = site_store_dir() . '/content.json';
 echo '<?xml version="1.0" encoding="UTF-8"?>' . "\n";
@@ -9,5 +10,16 @@ foreach (['/' => [__DIR__ . '/index.php', __DIR__ . '/../config/site_defaults.ph
     if ($loc === '') continue;
     $mtime = max(array_map(fn($f) => is_file($f) ? filemtime($f) : 0, $files));
     echo '  <url><loc>' . h($loc) . '</loc><lastmod>' . date('Y-m-d', $mtime) . '</lastmod></url>' . "\n";
+}
+$articles = articoli_public_list(500);
+$loc = site_absolute_url('/eventi.php');
+if ($loc !== '') {
+    $mtime = max(is_file(__DIR__ . '/eventi.php') ? filemtime(__DIR__ . '/eventi.php') : 0, $articles ? (int) strtotime((string) $articles[0]['updated_at']) : 0);
+    echo '  <url><loc>' . h($loc) . '</loc><lastmod>' . date('Y-m-d', $mtime) . '</lastmod></url>' . "\n";
+}
+foreach ($articles as $article) {
+    $loc = site_absolute_url('/evento.php?slug=' . rawurlencode($article['slug']));
+    if ($loc === '') continue;
+    echo '  <url><loc>' . h($loc) . '</loc><lastmod>' . h(substr((string) $article['updated_at'], 0, 10)) . '</lastmod></url>' . "\n";
 }
 echo "</urlset>\n";

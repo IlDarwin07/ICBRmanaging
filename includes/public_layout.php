@@ -90,6 +90,7 @@ function public_header(string $title, string $description, string $path = '/', a
     <link rel="stylesheet" href="<?= asset_url('/assets/css/modern.css') ?>">
     <link rel="stylesheet" href="<?= asset_url('/assets/css/membership.css') ?>">
     <link rel="stylesheet" href="<?= asset_url('/assets/css/faq.css') ?>">
+    <link rel="stylesheet" href="<?= asset_url('/assets/css/articoli.css') ?>">
     <link rel="icon" type="image/jpeg" href="<?= u('/assets/images/logo-inter-club-brindisi.jpg') ?>">
     <link rel="apple-touch-icon" href="<?= u('/assets/images/logo-inter-club-brindisi.jpg') ?>">
 <?php foreach ($schemas as $schema): ?>
@@ -117,6 +118,7 @@ function public_header(string $title, string $description, string $path = '/', a
         <a href="<?= h($home) ?>#club">Il club</a>
         <a href="<?= h($home) ?>#tesseramento">Tesseramento</a>
         <a href="<?= h($home) ?>#sede">La sede</a>
+        <a href="<?= u('/eventi.php') ?>">Eventi</a>
         <a href="<?= h($home) ?>#contatti">Contatti</a>
         <a href="<?= h($home) ?>#faq">FAQ</a>
     </nav>
@@ -135,7 +137,7 @@ function public_footer(): void
     <?php endif; ?>
     <div class="footer-grid">
         <div><img class="footer-club-logo" src="<?= u('/assets/images/logo-inter-club-brindisi.jpg') ?>" alt="Logo Inter Club Javier Zanetti Brindisi" width="100" height="100" loading="lazy"><strong>Inter Club Javier Zanetti Brindisi</strong><p>Associazione culturale</p><address><?= h($content['indirizzo']) ?>, <?= h($content['citta']) ?></address></div>
-        <div><a href="<?= u('/index.php') ?>#tesseramento">Tesseramento <?= h($content['stagione']) ?></a><a href="<?= u('/index.php') ?>#contatti">Contatti</a></div>
+        <div><a href="<?= u('/index.php') ?>#tesseramento">Tesseramento <?= h($content['stagione']) ?></a><a href="<?= u('/eventi.php') ?>">Eventi e racconti</a><a href="<?= u('/index.php') ?>#contatti">Contatti</a></div>
         <div><a href="<?= u('/privacy.php') ?>">Privacy e cookie</a></div>
     </div>
     <div class="footer-bottom"><span>© <?= date('Y') ?> Inter Club Javier Zanetti Brindisi · Associazione culturale</span><a class="footer-staff-link" href="<?= u('/login.php') ?>" rel="nofollow">Direttivo</a></div>

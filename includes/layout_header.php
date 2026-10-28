@@ -12,6 +12,7 @@ $groups = [
     'Comunicazioni' => [
         ['WhatsApp','/messaggi/index.php','whatsapp.view','/messaggi/'],
         ['Richieste dal sito','/richieste/list.php','richieste.view','/richieste/'],
+        ['Articoli ed eventi','/articoli/list.php','articoli.view','/articoli/'],
     ],
     'Gestione' => [
         ['Importa soci','/importazioni/upload.php','importazioni.write','/importazioni/'],
