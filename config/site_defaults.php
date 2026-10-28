@@ -45,7 +45,7 @@ return [
     'facebook' => '',
     'youtube' => '',
     'tiktok' => '',
-    'hero_foto' => '',
-    'sede_foto' => '',
-    'ricordi_foto' => '',
+    'hero_foto' => 'club-sede.jpg',
+    'sede_foto' => 'club-interno.jpg',
+    'ricordi_foto' => 'club-ricordi.jpg',
 ];
