@@ -32,6 +32,8 @@ public_header(
         </figure>
     </section>
 
+    <?php require __DIR__ . '/../includes/home_latest_article.php'; ?>
+
     <section class="section club-section" id="club" aria-labelledby="club-title">
         <div class="section-intro"><span class="eyebrow">IL CLUB</span><h2 id="club-title"><?= nl2br(h($site['club_titolo'])) ?></h2></div>
         <div class="club-layout">
@@ -86,7 +88,7 @@ public_header(
     <section class="section contact-section" id="contatti" aria-labelledby="contact-title">
         <div class="contact-copy"><span class="eyebrow">CONTATTI</span><h2 id="contact-title"><?= nl2br(h($site['contatti_titolo'])) ?></h2><p><?= nl2br(h($site['contatti_testo'])) ?></p></div>
         <div class="contact-form-panel">
-            <?php if ($sent): ?><div class="contact-success" role="status"><span class="eyebrow">MESSAGGIO RICEVUTO</span><h3>CI SIAMO. GRAZIE!</h3><p>Il direttivo ti risponderà al recapito indicato.</p><a href="#tesseramento" class="text-link">Torna al tesseramento ↑</a></div><?php endif; ?>
+            <?php if ($sent): ?><div class="contact-success" role="status"><span class="eyebrow">MESSAGGGIO RICEVUTO</span><h3>CI SIAMO. GRAZIE!</h3><p>Il direttivo ti risponderà al recapito indicato.</p><a href="#tesseramento" class="text-link">Torna al tesseramento ↑</a></div><?php endif; ?>
             <?php if ($errors): ?><div class="contact-error" role="alert"><strong>Controlla la richiesta.</strong><ul><?php foreach ($errors as $error): ?><li><?= h($error) ?></li><?php endforeach; ?></ul></div><?php endif; ?>
             <form method="post" action="<?= u('/contatti.php') ?>" class="public-form">
                 <input type="hidden" name="csrf_token" value="<?= h(csrf_token()) ?>">
