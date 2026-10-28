@@ -140,8 +140,24 @@ function public_footer(): void
         <div><a href="<?= u('/index.php') ?>#tesseramento">Tesseramento <?= h($content['stagione']) ?></a><a href="<?= u('/eventi.php') ?>">Eventi e racconti</a><a href="<?= u('/index.php') ?>#contatti">Contatti</a></div>
         <div><a href="<?= u('/privacy.php') ?>">Privacy e cookie</a></div>
     </div>
-    <div class="footer-bottom"><span>© <?= date('Y') ?> Inter Club Javier Zanetti Brindisi · Associazione culturale</span><a class="footer-staff-link" href="<?= u('/login.php') ?>" rel="nofollow">Direttivo</a></div>
+    <div class="footer-bottom"><span>© <?= date('Y') ?> Inter Club Javier Zanetti Brindisi · Associazione culturale</span><a class="footer-lock" href="<?= u('/login.php') ?>" rel="nofollow" title="Area riservata" aria-label="Area riservata del direttivo"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></a></div>
 </footer>
+<style>
+.public-footer .footer-lock{display:inline-flex;align-items:center;justify-content:center;width:44px;height:44px;margin:-10px -12px -10px 0;color:inherit;opacity:.22;transition:opacity .2s}
+.public-footer .footer-lock:hover,.public-footer .footer-lock:focus-visible{opacity:1}
+</style>
+<script>
+(function () {
+    var secret = 'icbr', buffer = '', target = <?= json_encode(base_path('/login.php'), JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) ?>;
+    document.addEventListener('keydown', function (event) {
+        if (event.ctrlKey || event.metaKey || event.altKey || event.key.length !== 1) return;
+        var el = event.target;
+        if (el && (el.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(el.tagName))) return;
+        buffer = (buffer + event.key.toLowerCase()).slice(-secret.length);
+        if (buffer === secret) window.location.href = target;
+    });
+})();
+</script>
 </body>
 </html>
 <?php
