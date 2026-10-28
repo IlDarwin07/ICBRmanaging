@@ -18,6 +18,7 @@ const DASH_WIDGETS = [
 const DASH_COOKIE = 'icbr_dashboard';
 const DASH_PALETTE = ['#123ed0', '#2f80ed', '#37b6e8', '#1fa971', '#f2a33a', '#8a5cf6', '#e0566b', '#e5c63c'];
 const DASH_ALTRI = '#b8c1d6';
+const DASH_SOGLIA_ALTRI = 0.8; // percentuale sotto cui un comune confluisce in "Altri comuni"
 
 function dash_selected(): array
 {
@@ -146,13 +147,17 @@ if ($mostra('comuni')) {
     )->fetchAll();
 
     $totale_comuni = 0;
+    foreach ($tutti_comuni as $r) {
+        $totale_comuni += (int)$r['totale'];
+    }
+
     $principali = [];
     $piccoli_comuni = 0;
     $piccoli_soci = 0;
     foreach ($tutti_comuni as $r) {
         $n = (int)$r['totale'];
-        $totale_comuni += $n;
-        if ($n <= 2 && $r['comune'] !== 'Non specificato') {
+        $percentuale = $totale_comuni > 0 ? $n * 100 / $totale_comuni : 0;
+        if ($percentuale < DASH_SOGLIA_ALTRI && $r['comune'] !== 'Non specificato') {
             $piccoli_comuni++;
             $piccoli_soci += $n;
         } else {
@@ -175,7 +180,7 @@ if ($mostra('comuni')) {
     }
     if ($piccoli_comuni > 0) {
         $righe_comuni[] = [
-            'label' => 'Altri comuni (' . $piccoli_comuni . ', 1-2 soci ciascuno)',
+            'label' => 'Altri comuni (' . $piccoli_comuni . ', ciascuno sotto lo 0,8%)',
             'value' => $piccoli_soci,
             'color' => DASH_ALTRI,
         ];
