@@ -2,13 +2,17 @@
 require_once __DIR__ . '/functions.php';
 require_once __DIR__ . '/site_content.php';
 
-/** Crea la tabella se manca (utile per installazioni senza migrazione 011). Solo area riservata. */
+const ARTICOLI_GALLERY_MAX = 8;
+const ARTICOLI_NEW_PHOTO_SLOTS = 3;
+
+/** Crea la tabella (e la colonna galleria) se mancano. Solo area riservata. */
 function articoli_table_ready(): bool
 {
     static $ready = null;
     if ($ready !== null) return $ready;
     try {
-        get_db_connection()->query(
+        $pdo = get_db_connection();
+        $pdo->query(
             'CREATE TABLE IF NOT EXISTS articoli_eventi (
                 id_articolo INT AUTO_INCREMENT PRIMARY KEY,
                 slug VARCHAR(160) NOT NULL,
@@ -19,6 +23,7 @@ function articoli_table_ready(): bool
                 luogo VARCHAR(160) NULL,
                 copertina VARCHAR(120) NULL,
                 copertina_alt VARCHAR(200) NULL,
+                galleria TEXT NULL,
                 pubblicato TINYINT(1) NOT NULL DEFAULT 0,
                 id_autore INT NULL,
                 created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -28,12 +33,34 @@ function articoli_table_ready(): bool
                 CONSTRAINT fk_articoli_autore FOREIGN KEY (id_autore) REFERENCES utenti_admin(id_utente) ON DELETE SET NULL
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4'
         );
+        $column = $pdo->query("SHOW COLUMNS FROM articoli_eventi LIKE 'galleria'")->fetch();
+        if (!$column) {
+            $pdo->query('ALTER TABLE articoli_eventi ADD COLUMN galleria TEXT NULL AFTER copertina_alt');
+        }
         $ready = true;
     } catch (Throwable $e) {
         error_log('ICBR: tabella articoli_eventi non disponibile: ' . $e->getMessage());
         $ready = false;
     }
     return $ready;
+}
+
+/** Galleria: elenco di ['file' => nome, 'alt' => didascalia], solo immagini valide. */
+function articoli_gallery_decode(?string $json): array
+{
+    $data = json_decode((string)$json, true);
+    if (!is_array($data)) return [];
+    $out = [];
+    foreach ($data as $item) {
+        if (!is_array($item) || !is_string($item['file'] ?? null) || !site_image_valid($item['file'])) continue;
+        $out[] = ['file' => $item['file'], 'alt' => is_string($item['alt'] ?? null) ? mb_substr($item['alt'], 0, 200) : ''];
+    }
+    return array_slice($out, 0, ARTICOLI_GALLERY_MAX);
+}
+
+function articoli_gallery_encode(array $items): ?string
+{
+    return $items ? json_encode(array_values($items), JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) : null;
 }
 
 function articoli_slug(string $title): string
@@ -113,14 +140,14 @@ function articoli_admin_find(int $id): ?array
     return $row ?: null;
 }
 
-/** Salva la copertina caricata; restituisce il nome del file oppure null (con eventuali errori). */
-function articoli_save_cover(?array $upload, array &$errors): ?string
+/** Salva un’immagine caricata; restituisce il nome del file oppure null (con eventuali errori). */
+function articoli_save_cover(?array $upload, array &$errors, string $label = 'Copertina'): ?string
 {
     if (!$upload || ($upload['error'] ?? UPLOAD_ERR_NO_FILE) === UPLOAD_ERR_NO_FILE) return null;
     if (!is_int($upload['error'] ?? null) || $upload['error'] !== UPLOAD_ERR_OK
         || !is_string($upload['tmp_name'] ?? null) || !is_uploaded_file($upload['tmp_name'])
         || !is_int($upload['size'] ?? null) || $upload['size'] <= 0 || $upload['size'] > 6 * 1024 * 1024) {
-        $errors[] = 'Copertina: carica un’immagine valida, massimo 6 MB.';
+        $errors[] = $label . ': carica un’immagine valida, massimo 6 MB.';
         return null;
     }
     $info = @getimagesize($upload['tmp_name']);
@@ -128,13 +155,13 @@ function articoli_save_cover(?array $upload, array &$errors): ?string
     $extensions = ['image/jpeg' => 'jpg', 'image/png' => 'png', 'image/webp' => 'webp'];
     if (!$info || !isset($extensions[$mime]) || ($info['mime'] ?? '') !== $mime
         || $info[0] < 640 || $info[1] < 360 || $info[0] * $info[1] > 24000000) {
-        $errors[] = 'Copertina: usa JPEG, PNG o WebP, almeno 640×360 px e massimo 24 megapixel.';
+        $errors[] = $label . ': usa JPEG, PNG o WebP, almeno 640×360 px e massimo 24 megapixel.';
         return null;
     }
     $name = 'evento-' . bin2hex(random_bytes(12)) . '.' . $extensions[$mime];
     $path = __DIR__ . '/../public/assets/images/' . $name;
     if (!move_uploaded_file($upload['tmp_name'], $path)) {
-        $errors[] = 'Copertina: cartella foto non scrivibile. Controlla i permessi.';
+        $errors[] = $label . ': cartella foto non scrivibile. Controlla i permessi.';
         return null;
     }
     chmod($path, 0644);

@@ -20,9 +20,11 @@ $pdo = get_db_connection();
 $stmt = $pdo->prepare('DELETE FROM articoli_eventi WHERE id_articolo = :id');
 $stmt->execute(['id' => $id]);
 
-$cover = (string)($article['copertina'] ?? '');
-if (str_starts_with($cover, 'evento-') && site_image_valid($cover)) {
-    @unlink(__DIR__ . '/../assets/images/' . $cover);
+$files = array_merge([(string)($article['copertina'] ?? '')], array_column(articoli_gallery_decode($article['galleria'] ?? null), 'file'));
+foreach ($files as $file) {
+    if (str_starts_with($file, 'evento-') && site_image_valid($file)) {
+        @unlink(__DIR__ . '/../assets/images/' . $file);
+    }
 }
 try {
     audit_event('articoli', 'eliminazione', 'articolo', (string)$id, ['titolo' => $article['titolo']]);

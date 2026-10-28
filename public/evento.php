@@ -15,6 +15,7 @@ if (!$article) {
 
 $path = '/evento.php?slug=' . rawurlencode($article['slug']);
 $cover = (string)($article['copertina'] ?? '');
+$gallery = articoli_gallery_decode($article['galleria'] ?? null);
 $schema = [
     '@context' => 'https://schema.org',
     '@type' => 'Article',
@@ -44,6 +45,16 @@ public_header($article['titolo'] . ' | Inter Club Javier Zanetti Brindisi', $art
         <div class="event-text">
             <?php foreach (articoli_paragraphs((string)$article['testo']) as $paragraph): ?><p><?= nl2br(h($paragraph)) ?></p><?php endforeach; ?>
         </div>
+        <?php if ($gallery): ?>
+        <section class="event-gallery" aria-label="Foto dell’evento">
+            <?php foreach ($gallery as $photo): ?>
+            <figure>
+                <?= site_picture($photo['file'], $photo['alt'] !== '' ? $photo['alt'] : $article['titolo'], 1200, 900) ?>
+                <?php if ($photo['alt'] !== ''): ?><figcaption><?= h($photo['alt']) ?></figcaption><?php endif; ?>
+            </figure>
+            <?php endforeach; ?>
+        </section>
+        <?php endif; ?>
         <a class="public-button button-blue" href="<?= u('/index.php') ?>#contatti">Vieni a trovarci <span aria-hidden="true">↗</span></a>
     </article>
 </main>

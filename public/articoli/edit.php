@@ -14,7 +14,9 @@ $values = $article ?: [
     'titolo' => '', 'sommario' => '', 'testo' => '', 'data_evento' => date('Y-m-d'),
     'luogo' => '', 'copertina' => '', 'copertina_alt' => '', 'pubblicato' => 0,
 ];
+$currentGallery = articoli_gallery_decode($article['galleria'] ?? null);
 $errors = [];
+$uploaded = [];
 
 if ($ready && $_SERVER['REQUEST_METHOD'] === 'POST') {
     verify_csrf_token($_POST['csrf_token'] ?? null);
@@ -36,8 +38,36 @@ if ($ready && $_SERVER['REQUEST_METHOD'] === 'POST') {
     $date = DateTime::createFromFormat('Y-m-d', $values['data_evento']);
     if (!$date || $date->format('Y-m-d') !== $values['data_evento']) $errors[] = 'Data evento: inserisci una data valida.';
 
+    $removeList = array_filter((array)($_POST['galleria_rimuovi'] ?? []), 'is_string');
+    $removedFiles = [];
+    $gallery = [];
+    foreach ($currentGallery as $item) {
+        if (in_array($item['file'], $removeList, true)) { $removedFiles[] = $item['file']; continue; }
+        $caption = $_POST['galleria_alt'][$item['file']] ?? '';
+        $item['alt'] = mb_substr(trim(is_string($caption) ? $caption : ''), 0, 200);
+        $gallery[] = $item;
+    }
+
     $newCover = null;
-    if (!$errors) $newCover = articoli_save_cover($_FILES['copertina_upload'] ?? null, $errors);
+    if (!$errors) {
+        $newCover = articoli_save_cover($_FILES['copertina_upload'] ?? null, $errors);
+        if ($newCover !== null) $uploaded[] = $newCover;
+    }
+    if (!$errors) {
+        for ($i = 0; $i < ARTICOLI_NEW_PHOTO_SLOTS; $i++) {
+            $slot = $_FILES['galleria_nuova_' . $i] ?? null;
+            if (!$slot || ($slot['error'] ?? UPLOAD_ERR_NO_FILE) === UPLOAD_ERR_NO_FILE) continue;
+            if (count($gallery) >= ARTICOLI_GALLERY_MAX) {
+                $errors[] = 'Foto nell’articolo: massimo ' . ARTICOLI_GALLERY_MAX . ' immagini.';
+                break;
+            }
+            $name = articoli_save_cover($slot, $errors, 'Foto ' . ($i + 1));
+            if ($name === null) continue;
+            $uploaded[] = $name;
+            $caption = $_POST['galleria_nuova_alt_' . $i] ?? '';
+            $gallery[] = ['file' => $name, 'alt' => mb_substr(trim(is_string($caption) ? $caption : ''), 0, 200)];
+        }
+    }
 
     if (!$errors) {
         $cover = $removeCover ? '' : (string)($values['copertina'] ?? '');
@@ -49,16 +79,20 @@ if ($ready && $_SERVER['REQUEST_METHOD'] === 'POST') {
                 'data' => $values['data_evento'], 'luogo' => $values['luogo'] !== '' ? $values['luogo'] : null,
                 'copertina' => $cover !== '' ? $cover : null,
                 'alt' => $values['copertina_alt'] !== '' ? $values['copertina_alt'] : null,
+                'galleria' => articoli_gallery_encode($gallery),
                 'pubblicato' => $values['pubblicato'],
             ];
             if ($article) {
-                $stmt = $pdo->prepare('UPDATE articoli_eventi SET titolo = :titolo, sommario = :sommario, testo = :testo, data_evento = :data, luogo = :luogo, copertina = :copertina, copertina_alt = :alt, pubblicato = :pubblicato WHERE id_articolo = :id');
+                $stmt = $pdo->prepare('UPDATE articoli_eventi SET titolo = :titolo, sommario = :sommario, testo = :testo, data_evento = :data, luogo = :luogo, copertina = :copertina, copertina_alt = :alt, galleria = :galleria, pubblicato = :pubblicato WHERE id_articolo = :id');
                 $stmt->execute($params + ['id' => $article['id_articolo']]);
                 $savedId = (int)$article['id_articolo'];
             } else {
-                $stmt = $pdo->prepare('INSERT INTO articoli_eventi (slug, titolo, sommario, testo, data_evento, luogo, copertina, copertina_alt, pubblicato, id_autore) VALUES (:slug, :titolo, :sommario, :testo, :data, :luogo, :copertina, :alt, :pubblicato, :autore)');
+                $stmt = $pdo->prepare('INSERT INTO articoli_eventi (slug, titolo, sommario, testo, data_evento, luogo, copertina, copertina_alt, galleria, pubblicato, id_autore) VALUES (:slug, :titolo, :sommario, :testo, :data, :luogo, :copertina, :alt, :galleria, :pubblicato, :autore)');
                 $stmt->execute($params + ['slug' => articoli_unique_slug(articoli_slug($values['titolo'])), 'autore' => current_user()['id_utente'] ?? null]);
                 $savedId = (int)$pdo->lastInsertId();
+            }
+            foreach ($removedFiles as $file) {
+                if (str_starts_with($file, 'evento-') && is_file(__DIR__ . '/../assets/images/' . $file)) @unlink(__DIR__ . '/../assets/images/' . $file);
             }
             try {
                 audit_event('articoli', $article ? 'modifica' : 'creazione', 'articolo', (string)$savedId, ['titolo' => $values['titolo'], 'pubblicato' => $values['pubblicato']]);
@@ -67,12 +101,17 @@ if ($ready && $_SERVER['REQUEST_METHOD'] === 'POST') {
             }
             redirect_with_message('/articoli/list.php', $values['pubblicato'] ? 'Articolo salvato e pubblicato.' : 'Articolo salvato come bozza.');
         } catch (Throwable $e) {
-            if ($newCover !== null && is_file(__DIR__ . '/../assets/images/' . $newCover)) unlink(__DIR__ . '/../assets/images/' . $newCover);
             $errors[] = 'Non è stato possibile salvare. Riprova.';
+        }
+    }
+    if ($errors) {
+        foreach ($uploaded as $file) {
+            if (is_file(__DIR__ . '/../assets/images/' . $file)) @unlink(__DIR__ . '/../assets/images/' . $file);
         }
     }
 }
 
+$freeSlots = max(0, ARTICOLI_GALLERY_MAX - count($currentGallery));
 $page_title = $article ? 'Modifica articolo' : 'Nuovo articolo';
 require __DIR__ . '/../../includes/layout_header.php';
 ?>
@@ -108,6 +147,33 @@ require __DIR__ . '/../../includes/layout_header.php';
             <div class="cms-field"><label for="copertina_upload">Carica una nuova copertina</label><input id="copertina_upload" name="copertina_upload" type="file" accept="image/jpeg,image/png,image/webp"></div>
             <div class="cms-field"><label for="copertina_alt">Descrizione della foto <span class="muted">(per chi non la vede)</span></label><input id="copertina_alt" name="copertina_alt" maxlength="200" value="<?= h($values['copertina_alt'] ?? '') ?>"></div>
         </div>
+    </section>
+    <section class="admin-panel cms-section">
+        <h2>Foto nell’articolo</h2>
+        <p class="muted">Fino a <?= ARTICOLI_GALLERY_MAX ?> foto, mostrate sotto il testo. La didascalia compare sotto la foto. Ne puoi aggiungere <?= ARTICOLI_NEW_PHOTO_SLOTS ?> per volta.</p>
+        <?php foreach ($currentGallery as $photo): ?>
+            <div class="cms-photo">
+                <img src="<?= u('/assets/images/' . $photo['file']) ?>" alt="Foto dell’articolo" width="320" height="180">
+                <div>
+                    <label for="alt-<?= h($photo['file']) ?>">Didascalia</label>
+                    <input id="alt-<?= h($photo['file']) ?>" name="galleria_alt[<?= h($photo['file']) ?>]" maxlength="200" value="<?= h($photo['alt']) ?>">
+                    <label><input type="checkbox" name="galleria_rimuovi[]" value="<?= h($photo['file']) ?>"> Rimuovi questa foto</label>
+                </div>
+            </div>
+        <?php endforeach; ?>
+        <?php if ($freeSlots > 0): ?>
+            <div class="cms-fields">
+            <?php for ($i = 0; $i < min($freeSlots, ARTICOLI_NEW_PHOTO_SLOTS); $i++): ?>
+                <div class="cms-field">
+                    <label for="galleria_nuova_<?= $i ?>">Nuova foto <?= $i + 1 ?></label>
+                    <input id="galleria_nuova_<?= $i ?>" name="galleria_nuova_<?= $i ?>" type="file" accept="image/jpeg,image/png,image/webp">
+                    <input name="galleria_nuova_alt_<?= $i ?>" maxlength="200" placeholder="Didascalia (facoltativa)" aria-label="Didascalia della nuova foto <?= $i + 1 ?>">
+                </div>
+            <?php endfor; ?>
+            </div>
+        <?php else: ?>
+            <p class="note">Hai raggiunto il massimo di <?= ARTICOLI_GALLERY_MAX ?> foto: rimuovine una per aggiungerne altre.</p>
+        <?php endif; ?>
     </section>
     <div class="cms-save">
         <label><input type="checkbox" name="pubblicato" value="1" <?= !empty($values['pubblicato']) ? 'checked' : '' ?>> Pubblica sul sito</label>
