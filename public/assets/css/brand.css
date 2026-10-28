@@ -13,3 +13,29 @@
 .login-brand-copy>span{color:#b5c7ff}
 @media(max-width:1050px){.public-site .wordmark>.club-logo{width:62px;height:62px}.admin-body .topbar-brand>.club-logo{width:54px;height:54px}.admin-body .topbar-brand{gap:12px}}
 @media(max-width:650px){.public-site .public-header{height:90px}.public-site .wordmark{gap:12px}.public-site .wordmark>.club-logo{width:56px;height:56px}.public-site .wordmark-top{font-size:25px}.public-site .wordmark-bottom{margin-top:4px;font-size:12px!important}.public-site .wordmark-bottom b{display:block;margin:4px 0 0}.admin-body .topbar-brand{gap:9px}.admin-body .topbar-brand>.club-logo{width:44px;height:44px}.admin-body .topbar-brand strong{font-size:20px}.admin-body .topbar-brand small{font-size:12px;letter-spacing:.025em}.admin-body .brand-area{display:none}.login-brand{gap:15px;font-size:23px}.login-brand>.club-logo{width:68px;height:68px}.login-brand-copy{max-width:200px}.footer-club-logo{width:85px;height:85px}}
+
+/* Indicatore simmetrico: nessuna eccezione di padding sul primo link. */
+body.admin-body .topbar .topbar-nav>a,
+body.admin-body .topbar .topbar-nav>a:first-child,
+body.admin-body .topbar .workspace-menu>summary{
+    position:relative;justify-content:center;padding:10px 12px 14px;
+    border-bottom:0;text-align:center;
+}
+body.admin-body .topbar .topbar-nav>a::after,
+body.admin-body .topbar .workspace-menu>summary::after{
+    content:"";position:absolute;left:50%;bottom:3px;
+    width:calc(100% - 24px);height:3px;border-radius:999px;
+    transform:translateX(-50%);background:#5b7fff;opacity:0;pointer-events:none;
+}
+body.admin-body .topbar .topbar-nav>a.active::after,
+body.admin-body .topbar .topbar-nav>a:hover::after,
+body.admin-body .topbar .workspace-menu.active>summary::after{opacity:1}
+@media(max-width:1050px){
+    body.admin-body .topbar .topbar-nav>a,
+    body.admin-body .topbar .topbar-nav>a:first-child,
+    body.admin-body .topbar .workspace-menu>summary{
+        justify-content:flex-start;text-align:left;padding:12px;
+    }
+    body.admin-body .topbar .topbar-nav>a::after,
+    body.admin-body .topbar .workspace-menu>summary::after{display:none}
+}
