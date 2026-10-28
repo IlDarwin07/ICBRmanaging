@@ -26,6 +26,25 @@ if (nav) {
         nav.appendChild(clone);
     });
 }
+// Un solo menu a tendina aperto alla volta; si chiude con clic fuori o Esc.
+const dropdownMenus = Array.from(document.querySelectorAll('.workspace-menu, .dash-config'));
+dropdownMenus.forEach(menu => {
+    menu.addEventListener('toggle', () => {
+        if (!menu.open) return;
+        dropdownMenus.forEach(other => { if (other !== menu) other.open = false; });
+    });
+});
+document.addEventListener('click', event => {
+    dropdownMenus.forEach(menu => { if (menu.open && !menu.contains(event.target)) menu.open = false; });
+});
+document.addEventListener('keydown', event => {
+    if (event.key !== 'Escape') return;
+    dropdownMenus.forEach(menu => {
+        if (!menu.open) return;
+        menu.open = false;
+        menu.querySelector('summary')?.focus();
+    });
+});
 window.icbrConfirm = message => new Promise(resolve => {
     const modal = document.createElement('dialog');
     modal.className = 'club-dialog';
