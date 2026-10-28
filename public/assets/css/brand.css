@@ -39,3 +39,32 @@ body.admin-body .topbar .workspace-menu.active>summary::after{opacity:1}
     body.admin-body .topbar .topbar-nav>a::after,
     body.admin-body .topbar .workspace-menu>summary::after{display:none}
 }
+
+/* Disposizione riservata alla dashboard; nessuna variazione delle altre pagine. */
+body.admin-body .content:has(>.dash-config){display:flow-root}
+body.admin-body .content>.dash-config{float:right;position:relative;width:auto;max-width:100%;margin:-2px 0 12px 20px;border:0;background:transparent;border-radius:10px;z-index:10}
+body.admin-body .content>.dash-config>summary{list-style:none;padding:10px 14px;min-height:42px;box-sizing:border-box;display:flex;align-items:center;gap:10px;background:white;border:1px solid #d7dfec;border-radius:10px;font-size:13px;color:#344260}
+body.admin-body .content>.dash-config>summary::-webkit-details-marker{display:none}
+body.admin-body .content>.dash-config>summary::after{content:'⌄';font-size:16px}
+body.admin-body .content>.dash-config[open]>summary{background:#eef3ff;border-color:#a8bce9}
+body.admin-body .content>.dash-config>form{position:absolute;top:calc(100% + 8px);right:0;width:300px;max-width:calc(100vw - 40px);box-sizing:border-box;display:flex;flex-direction:column;align-items:stretch;gap:0;margin:0;padding:10px;background:white;border:1px solid #dce3ef;border-radius:13px;box-shadow:0 14px 36px #182c5226}
+body.admin-body .content>.dash-config>form>label{display:flex!important;min-height:44px;box-sizing:border-box;padding:10px;border-radius:7px;font-size:14px;margin:0!important}
+body.admin-body .content>.dash-config>form>label:hover{background:#f2f5fc}
+body.admin-body .content>.dash-config>form>.btn{width:100%;margin:10px 0 0;background:#123ed0;border-color:#123ed0;color:white}
+body.admin-body .content:has(>.dash-config)>h1{margin-bottom:16px}
+body.admin-body .content:has(>.dash-config)>.flash{padding:10px 14px;font-size:13px;margin-bottom:18px}
+body.admin-body .content:has(>.dash-config)>.quick-links{gap:7px;margin:0 0 18px;min-height:44px;align-items:center}
+body.admin-body .content:has(>.dash-config)>.quick-links>.btn{min-height:38px;padding:8px 12px;font-size:13px;box-shadow:none}
+body.admin-body .content:has(>.dash-config)>h2{clear:both;margin:22px 0 10px;font-size:17px}
+body.admin-body .content:has(>.dash-config)>.cards-grid{gap:12px;margin-bottom:16px}
+body.admin-body .content:has(>.dash-config)>.cards-grid>.card{padding:16px 18px;gap:4px;min-height:104px;box-sizing:border-box}
+body.admin-body .content:has(>.dash-config)>.cards-grid>.card>.card-value{font-size:30px;line-height:1.15}
+body.admin-body .content:has(>.dash-config)>.cards-grid>.card>.card-label{margin-top:4px;font-size:12px;line-height:1.4}
+@media(max-width:700px){
+    body.admin-body .content>.dash-config{float:none;margin:0 0 12px;width:100%}
+    body.admin-body .content>.dash-config>summary{justify-content:space-between}
+    body.admin-body .content>.dash-config>form{position:static;width:100%;max-width:100%;margin-top:8px;box-shadow:none}
+    body.admin-body .content:has(>.dash-config)>.quick-links{margin:0 0 16px}
+    body.admin-body .content:has(>.dash-config)>.cards-grid>.card{padding:14px 12px;min-height:96px}
+    body.admin-body .content:has(>.dash-config)>.cards-grid>.card>.card-value{font-size:26px}
+}
