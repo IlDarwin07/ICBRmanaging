@@ -121,6 +121,7 @@ function public_header(string $title, string $description, string $path = '/', a
         <a href="<?= u('/eventi.php') ?>">Eventi</a>
         <a href="<?= h($home) ?>#contatti">Contatti</a>
         <a href="<?= h($home) ?>#faq">FAQ</a>
+        <a class="nav-lock" href="<?= u('/login.php') ?>" rel="nofollow" title="Area riservata" aria-label="Area riservata del direttivo"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></a>
     </nav>
 </header>
 <?php
@@ -145,6 +146,9 @@ function public_footer(): void
 <style>
 .public-footer .footer-lock{display:inline-flex;align-items:center;justify-content:center;width:44px;height:44px;margin:-10px -12px -10px 0;color:inherit;opacity:.22;transition:opacity .2s}
 .public-footer .footer-lock:hover,.public-footer .footer-lock:focus-visible{opacity:1}
+.public-nav .nav-lock{display:inline-flex;align-items:center;justify-content:center;min-width:44px;min-height:44px;margin-left:auto;padding:0;opacity:.75;transition:opacity .2s}
+.public-nav .nav-lock:hover,.public-nav .nav-lock:focus-visible{opacity:1}
+.public-nav .nav-lock::after{display:none}
 </style>
 <script>
 (function () {
