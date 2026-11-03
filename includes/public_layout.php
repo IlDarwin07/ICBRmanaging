@@ -149,6 +149,7 @@ function public_footer(): void
 .public-nav .nav-lock{display:inline-flex;align-items:center;justify-content:center;min-width:44px;min-height:44px;margin-left:auto;padding:0;opacity:.75;transition:opacity .2s}
 .public-nav .nav-lock:hover,.public-nav .nav-lock:focus-visible{opacity:1}
 .public-nav .nav-lock::after{display:none}
+@media(max-width:1050px){.public-nav .nav-lock{margin-left:0;justify-content:flex-start;margin-top:10px;border-top:1px solid var(--line);padding-top:6px}}
 </style>
 <script>
 (function () {
