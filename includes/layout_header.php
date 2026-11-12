@@ -20,8 +20,10 @@ $groups = [
     ],
     'Gestione' => [
         ['Importa soci','/importazioni/upload.php','importazioni.write','/importazioni/'],
+        ['Famiglie','/soci/famiglia.php','area_soci.write','/soci/famiglia.php'],
         ['Sito vetrina','/sito/edit.php','sito.write','/sito/'],
         ['Direttivo','/utenti/list.php','utenti.manage','/utenti/'],
+        ['Email di sistema','/impostazioni/mail.php','utenti.manage','/impostazioni/'],
         ['Registro attività','/attivita/list.php','attivita.view','/attivita/'],
         ['Stagioni','/stagioni/list.php','configurazione.view','/stagioni/'],
         ['Tipologie tessera','/tipologie/list.php','configurazione.view','/tipologie/'],

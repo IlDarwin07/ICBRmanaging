@@ -56,6 +56,7 @@ function permission_routes(): array
         '/prima_nota/delete.php'=>'prima_nota.delete','/prima_nota/export.php'=>'prima_nota.export',
         '/richieste/list.php'=>'richieste.view','/richieste/view.php'=>'richieste.view',
         '/sito/edit.php'=>'sito.write','/utenti/list.php'=>'utenti.manage','/utenti/edit.php'=>'utenti.manage',
+        '/impostazioni/mail.php'=>'utenti.manage',
         '/articoli/list.php'=>'articoli.view','/articoli/edit.php'=>'articoli.write','/articoli/delete.php'=>'articoli.delete',
         '/attivita/list.php'=>'attivita.view',
         '/partite/list.php'=>'partite.view','/partite/view.php'=>'partite.view','/partite/sostenitori.php'=>'partite.view',
