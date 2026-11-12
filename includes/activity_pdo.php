@@ -25,6 +25,8 @@ class ActivityPDO extends PDO
         static $request;
         $request ??= bin2hex(random_bytes(16));
         $user = $_SESSION['user'] ?? null;
+        // Nell'area soci la sessione contiene solo 'socio' (id_utente resta NULL).
+        if (!$user && isset($_SESSION['socio']['id_socio'])) $author ??= 'Area soci / socio #' . (int)$_SESSION['socio']['id_socio'];
         $this->auditBusy = true;
         try {
             $stmt = $this->prepare('INSERT INTO registro_attivita (data_evento,id_utente,autore,modulo,azione,entita,id_entita,dettagli_json,richiesta) VALUES (UTC_TIMESTAMP(),?,?,?,?,?,?,?,?)');
@@ -45,12 +47,14 @@ class ActivityPDO extends PDO
         $match = [];
         if ($this->auditBusy || !preg_match('/^\s*(INSERT(?:\s+IGNORE)?\s+INTO|UPDATE|DELETE\s+FROM|REPLACE\s+INTO)\s+`?([a-z_]+)`?/i',$sql,$match)
             || $match[2] === 'registro_attivita' || !$this->securityReady()
-            || (preg_match('/^\s*UPDATE\s+utenti_admin\s+SET\s+ultimo_accesso\b/i',$sql))) return $execute();
+            || (preg_match('/^\s*UPDATE\s+utenti_admin\s+SET\s+ultimo_accesso\b/i',$sql))
+            || (preg_match('/^\s*UPDATE\s+soci_account\s+SET\s+(ultimo_accesso|tentativi_falliti)\b/i',$sql))) return $execute();
         $table = strtolower($match[2]);
         $modules = ['utenti_admin'=>'utenti','utenti_accessi'=>'utenti','soci'=>'soci','tesseramenti'=>'tesseramenti',
             'pagamenti_tesseramenti'=>'pagamenti','prima_nota'=>'prima_nota','messaggi_whatsapp'=>'whatsapp',
             'template_whatsapp'=>'whatsapp','richieste_contatto'=>'richieste','importazioni'=>'importazioni','righe_importazione'=>'importazioni',
-            'stagioni'=>'configurazione','tipologie_tesseramento'=>'configurazione'];
+            'stagioni'=>'configurazione','tipologie_tesseramento'=>'configurazione',
+            'soci_account'=>'area_soci','sale'=>'partite','partite'=>'partite','prenotazioni'=>'partite'];
         if (!isset($modules[$table])) return $execute();
         $own = !$this->inTransaction();
         if ($own) $this->beginTransaction();
