@@ -20,6 +20,10 @@ $form = $partita ?? ['titolo' => '', 'competizione' => '', 'data_ora' => null, '
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     verify_csrf_token($_POST['csrf_token'] ?? '');
     [$data, $errors] = partita_validate($_POST);
+    // Titolo sempre in MAIUSCOLO e senza spazi doppi: "inter  juve" diventa "INTER JUVE".
+    if (isset($data['titolo']) && is_string($data['titolo'])) {
+        $data['titolo'] = mb_strtoupper(trim((string)preg_replace('/\s+/u', ' ', $data['titolo'])), 'UTF-8');
+    }
     $form = array_merge($form, $data);
     if (!$errors) {
         if ($partita) {
@@ -73,7 +77,8 @@ require __DIR__ . '/../../includes/layout_header.php';
     <div class="form-row">
         <div class="form-group">
             <label for="titolo">Partita *</label>
-            <input type="text" id="titolo" name="titolo" maxlength="150" placeholder="Inter - Juventus" value="<?= h($form['titolo']) ?>" required>
+            <input type="text" id="titolo" name="titolo" maxlength="150" placeholder="Inter - Juventus" value="<?= h($form['titolo']) ?>" style="text-transform:uppercase" required>
+            <small>Il titolo viene salvato in maiuscolo.</small>
         </div>
         <div class="form-group">
             <label for="competizione">Competizione</label>
