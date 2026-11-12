@@ -58,10 +58,10 @@ function permission_routes(): array
         '/sito/edit.php'=>'sito.write','/utenti/list.php'=>'utenti.manage','/utenti/edit.php'=>'utenti.manage',
         '/articoli/list.php'=>'articoli.view','/articoli/edit.php'=>'articoli.write','/articoli/delete.php'=>'articoli.delete',
         '/attivita/list.php'=>'attivita.view',
-        '/partite/list.php'=>'partite.view','/partite/view.php'=>'partite.view',
+        '/partite/list.php'=>'partite.view','/partite/view.php'=>'partite.view','/partite/sostenitori.php'=>'partite.view',
         '/partite/edit.php'=>'partite.write','/partite/stato.php'=>'partite.write','/partite/sale.php'=>'partite.write',
         '/partite/prenotazione.php'=>'partite.assegna','/partite/export.php'=>'partite.export',
-        '/soci/accesso.php'=>'area_soci.write',
+        '/soci/accesso.php'=>'area_soci.write','/soci/famiglia.php'=>'area_soci.write',
     ];
     foreach (['stagioni','tipologie'] as $module) foreach (['list','create','edit'] as $p) $routes["/$module/$p.php"] = $p === 'list' ? 'configurazione.view' : 'configurazione.write';
     foreach (['index','list','template_list','direct','compose','edit','template_create','template_edit','template_delete'] as $p) {
