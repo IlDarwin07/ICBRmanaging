@@ -2,6 +2,7 @@
 require_once __DIR__ . '/../../includes/auth.php';
 require_once __DIR__ . '/../../includes/functions.php';
 require_once __DIR__ . '/../../includes/partite.php';
+require_once __DIR__ . '/../../includes/mailer.php';
 start_secure_session();
 require_login();
 partite_require_ready();
@@ -20,6 +21,10 @@ $capienza = (int)$partita['capienza'];
 $liberi = array_values(array_filter(range(1, max(1, $capienza)), fn($n) => !isset($occupati[$n])));
 $modificabile = !in_array($partita['stato'], ['conclusa', 'annullata'], true);
 $puo_assegnare = can('partite.assegna') && $modificabile;
+
+// Link diretto alle prenotazioni, da incollare nel gruppo WhatsApp.
+$link_prenota = absolute_url('/soci-area/index.php?partita=' . $id) . '#partita-' . $id;
+$testo_wa = 'Prenota il tuo posto per ' . $partita['titolo'] . ' (' . partita_data_label($partita['data_ora']) . ') in sede: ' . $link_prenota;
 
 // Ricerca soci da aggiungere a mano (es. chi prenota per telefono o in sede).
 $q = clean_text($_GET['q'] ?? '') ?? '';
@@ -81,6 +86,21 @@ $action = function (string $azione, int $id_socio, string $label, string $class 
     <?php endforeach; ?>
     </div>
 </section>
+<?php endif; ?>
+
+<?php if ($partita['stato'] === 'aperta'): ?>
+<section class="admin-panel">
+    <h2>Link per le prenotazioni</h2>
+    <p>Incolla questo link nel gruppo WhatsApp: i soci lo aprono, accedono all'area soci e arrivano direttamente a questa partita.</p>
+    <div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center">
+        <input type="text" id="link-prenota" value="<?= h($link_prenota) ?>" readonly aria-label="Link diretto alle prenotazioni" style="flex:1 1 320px">
+        <button type="button" class="btn" id="copia-link">Copia link</button>
+        <a class="btn btn-secondary" target="_blank" rel="noopener" href="https://wa.me/?text=<?= h(rawurlencode($testo_wa)) ?>">Invia su WhatsApp ↗</a>
+    </div>
+    <p class="note" id="copia-esito" role="status"></p>
+</section>
+<?php elseif (in_array($partita['stato'], ['bozza', 'chiusa'], true)): ?>
+<p class="note">Il link da condividere nel gruppo WhatsApp compare quando le prenotazioni sono aperte.</p>
 <?php endif; ?>
 
 <div class="partite-kpi">
@@ -215,6 +235,26 @@ $action = function (string $azione, int $id_socio, string $label, string $class 
     <summary>Annullate (<?= count($annullate) ?>)</summary>
     <ul><?php foreach ($annullate as $r): ?><li><?= h($r['cognome'] . ' ' . $r['nome']) ?> <small>(<?= h(date('d/m H:i', strtotime($r['updated_at']))) ?>)</small></li><?php endforeach; ?></ul>
 </details>
+<?php endif; ?>
+
+<?php if ($partita['stato'] === 'aperta'): ?>
+<script>
+(function () {
+    var btn = document.getElementById('copia-link'), campo = document.getElementById('link-prenota'), esito = document.getElementById('copia-esito');
+    if (!btn || !campo) return;
+    function ok() { esito.textContent = 'Link copiato: incollalo nel gruppo WhatsApp.'; }
+    function manuale() { campo.select(); esito.textContent = 'Link selezionato: premi Ctrl+C per copiarlo.'; }
+    btn.addEventListener('click', function () {
+        if (navigator.clipboard && window.isSecureContext) {
+            navigator.clipboard.writeText(campo.value).then(ok, manuale);
+        } else {
+            campo.select();
+            try { document.execCommand('copy') ? ok() : manuale(); } catch (e) { manuale(); }
+        }
+    });
+    campo.addEventListener('focus', function () { campo.select(); });
+})();
+</script>
 <?php endif; ?>
 
 <?php if ($puo_assegnare): ?>

@@ -2,6 +2,13 @@
 require_once __DIR__ . '/../../includes/auth_soci.php';
 require_once __DIR__ . '/../../includes/soci_layout.php';
 require_once __DIR__ . '/../../includes/famiglia.php';
+
+// Link diretto a una partita (?partita=ID): se il socio non e' ancora entrato, lo si ricorda per dopo il login.
+$partita_link = isset($_GET['partita']) && ctype_digit((string)$_GET['partita']) ? (int)$_GET['partita'] : 0;
+if ($partita_link > 0) {
+    start_soci_session();
+    if (!current_socio()) $_SESSION['socio_dopo_login'] = $partita_link;
+}
 $socio = require_socio_login();
 
 $partite = partite_per_socio($socio['id_socio']);
@@ -39,7 +46,7 @@ soci_header('Le partite in sede', $socio);
     $liberi = max(0, (int)$p['capienza'] - (int)$p['presenti']);
     $riservata = (int)$p['solo_tesserati'] === 1 && !$tesserato;
     $mio_extra = $extra[(int)$p['id_partita']][(int)$socio['id_socio']] ?? null; ?>
-<article class="sa-match<?= $mia === 'presente' ? ' is-booked' : '' ?><?= $p['stato'] === 'annullata' ? ' is-cancelled' : '' ?>">
+<article id="partita-<?= (int)$p['id_partita'] ?>" style="scroll-margin-top:16px<?= $partita_link === (int)$p['id_partita'] ? ';outline:3px solid #011ea0;outline-offset:3px' : '' ?>" class="sa-match<?= $mia === 'presente' ? ' is-booked' : '' ?><?= $p['stato'] === 'annullata' ? ' is-cancelled' : '' ?>">
     <div class="sa-match-head">
         <?php if ($p['competizione']): ?><span class="sa-comp"><?= h($p['competizione']) ?></span><?php endif; ?>
         <h2><?= h($p['titolo']) ?></h2>
