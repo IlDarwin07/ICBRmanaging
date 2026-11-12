@@ -340,6 +340,20 @@ CREATE TABLE IF NOT EXISTS prenotazioni (
     CONSTRAINT fk_prenotazioni_socio FOREIGN KEY (id_socio) REFERENCES soci(id_socio) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
+-- Sale in cui e' trasmessa ogni partita, con intervallo di sedie (migration 017).
+-- Numerazione unica per partita: la sala di una sedia deriva dal numero.
+CREATE TABLE IF NOT EXISTS partite_sale (
+    id_partita_sala INT AUTO_INCREMENT PRIMARY KEY,
+    id_partita INT NOT NULL,
+    id_sala INT NOT NULL,
+    posto_da SMALLINT UNSIGNED NOT NULL,
+    posto_a SMALLINT UNSIGNED NOT NULL,
+    UNIQUE KEY uq_partita_sala (id_partita, id_sala),
+    KEY idx_partite_sale_range (id_partita, posto_da),
+    CONSTRAINT fk_partite_sale_partita FOREIGN KEY (id_partita) REFERENCES partite(id_partita) ON DELETE CASCADE,
+    CONSTRAINT fk_partite_sale_sala FOREIGN KEY (id_sala) REFERENCES sale(id_sala) ON DELETE RESTRICT
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
 SET FOREIGN_KEY_CHECKS = 1;
 
 -- ---------------------------------------------------------------------
