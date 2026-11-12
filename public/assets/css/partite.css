@@ -2,6 +2,10 @@
 .sr-only{position:absolute!important;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
 .inline-form{display:inline-flex;gap:.35rem;align-items:center;margin:0}
 .inline-form select{padding:.2rem .4rem;font-size:.85rem}
+.td-actions .inline-form{flex-wrap:nowrap;margin:.15rem .25rem .15rem 0;vertical-align:middle}
+.td-actions .inline-form select,.td-actions .btn,.td-actions .inline-form .btn{flex:0 0 auto;white-space:nowrap;writing-mode:horizontal-tb}
+.td-actions .btn-sm{padding:.4rem .75rem;line-height:1.2;display:inline-flex;align-items:center;justify-content:center}
+.td-actions{min-width:21rem}
 .section-head{display:flex;flex-wrap:wrap;gap:1rem;align-items:center;justify-content:space-between}
 .partite-kpi{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:.75rem;margin:1rem 0}
 .partite-kpi div{background:#fff;border:1px solid var(--line,#dcdde4);border-radius:8px;padding:.8rem 1rem}
