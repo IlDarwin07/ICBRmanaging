@@ -23,6 +23,11 @@ $sql = "SELECT s.id_socio, s.nome, s.cognome, s.data_nascita,
         WHERE 1=1";
 $params = ['id_stagione' => $stagione_attiva['id_stagione'] ?? 0];
 
+// Collaboratori con limite per comune: solo i soci dei comuni assegnati.
+[$scope_sql, $scope_params] = socio_scope_sql('s');
+$sql .= $scope_sql;
+$params += $scope_params;
+
 if ($q !== '') {
     $sql .= ' AND (s.nome LIKE :q1 OR s.cognome LIKE :q2 OR s.telefono LIKE :q3 OR s.codice_fiscale LIKE :q4 OR s.email LIKE :q5)';
     $like = '%' . $q . '%';
@@ -57,6 +62,10 @@ require __DIR__ . '/../../includes/layout_header.php';
     </h1>
     <a class="btn" href="<?= $base ?>/soci/create.php">+ Nuovo socio</a>
 </div>
+
+<?php if (user_comuni_scope() !== null): ?>
+    <p class="note">Vedi solo i soci di: <?= h(implode(', ', user_comuni_scope())) ?>.</p>
+<?php endif; ?>
 
 <form method="get" class="search-form">
     <input type="text" name="q" value="<?= h($q) ?>"

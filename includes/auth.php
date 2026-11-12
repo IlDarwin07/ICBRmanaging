@@ -115,11 +115,13 @@ function load_user_access(PDO $pdo, array $row): void
         $profile = $stmt->fetch();
     }
     $decoded = json_decode($profile['permessi_json'] ?? '[]',true);
+    $comuni = json_decode($profile['comuni_json'] ?? '[]',true);
     $_SESSION['user'] = [
         'id_utente'=>(int)$row['id_utente'],'nome'=>$row['nome'],'cognome'=>$row['cognome'],
         'username'=>$row['username'],'ruolo'=>$row['ruolo'],
         'etichetta_ruolo'=>$profile['etichetta_ruolo'] ?? ucfirst($row['ruolo']),
         'permessi'=>normalise_permissions(is_array($decoded) ? $decoded : []),
+        'comuni'=>normalise_comuni(is_array($comuni) ? $comuni : []),
         'versione_sessione'=>(int)($profile['versione_sessione'] ?? 0),
     ];
 }

@@ -37,11 +37,73 @@ function normalise_permissions(array $input): array
     return array_values(array_unique($result));
 }
 
+/** Elenco comuni pulito: accetta testo (uno per riga, o separati da virgola/punto e virgola) oppure array. */
+function normalise_comuni(mixed $input): array
+{
+    if (is_string($input)) $input = preg_split('/[\r\n,;]+/', $input) ?: [];
+    if (!is_array($input)) return [];
+    $out = [];
+    foreach ($input as $comune) {
+        if (!is_string($comune)) continue;
+        $comune = trim((string)preg_replace('/\s+/u', ' ', $comune));
+        if ($comune === '' || mb_strlen($comune) > 100) continue;
+        $out[mb_strtolower($comune)] = $comune;
+    }
+    return array_slice(array_values($out), 0, 40);
+}
+
+/** True se la migrazione 016 (colonna comuni_json) è stata eseguita. */
+function comuni_scope_ready(): bool
+{
+    static $ready = null;
+    if ($ready !== null) return $ready;
+    try {
+        $ready = (bool)get_db_connection()->query("SHOW COLUMNS FROM utenti_accessi LIKE 'comuni_json'")->fetch();
+    } catch (Throwable $e) {
+        $ready = false;
+    }
+    return $ready;
+}
+
+/** Comuni consentiti all'utente corrente, oppure null se non ha limiti (amministratori inclusi). */
+function user_comuni_scope(): ?array
+{
+    $user = current_user();
+    if (!$user || ($user['ruolo'] ?? '') === 'admin') return null;
+    $comuni = $user['comuni'] ?? [];
+    return $comuni ? array_values($comuni) : null;
+}
+
+function comune_in_scope(?string $comune, array $consentiti): bool
+{
+    $comune = mb_strtolower(trim((string)$comune));
+    foreach ($consentiti as $c) if (mb_strtolower($c) === $comune) return true;
+    return false;
+}
+
+/** Condizione SQL (con parametri nominali) da aggiungere alle query sui soci. */
+function socio_scope_sql(string $alias = 's'): array
+{
+    $comuni = user_comuni_scope();
+    if ($comuni === null) return ['', []];
+    $names = [];
+    $params = [];
+    foreach ($comuni as $i => $comune) {
+        $names[] = ":sc$i";
+        $params["sc$i"] = $comune;
+    }
+    return [" AND TRIM($alias.comune) IN (" . implode(',', $names) . ')', $params];
+}
+
 function can(string $permission): bool
 {
     $user = current_user();
-    return $user && (($user['ruolo'] ?? '') === 'admin'
-        || ($permission !== 'utenti.manage' && in_array($permission,$user['permessi'] ?? [],true)));
+    if (!$user) return false;
+    if (($user['ruolo'] ?? '') === 'admin') return true;
+    if ($permission === 'utenti.manage') return false;
+    // Chi ha un limite per comune può usare solo la sezione Soci.
+    if (!empty($user['comuni']) && !in_array($permission, ['soci.view','soci.write'], true)) return false;
+    return in_array($permission,$user['permessi'] ?? [],true);
 }
 
 function permission_routes(): array
@@ -79,9 +141,53 @@ function request_route(): string
     return $script;
 }
 
+/**
+ * Limite per comune: chi lo ha vede solo i soci dei comuni assegnati e solo la sezione Soci.
+ * Ogni altra pagina (dashboard compresa) è chiusa, perché mostrerebbe dati di tutti i soci.
+ */
+function enforce_comuni_scope(string $route): void
+{
+    $comuni = user_comuni_scope();
+    if ($comuni === null) return;
+
+    if (str_ends_with($route,'/dashboard.php')) {
+        header('Location: ' . (function_exists('base_path') ? base_path('/soci/list.php') : '/soci/list.php'));
+        exit;
+    }
+
+    $deny = function (string $title, string $text) use ($route): void {
+        audit_event('sicurezza','accesso_negato',null,null,['ambito'=>'comuni','pagina'=>$route]);
+        render_error_page($title, $text, 403);
+    };
+
+    if (!in_array($route, ['/soci/list.php','/soci/view.php','/soci/edit.php','/soci/create.php'], true)) {
+        $deny('Sezione non disponibile', 'Il tuo account è limitato ai soci dei comuni assegnati: questa sezione non è abilitata.');
+    }
+
+    if (in_array($route, ['/soci/view.php','/soci/edit.php'], true)) {
+        $id = (int)($_GET['id'] ?? $_POST['id'] ?? 0);
+        if ($id > 0) {
+            $stmt = get_db_connection()->prepare('SELECT comune FROM soci WHERE id_socio = ?');
+            $stmt->execute([$id]);
+            $row = $stmt->fetch();
+            if ($row && !comune_in_scope($row['comune'] ?? null, $comuni)) {
+                $deny('Socio non disponibile', 'Questo socio non rientra nei comuni assegnati al tuo account.');
+            }
+        }
+    }
+
+    if ($_SERVER['REQUEST_METHOD'] === 'POST' && in_array($route, ['/soci/edit.php','/soci/create.php'], true)) {
+        $nuovo = is_string($_POST['comune'] ?? null) ? $_POST['comune'] : '';
+        if (!comune_in_scope($nuovo, $comuni)) {
+            $deny('Comune non consentito', 'Puoi indicare solo questi comuni: ' . implode(', ', $comuni) . '. Torna indietro e correggi il campo Comune.');
+        }
+    }
+}
+
 function enforce_route_permission(): void
 {
     $route = request_route();
+    enforce_comuni_scope($route);
     $permission = permission_routes()[$route] ?? null;
     if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $action = is_string($_POST['azione'] ?? null) ? $_POST['azione'] : '';
