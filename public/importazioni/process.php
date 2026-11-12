@@ -79,11 +79,15 @@ foreach ($rows as $r_idx => $row) {
             $dati[$df] = null;
         }
     }
-    // Date/ora attivazione
+    // Date/ora attivazione (il portale esporta 21-06-2026 10:59:45)
     if (!empty($dati['data_attivazione'])) {
         $d = date_create_from_format('d/m/Y H:i', $dati['data_attivazione'])
+          ?: date_create_from_format('d/m/Y H:i:s', $dati['data_attivazione'])
+          ?: date_create_from_format('d-m-Y H:i:s', $dati['data_attivazione'])
+          ?: date_create_from_format('d-m-Y H:i', $dati['data_attivazione'])
           ?: date_create_from_format('Y-m-d H:i:s', $dati['data_attivazione'])
-          ?: date_create_from_format('d/m/Y', $dati['data_attivazione']);
+          ?: date_create_from_format('d/m/Y', $dati['data_attivazione'])
+          ?: date_create_from_format('d-m-Y', $dati['data_attivazione']);
         $dati['data_attivazione'] = $d ? $d->format('Y-m-d H:i:s') : null;
     } else {
         $dati['data_attivazione'] = null;
@@ -198,30 +202,44 @@ foreach ($rows as $r_idx => $row) {
             }
         }
 
-        // Risolvi tipologia: colonna 'tipo' in tipologie_tesseramento
+        // Risolvi tipologia: colonna 'tipo' in tipologie_tesseramento.
+        // Il portale distingue solo senior/junior: la categoria della quota
+        // (fuori sede, sostenitore, fedelissimo, family) arriva dalla prima nota.
+        // Qui il valore del portale va in tipo_portale; solo i junior hanno
+        // una tipologia univoca (junior / junior_rinnovo, in base al listino).
         $id_tipologia = null;
         if (isset($dati_tess['__tipologia__'])) {
             $val_tipo = $dati_tess['__tipologia__'];
             unset($dati_tess['__tipologia__']);
             if ($val_tipo !== '') {
-                $tp = $pdo->prepare(
-                    'SELECT id_tipologia FROM tipologie_tesseramento WHERE UPPER(TRIM(tipo)) = UPPER(TRIM(?)) LIMIT 1'
-                );
-                $tp->execute([$val_tipo]);
-                $id_tipologia = $tp->fetchColumn() ?: null;
-                if ($id_tipologia) {
-                    $dati_tess['id_tipologia'] = $id_tipologia;
-                    // Snapshot quota corrente del listino (non retroattivo)
-                    $qs = $pdo->prepare('SELECT quota_standard FROM tipologie_tesseramento WHERE id_tipologia = ?');
-                    $qs->execute([$id_tipologia]);
-                    $quota_snap = $qs->fetchColumn();
-                    if ($quota_snap !== false && $quota_snap !== null) {
-                        $dati_tess['quota_tesseramento'] = $quota_snap;
+                $val_norm = strtolower(trim($val_tipo));
+                $codice_tipo = $val_tipo;
+                if (in_array($val_norm, ['senior', 'junior'], true)) {
+                    $dati_tess['tipo_portale'] = $val_norm;
+                    $codice_tipo = null;
+                    if ($val_norm === 'junior') {
+                        $e_rinnovo = str_contains(strtoupper($dati['listino'] ?? ''), 'RINNOVO');
+                        $codice_tipo = $e_rinnovo ? 'junior_rinnovo' : 'junior';
+                    }
+                }
+                if ($codice_tipo !== null) {
+                    $tp = $pdo->prepare(
+                        'SELECT id_tipologia FROM tipologie_tesseramento WHERE UPPER(TRIM(tipo)) = UPPER(TRIM(?)) LIMIT 1'
+                    );
+                    $tp->execute([$codice_tipo]);
+                    $id_tipologia = $tp->fetchColumn() ?: null;
+                    if ($id_tipologia) {
+                        $dati_tess['id_tipologia'] = $id_tipologia;
+                        // Snapshot quota corrente del listino (non retroattivo)
+                        $qs = $pdo->prepare('SELECT quota_standard FROM tipologie_tesseramento WHERE id_tipologia = ?');
+                        $qs->execute([$id_tipologia]);
+                        $quota_snap = $qs->fetchColumn();
+                        if ($quota_snap !== false && $quota_snap !== null) {
+                            $dati_tess['quota_tesseramento'] = $quota_snap;
+                        }
                     }
                 }
             }
-        } else {
-            unset($dati_tess['__tipologia__']);
         }
 
         if ($id_socio) {
@@ -265,6 +283,14 @@ foreach ($rows as $r_idx => $row) {
                 // tesseramento: un reimport non deve sovrascriverlo (se il
                 // listino cambia, la quota storica resta quella dovuta allora).
                 unset($dati_tess['quota_tesseramento']);
+
+                // Una tipologia gia impostata (es. dalla prima nota) non va
+                // sovrascritta da un reimport del file del portale.
+                $cur_tip = $pdo->prepare('SELECT id_tipologia FROM tesseramenti WHERE id_tesseramento = ?');
+                $cur_tip->execute([$id_tess]);
+                if ($cur_tip->fetchColumn()) {
+                    unset($dati_tess['id_tipologia']);
+                }
 
                 // Lo stato 'non_consegnata' (tessera richiesta, in attesa di
                 // consegna) è più specifico di 'non_richiesta': non degradarlo
@@ -408,6 +434,7 @@ require __DIR__ . '/../../includes/layout_header.php';
 
 <div class="form-actions" style="margin-top:1.5rem">
     <a href="<?= u('/importazioni/upload.php') ?>" class="btn">Nuova importazione</a>
+    <a href="<?= u('/importazioni/prima_nota.php') ?>" class="btn btn-secondary">Importa prima nota</a>
     <a href="<?= u('/soci/list.php') ?>" class="btn btn-secondary">Vai all'anagrafica soci</a>
     <a href="<?= u('/dashboard.php') ?>" class="btn btn-secondary">Dashboard</a>
 </div>
