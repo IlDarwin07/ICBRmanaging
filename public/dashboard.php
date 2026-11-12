@@ -1,6 +1,7 @@
 <?php
 require_once __DIR__ . '/../includes/auth.php';
 require_once __DIR__ . '/../includes/functions.php';
+require_once __DIR__ . '/../includes/partite.php';
 
 start_secure_session();
 require_login();
@@ -13,6 +14,7 @@ const DASH_WIDGETS = [
     'azioni'   => 'Azioni rapide',
     'soci'     => 'Soci e rinnovi',
     'economia' => 'Andamento economico',
+    'partita'  => 'Prossima partita',
     'comuni'   => 'Soci per comune',
 ];
 const DASH_COOKIE = 'icbr_dashboard';
@@ -140,6 +142,25 @@ if ($mostra('economia')) {
     }
 }
 
+if ($mostra('partita')) {
+    $prossima_partita = null;
+    $partita_errore = false;
+    try {
+        if (!partite_ready()) {
+            $partita_errore = true;
+        } else {
+            foreach (partite_admin_list('prossime') as $p) {
+                if (in_array($p['stato'], ['aperta', 'chiusa'], true)) {
+                    $prossima_partita = $p;
+                    break;
+                }
+            }
+        }
+    } catch (Throwable $e) {
+        $partita_errore = true;
+    }
+}
+
 if ($mostra('comuni')) {
     $tutti_comuni = $pdo->query(
         "SELECT COALESCE(NULLIF(TRIM(comune), ''), 'Non specificato') AS comune, COUNT(*) AS totale
@@ -215,6 +236,9 @@ require __DIR__ . '/../includes/layout_header.php';
 .admin-body .dash-stat strong{font-size:clamp(22px,2.4vw,30px);line-height:1.15;color:#0f2f9e;overflow-wrap:anywhere}
 .admin-body .dash-stat span{font-size:12px;line-height:1.4;color:#66718a}
 .admin-body .dash-stat.is-warn strong{color:#a85a05}
+.admin-body .dash-match{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.4fr);gap:24px;align-items:center}
+.admin-body .dash-match-title{margin:0 0 6px;font-size:20px;color:#0f2f9e}
+.admin-body .dash-match-meta{margin:0 0 12px;font-size:13px;line-height:1.6;color:#66718a}
 .admin-body .dash-comuni{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(220px,.75fr);gap:28px;align-items:center}
 .admin-body .dash-list{max-height:360px;overflow:auto;border:1px solid #e5e9f2;border-radius:11px}
 .admin-body .dash-table{width:100%;border-collapse:collapse;font-size:13px}
@@ -227,7 +251,7 @@ require __DIR__ . '/../includes/layout_header.php';
 .admin-body .dash-pie{width:100%;max-width:290px;height:auto}
 .admin-body .dash-pie-total{font-size:19px;font-weight:700;fill:#0f2f9e}
 .admin-body .dash-pie-label{font-size:8px;fill:#66718a}
-@media(max-width:800px){.admin-body .dash-comuni{grid-template-columns:minmax(0,1fr);gap:18px}.admin-body .dash-chart{order:-1}.admin-body .dash-pie{max-width:230px}}
+@media(max-width:800px){.admin-body .dash-comuni,.admin-body .dash-match{grid-template-columns:minmax(0,1fr);gap:18px}.admin-body .dash-chart{order:-1}.admin-body .dash-pie{max-width:230px}}
 @media(max-width:600px){.admin-body .dash-head{align-items:flex-start}.admin-body .dash-panel{padding:16px}.admin-body .dash-stat{padding:12px}.admin-body .dash-actions .btn{flex:1 1 130px}}
 </style>
 
@@ -285,6 +309,39 @@ require __DIR__ . '/../includes/layout_header.php';
             <div class="dash-stat"><strong>&euro; <?= euro($saldi_conti['cassa']) ?></strong><span>Cassa</span></div>
             <div class="dash-stat"><strong>&euro; <?= euro($saldi_conti['banca']) ?></strong><span>Banca</span></div>
         </div>
+    </section>
+<?php endif; ?>
+
+<?php if ($mostra('partita')): ?>
+    <section class="dash-panel is-wide" aria-labelledby="dash-partita">
+        <h2 id="dash-partita">Prossima partita</h2>
+        <?php if ($partita_errore): ?>
+            <p class="note">Prenotazioni non disponibili: applica la migrazione 013_partite_prenotazioni.sql.</p>
+        <?php elseif (!$prossima_partita): ?>
+            <p class="note">Nessuna partita con prenotazioni aperte o chiuse. <a href="<?= u('/partite/edit.php') ?>">Crea una partita</a></p>
+        <?php else: $pp = $prossima_partita; ?>
+            <div class="dash-match">
+                <div>
+                    <p class="dash-match-title"><?= h($pp['titolo']) ?></p>
+                    <p class="dash-match-meta">
+                        <?= $pp['competizione'] ? h($pp['competizione']) . '<br>' : '' ?>
+                        <?= h(partita_data_label($pp['data_ora'])) ?><br>
+                        <?= h($pp['sala_nome']) ?>
+                        <span class="badge <?= h(partita_stato_badge($pp['stato'])) ?>"><?= h(partita_stato_label($pp['stato'])) ?></span>
+                    </p>
+                    <div class="dash-actions" style="margin:0">
+                        <a class="btn" href="<?= u('/partite/view.php?id=' . (int)$pp['id_partita']) ?>">Presenze e sedie</a>
+                        <a class="btn btn-secondary" href="<?= u('/partite/list.php') ?>">Tutte le partite</a>
+                    </div>
+                </div>
+                <div class="dash-stats">
+                    <div class="dash-stat"><strong><?= (int)$pp['presenti'] ?> / <?= (int)$pp['capienza'] ?></strong><span>Prenotati</span></div>
+                    <div class="dash-stat <?= (int)$pp['in_attesa'] > 0 ? 'is-warn' : '' ?>"><strong><?= (int)$pp['in_attesa'] ?></strong><span>In lista d'attesa</span></div>
+                    <div class="dash-stat"><strong><?= (int)$pp['assegnati'] ?> / <?= (int)$pp['presenti'] ?></strong><span>Sedie assegnate</span></div>
+                    <div class="dash-stat"><strong><?= h(date('d/m H:i', strtotime($pp['prenotazioni_chiudono']))) ?></strong><span>Chiusura prenotazioni</span></div>
+                </div>
+            </div>
+        <?php endif; ?>
     </section>
 <?php endif; ?>
 
