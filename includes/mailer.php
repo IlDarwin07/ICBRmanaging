@@ -43,14 +43,20 @@ function mail_enabled(): bool
 /**
  * URL assoluto per i link nelle email. Usa ICBR_PUBLIC_URL se configurato,
  * altrimenti l'host della richiesta corrente.
+ * Se ICBR_PUBLIC_URL termina gia' con il percorso base (es. /ICBRmanaging/public
+ * in XAMPP) questo non viene aggiunto una seconda volta.
  */
 function absolute_url(string $path): string
 {
-    $root = mail_config()['public_url'];
+    $root = rtrim(mail_config()['public_url'], '/');
     if ($root === '') {
         $scheme = !empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off' ? 'https' : 'http';
         $host = preg_replace('/[^A-Za-z0-9.\-:\[\]]/', '', (string)($_SERVER['HTTP_HOST'] ?? 'localhost'));
         $root = $scheme . '://' . $host;
+    }
+    $prefix = base_url();
+    if ($prefix !== '' && $path !== '' && $path[0] === '/' && str_ends_with($root, $prefix)) {
+        return $root . $path;
     }
     return $root . base_path($path);
 }
