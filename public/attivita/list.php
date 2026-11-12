@@ -7,9 +7,9 @@ if (!security_ready()) render_error_page('Registro non ancora attivo','Applica l
 $pdo = get_db_connection();
 $author = is_string($_GET['autore'] ?? null) ? mb_substr(trim($_GET['autore']),0,80) : '';
 $module = is_string($_GET['modulo'] ?? null) ? $_GET['modulo'] : '';
-$modules = ['accessi','sicurezza','utenti','soci','tesseramenti','pagamenti','prima_nota','whatsapp','richieste','importazioni','configurazione','sito'];
-$labels = ['accessi'=>'Accessi','sicurezza'=>'Sicurezza','utenti'=>'Direttivo','soci'=>'Soci','tesseramenti'=>'Tesseramenti','pagamenti'=>'Pagamenti','prima_nota'=>'Prima nota','whatsapp'=>'WhatsApp','richieste'=>'Contatti sito','importazioni'=>'Importazioni','configurazione'=>'Configurazione','sito'=>'Sito vetrina'];
-$entities = ['utenti_admin'=>'Account','utenti_accessi'=>'Permessi account','soci'=>'Socio','tesseramenti'=>'Tesseramento','pagamenti_tesseramenti'=>'Pagamento','prima_nota'=>'Movimento','messaggi_whatsapp'=>'Messaggio','template_whatsapp'=>'Template','richieste_contatto'=>'Richiesta','importazioni'=>'Importazione','righe_importazione'=>'Riga importata','stagioni'=>'Stagione','tipologie_tesseramento'=>'Tipo tessera'];
+$modules = ['accessi','sicurezza','utenti','soci','tesseramenti','pagamenti','prima_nota','whatsapp','richieste','importazioni','configurazione','sito','partite','area_soci'];
+$labels = ['accessi'=>'Accessi','sicurezza'=>'Sicurezza','utenti'=>'Direttivo','soci'=>'Soci','tesseramenti'=>'Tesseramenti','pagamenti'=>'Pagamenti','prima_nota'=>'Prima nota','whatsapp'=>'WhatsApp','richieste'=>'Contatti sito','importazioni'=>'Importazioni','configurazione'=>'Configurazione','sito'=>'Sito vetrina','partite'=>'Partite e prenotazioni','area_soci'=>'Area soci'];
+$entities = ['utenti_admin'=>'Account','utenti_accessi'=>'Permessi account','soci'=>'Socio','tesseramenti'=>'Tesseramento','pagamenti_tesseramenti'=>'Pagamento','prima_nota'=>'Movimento','messaggi_whatsapp'=>'Messaggio','template_whatsapp'=>'Template','richieste_contatto'=>'Richiesta','importazioni'=>'Importazione','righe_importazione'=>'Riga importata','stagioni'=>'Stagione','tipologie_tesseramento'=>'Tipo tessera','soci_account'=>'Accesso socio','sale'=>'Sala','partite'=>'Partita','prenotazioni'=>'Prenotazione'];
 if (!in_array($module,$modules,true)) $module = '';
 $from = is_string($_GET['dal'] ?? null) ? $_GET['dal'] : '';
 $to = is_string($_GET['al'] ?? null) ? $_GET['al'] : '';

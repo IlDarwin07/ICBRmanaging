@@ -13,6 +13,8 @@ function permission_catalog(): array
         'sito'=>['Sito vetrina',['write'=>'Modificare e pubblicare']],
         'articoli'=>['Articoli ed eventi',['view'=>'Consultare','write'=>'Creare, modificare e pubblicare','delete'=>'Eliminare']],
         'attivita'=>['Registro attività',['view'=>'Consultare il registro']],
+        'partite'=>['Partite e prenotazioni',['view'=>'Consultare presenze','write'=>'Creare partite e aprire/chiudere prenotazioni','assegna'=>'Gestire presenze e assegnare sedie','export'=>'Esportare elenco presenze']],
+        'area_soci'=>['Accessi area soci',['write'=>'Inviare, rinnovare e revocare gli accessi dei soci']],
     ];
 }
 
@@ -30,6 +32,7 @@ function normalise_permissions(array $input): array
         [$module] = explode('.',$permission);
         if (in_array("$module.view",$valid,true)) $result[] = "$module.view";
         if ($module === 'pagamenti') $result[] = 'tesseramenti.view';
+        if ($module === 'area_soci') $result[] = 'soci.view';
     }
     return array_values(array_unique($result));
 }
@@ -55,6 +58,10 @@ function permission_routes(): array
         '/sito/edit.php'=>'sito.write','/utenti/list.php'=>'utenti.manage','/utenti/edit.php'=>'utenti.manage',
         '/articoli/list.php'=>'articoli.view','/articoli/edit.php'=>'articoli.write','/articoli/delete.php'=>'articoli.delete',
         '/attivita/list.php'=>'attivita.view',
+        '/partite/list.php'=>'partite.view','/partite/view.php'=>'partite.view',
+        '/partite/edit.php'=>'partite.write','/partite/stato.php'=>'partite.write','/partite/sale.php'=>'partite.write',
+        '/partite/prenotazione.php'=>'partite.assegna','/partite/export.php'=>'partite.export',
+        '/soci/accesso.php'=>'area_soci.write',
     ];
     foreach (['stagioni','tipologie'] as $module) foreach (['list','create','edit'] as $p) $routes["/$module/$p.php"] = $p === 'list' ? 'configurazione.view' : 'configurazione.write';
     foreach (['index','list','template_list','direct','compose','edit','template_create','template_edit','template_delete'] as $p) {

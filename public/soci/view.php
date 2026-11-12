@@ -43,6 +43,16 @@ if ($stagione_attiva) {
     }
 }
 
+// Accesso all'area soci (se il modulo è installato)
+require_once __DIR__ . '/../../includes/partite.php';
+$account_socio = null;
+$area_soci_pronta = partite_ready();
+if ($area_soci_pronta) {
+    $stmt = $pdo->prepare('SELECT id_account, email, attivo, password_hash IS NOT NULL AS attivato, token_scadenza > NOW() AS invito_valido, ultimo_accesso FROM soci_account WHERE id_socio = ?');
+    $stmt->execute([$id_socio]);
+    $account_socio = $stmt->fetch() ?: null;
+}
+
 // Telefono valido: almeno 6 cifre reali
 function telefono_valido(?string $tel): bool {
     if (!$tel) return false;
@@ -189,6 +199,41 @@ $ico_card  = '<svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" vie
         </div>
     </div>
 </div>
+
+<!-- ACCESSO AREA SOCI -->
+<?php if ($area_soci_pronta && can('area_soci.write')): ?>
+<div class="scheda-section">
+    <div class="scheda-section-header">
+        <h2>Accesso all'area soci</h2>
+    </div>
+    <?php
+    if (!$account_socio) { $acc_label = 'Nessun accesso'; $acc_badge = 'badge-gray'; }
+    elseif (!(int)$account_socio['attivo']) { $acc_label = 'Accesso revocato'; $acc_badge = 'badge-red'; }
+    elseif ((int)$account_socio['attivato']) { $acc_label = 'Attivo'; $acc_badge = 'badge-green'; }
+    elseif ((int)$account_socio['invito_valido']) { $acc_label = 'Invito inviato, in attesa di attivazione'; $acc_badge = 'badge-orange'; }
+    else { $acc_label = 'Invito scaduto'; $acc_badge = 'badge-orange'; }
+    $csrf_acc = csrf_token();
+    ?>
+    <p><span class="badge <?= $acc_badge ?>"><?= h($acc_label) ?></span>
+        <?php if ($account_socio): ?> · <?= h($account_socio['email']) ?><?= $account_socio['ultimo_accesso'] ? ' · ultimo accesso ' . h(date('d/m/Y H:i', strtotime($account_socio['ultimo_accesso']))) : '' ?><?php endif; ?></p>
+    <form method="post" action="<?= u('/soci/accesso.php') ?>" class="search-form">
+        <input type="hidden" name="csrf_token" value="<?= h($csrf_acc) ?>">
+        <input type="hidden" name="id_socio" value="<?= $id_socio ?>">
+        <input type="hidden" name="azione" value="invia">
+        <label for="acc-email">Email per l'accesso</label>
+        <input type="email" id="acc-email" name="email" required maxlength="190" value="<?= h($account_socio['email'] ?? ($socio['email'] ?? '')) ?>">
+        <button class="btn" type="submit"><?= !$account_socio ? 'Invia accesso' : ((int)$account_socio['attivato'] ? 'Invia link nuova password' : 'Invia di nuovo l\'invito') ?></button>
+    </form>
+    <?php if ($account_socio && (int)$account_socio['attivo']): ?>
+    <form method="post" action="<?= u('/soci/accesso.php') ?>" data-confirm="Revocare l'accesso all'area soci? Il socio verrà disconnesso subito.">
+        <input type="hidden" name="csrf_token" value="<?= h($csrf_acc) ?>">
+        <input type="hidden" name="id_socio" value="<?= $id_socio ?>">
+        <input type="hidden" name="azione" value="revoca">
+        <button class="btn btn-danger btn-sm" type="submit">Revoca accesso</button>
+    </form>
+    <?php endif; ?>
+</div>
+<?php endif; ?>
 
 <!-- TESSERAMENTI (corrente + storico unificati) -->
 <div class="scheda-section">

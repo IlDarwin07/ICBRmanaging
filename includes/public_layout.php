@@ -121,6 +121,7 @@ function public_header(string $title, string $description, string $path = '/', a
         <a href="<?= u('/eventi.php') ?>">Eventi</a>
         <a href="<?= h($home) ?>#contatti">Contatti</a>
         <a href="<?= h($home) ?>#faq">FAQ</a>
+        <a href="<?= u('/soci-area/login.php') ?>" rel="nofollow">Area soci</a>
         <a class="nav-lock" href="<?= u('/login.php') ?>" rel="nofollow" title="Area riservata" aria-label="Area riservata del direttivo"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></a>
     </nav>
 </header>
@@ -138,7 +139,7 @@ function public_footer(): void
     <?php endif; ?>
     <div class="footer-grid">
         <div><img class="footer-club-logo" src="<?= u('/assets/images/logo-inter-club-brindisi.jpg') ?>" alt="Logo Inter Club Javier Zanetti Brindisi" width="100" height="100" loading="lazy"><strong>Inter Club Javier Zanetti Brindisi</strong><p>Associazione culturale</p><address><?= h($content['indirizzo']) ?>, <?= h($content['citta']) ?></address></div>
-        <div><a href="<?= u('/index.php') ?>#tesseramento">Tesseramento <?= h($content['stagione']) ?></a><a href="<?= u('/eventi.php') ?>">Eventi e racconti</a><a href="<?= u('/index.php') ?>#contatti">Contatti</a></div>
+        <div><a href="<?= u('/index.php') ?>#tesseramento">Tesseramento <?= h($content['stagione']) ?></a><a href="<?= u('/eventi.php') ?>">Eventi e racconti</a><a href="<?= u('/index.php') ?>#contatti">Contatti</a><a href="<?= u('/soci-area/login.php') ?>" rel="nofollow">Area soci: prenota la partita</a></div>
         <div><a href="<?= u('/privacy.php') ?>">Privacy e cookie</a></div>
     </div>
     <div class="footer-bottom"><span>© <?= date('Y') ?> Inter Club Javier Zanetti Brindisi · Associazione culturale</span><a class="footer-lock" href="<?= u('/login.php') ?>" rel="nofollow" title="Area riservata" aria-label="Area riservata del direttivo"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></a></div>

@@ -8,6 +8,10 @@ $asset_version = function (string $relative): string {
     return is_file($file) ? '?v=' . filemtime($file) : '';
 };
 $groups = [
+    'Sede' => [
+        ['Partite e presenze','/partite/list.php','partite.view','/partite/'],
+        ['Sale e capienze','/partite/sale.php','partite.write','/partite/sale.php'],
+    ],
     'Contabilità' => [['Prima nota','/prima_nota/list.php','prima_nota.view','/prima_nota/']],
     'Comunicazioni' => [
         ['WhatsApp','/messaggi/index.php','whatsapp.view','/messaggi/'],
@@ -32,7 +36,7 @@ $groups = [
     <title><?= h($page_title ?? 'Gestionale') ?> - Inter Club Brindisi</title>
     <meta name="robots" content="noindex,nofollow">
     <meta name="theme-color" content="#011ea0">
-    <?php foreach (['base','style','admin','accessibility','details','brand','editor','access-control','workspace'] as $sheet): ?>
+    <?php foreach (['base','style','admin','accessibility','details','brand','editor','access-control','workspace','partite'] as $sheet): ?>
     <link rel="stylesheet" href="<?= h($base) ?>/assets/css/<?= h($sheet) ?>.css<?= h($asset_version('css/' . $sheet . '.css')) ?>">
     <?php endforeach; ?>
     <script>window.icbrAccess=<?= json_encode(['admin'=>($utente['ruolo'] ?? '')==='admin','permissions'=>$utente['permessi'] ?? [],'routes'=>permission_routes(),'current'=>request_route()],JSON_HEX_TAG|JSON_HEX_AMP|JSON_HEX_APOS|JSON_HEX_QUOT) ?>;</script>
