@@ -80,6 +80,7 @@ if ($mostra('soci')) {
     $soci_attivi_corrente = 0;
     $soci_anagrafica_confermata = 0;
     $non_rinnovati = 0;
+    $attivi_non_registrati = null; // null = non calcolabile (tabella soci_account assente)
     $stagione_precedente = null;
 
     if ($stagione_attiva) {
@@ -95,6 +96,20 @@ if ($mostra('soci')) {
         $r = $stmt->fetch();
         $soci_attivi_corrente = (int)$r['attivi'];
         $soci_anagrafica_confermata = (int)$r['confermati'];
+
+        // Attivi sul portale Inter Club ma senza account dell'area soci completato (password scelta).
+        try {
+            $stmt_nr = $pdo->prepare(
+                'SELECT COUNT(DISTINCT t.id_socio)
+                 FROM tesseramenti t JOIN soci s ON s.id_socio = t.id_socio AND s.attivo_record = 1
+                 WHERE t.id_stagione = :id AND t.attivo_portale = 1
+                   AND NOT EXISTS (SELECT 1 FROM soci_account a WHERE a.id_socio = t.id_socio AND a.password_hash IS NOT NULL)'
+            );
+            $stmt_nr->execute(['id' => $stagione_attiva['id_stagione']]);
+            $attivi_non_registrati = (int)$stmt_nr->fetchColumn();
+        } catch (Throwable $e) {
+            $attivi_non_registrati = null;
+        }
 
         if ($stagione_precedente) {
             $stmt3 = $pdo->prepare(
@@ -294,6 +309,7 @@ require __DIR__ . '/../includes/layout_header.php';
         <div class="dash-stats">
             <div class="dash-stat"><strong><?= $totale_soci ?></strong><span>Registrati</span></div>
             <div class="dash-stat"><strong><?= $soci_attivi_corrente ?></strong><span>Attivi <?= $codice ?: '(nessuna stagione)' ?></span></div>
+            <div class="dash-stat <?= $attivi_non_registrati ? 'is-warn' : '' ?>"><strong><?= $attivi_non_registrati === null ? 'n/d' : $attivi_non_registrati ?></strong><span>Attivi non registrati all'area soci</span></div>
             <div class="dash-stat"><strong><?= $soci_anagrafica_confermata ?></strong><span>Anagrafica confermata</span></div>
             <div class="dash-stat is-warn"><strong><?= $non_rinnovati ?></strong><span>Da rinnovare<?= $stagione_precedente ? ' (attivi in ' . h($stagione_precedente['codice_stagione']) . ')' : '' ?></span></div>
         </div>
@@ -316,7 +332,7 @@ require __DIR__ . '/../includes/layout_header.php';
     <section class="dash-panel is-wide" aria-labelledby="dash-partita">
         <h2 id="dash-partita">Prossima partita</h2>
         <?php if ($partita_errore): ?>
-            <p class="note">Prenotazioni non disponibili: applica la migrazione 013_partite_prenotazioni.sql.</p>
+            <p class="note">Prenotazioni non disponibili: applica le migrazioni 013_partite_prenotazioni.sql e 017_partite_sale.sql.</p>
         <?php elseif (!$prossima_partita): ?>
             <p class="note">Nessuna partita con prenotazioni aperte o chiuse. <a href="<?= u('/partite/edit.php') ?>">Crea una partita</a></p>
         <?php else: $pp = $prossima_partita; ?>
