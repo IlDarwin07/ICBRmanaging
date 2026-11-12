@@ -18,7 +18,8 @@ $annullate = array_values(array_filter($prenotazioni, fn($r) => $r['stato'] === 
 $occupati = [];
 foreach ($presenti as $r) if ($r['numero_posto'] !== null) $occupati[(int)$r['numero_posto']] = $r;
 $capienza = (int)$partita['capienza'];
-$liberi = array_values(array_filter(range(1, max(1, $capienza)), fn($n) => !isset($occupati[$n])));
+$settori = $partita['settori'];
+$liberi = array_values(array_filter(partita_posti($settori), fn($n) => !isset($occupati[$n])));
 $modificabile = !in_array($partita['stato'], ['conclusa', 'annullata'], true);
 $puo_assegnare = can('partite.assegna') && $modificabile;
 
@@ -42,7 +43,6 @@ if ($puo_assegnare && mb_strlen($q) >= 2) {
 }
 
 $csrf = generate_csrf_token();
-$per_fila = max(1, (int)$partita['posti_per_fila']);
 $page_title = 'Presenze — ' . $partita['titolo'];
 require __DIR__ . '/../../includes/layout_header.php';
 
@@ -60,6 +60,7 @@ $action = function (string $azione, int $id_socio, string $label, string $class 
         <h1><?= h($partita['titolo']) ?></h1>
         <p><?= h(partita_data_label($partita['data_ora'])) ?><?= $partita['competizione'] ? ' · ' . h($partita['competizione']) : '' ?>
             · <span class="badge <?= h(partita_stato_badge($partita['stato'])) ?>"><?= h(partita_stato_label($partita['stato'])) ?></span></p>
+        <p><small>Sale: <?= h(partita_settori_label($settori)) ?></small></p>
         <p><small>Prenotazioni fino a <?= h(date('d/m/Y H:i', strtotime($partita['prenotazioni_chiudono']))) ?><?= (int)$partita['solo_tesserati'] === 1 ? ' · solo soci tesserati' : ' · aperta a tutti i soci con accesso' ?></small></p>
     </div>
     <div class="quick-links">
@@ -109,7 +110,7 @@ $action = function (string $azione, int $id_socio, string $label, string $class 
     <div><strong><?= max(0, $capienza - count($presenti)) ?></strong><span>posti liberi</span></div>
     <div><strong><?= count($attesa) ?></strong><span>in lista d'attesa</span></div>
 </div>
-<?php if (count($presenti) > $capienza): ?><div class="flash flash-error">I presenti superano la capienza della sala: sposta qualcuno in un'altra partita o cambia sala.</div><?php endif; ?>
+<?php if (count($presenti) > $capienza): ?><div class="flash flash-error">I presenti superano le sedie disponibili: allarga gli intervalli delle sale o sposta qualcuno in un'altra partita.</div><?php endif; ?>
 
 <section class="admin-panel">
     <div class="section-head">
@@ -118,14 +119,16 @@ $action = function (string $azione, int $id_socio, string $label, string $class 
             <?= $action('auto', 0, 'Assegna in automatico le sedie libere', '', [], 'Assegnare le sedie libere ai presenti senza posto, in ordine di prenotazione?') ?>
         <?php endif; ?>
     </div>
-    <?php if ($puo_assegnare): ?><p class="seat-help" id="seat-help">Seleziona un socio nell'elenco qui sotto, poi clicca una sedia libera.</p><?php endif; ?>
+    <?php if ($puo_assegnare): ?><p class="seat-help" id="seat-help">Seleziona un socio nell'elenco qui sotto, poi clicca una sedia libera: la sala è quella della sedia scelta.</p><?php endif; ?>
     <form method="post" action="<?= u('/partite/prenotazione.php') ?>" id="seat-form">
         <input type="hidden" name="csrf_token" value="<?= h($csrf) ?>">
         <input type="hidden" name="id_partita" value="<?= $id ?>">
         <input type="hidden" name="azione" value="assegna">
         <input type="hidden" name="id_socio" id="seat-socio" value="">
-        <div class="seat-grid" style="--seats-per-row: <?= $per_fila ?>" aria-label="Sedie della <?= h($partita['sala_nome']) ?>">
-            <?php for ($n = 1; $n <= $capienza; $n++): $occ = $occupati[$n] ?? null; ?>
+        <?php foreach ($settori as $sett): ?>
+        <h3><?= h($sett['sala_nome']) ?> <small>(sedie <?= (int)$sett['posto_da'] ?>–<?= (int)$sett['posto_a'] ?>)</small></h3>
+        <div class="seat-grid" style="--seats-per-row: <?= (int)$sett['posti_per_fila'] ?>" aria-label="Sedie della <?= h($sett['sala_nome']) ?>">
+            <?php for ($n = (int)$sett['posto_da']; $n <= (int)$sett['posto_a']; $n++): $occ = $occupati[$n] ?? null; ?>
                 <?php if ($occ): ?>
                     <span class="seat seat-taken" title="<?= h($occ['cognome'] . ' ' . $occ['nome']) ?>"><b><?= $n ?></b><small><?= h(mb_substr($occ['cognome'], 0, 10)) ?></small></span>
                 <?php elseif ($puo_assegnare): ?>
@@ -135,6 +138,7 @@ $action = function (string $azione, int $id_socio, string $label, string $class 
                 <?php endif; ?>
             <?php endfor; ?>
         </div>
+        <?php endforeach; ?>
     </form>
 </section>
 
@@ -149,7 +153,7 @@ $action = function (string $azione, int $id_socio, string $label, string $class 
                 <?php if ($puo_assegnare): ?><td><input type="radio" name="seat-pick" value="<?= (int)$r['id_socio'] ?>" aria-label="Seleziona <?= h($nome) ?> per assegnare la sedia"></td><?php endif; ?>
                 <td><?= $i + 1 ?></td>
                 <td><a href="<?= u('/soci/view.php?id=' . (int)$r['id_socio']) ?>"><?= h($nome) ?></a></td>
-                <td><?= $r['numero_posto'] !== null ? '<strong>' . (int)$r['numero_posto'] . '</strong>' : '<span class="badge badge-gray">da assegnare</span>' ?></td>
+                <td><?= $r['numero_posto'] !== null ? '<strong>' . (int)$r['numero_posto'] . '</strong> <small>' . h(partita_nome_sala_posto($settori, (int)$r['numero_posto'])) . '</small>' : '<span class="badge badge-gray">da assegnare</span>' ?></td>
                 <td><?= h(date('d/m H:i', strtotime($r['created_at']))) ?></td>
                 <td class="td-actions">
                     <?php if ($puo_assegnare): ?>
@@ -158,8 +162,8 @@ $action = function (string $azione, int $id_socio, string $label, string $class 
                         <input type="hidden" name="id_socio" value="<?= (int)$r['id_socio'] ?>"><input type="hidden" name="azione" value="assegna">
                         <label class="sr-only" for="posto-<?= (int)$r['id_socio'] ?>">Sedia per <?= h($nome) ?></label>
                         <select id="posto-<?= (int)$r['id_socio'] ?>" name="numero">
-                            <?php if ($r['numero_posto'] !== null): ?><option value="<?= (int)$r['numero_posto'] ?>" selected>Sedia <?= (int)$r['numero_posto'] ?></option><?php else: ?><option value="">—</option><?php endif; ?>
-                            <?php foreach ($liberi as $n): ?><option value="<?= $n ?>">Sedia <?= $n ?></option><?php endforeach; ?>
+                            <?php if ($r['numero_posto'] !== null): ?><option value="<?= (int)$r['numero_posto'] ?>" selected>Sedia <?= (int)$r['numero_posto'] ?> · <?= h(partita_nome_sala_posto($settori, (int)$r['numero_posto'])) ?></option><?php else: ?><option value="">—</option><?php endif; ?>
+                            <?php foreach ($liberi as $n): ?><option value="<?= $n ?>">Sedia <?= $n ?> · <?= h(partita_nome_sala_posto($settori, $n)) ?></option><?php endforeach; ?>
                         </select>
                         <button class="btn btn-sm" type="submit">Assegna</button>
                     </form>
@@ -188,7 +192,7 @@ $action = function (string $azione, int $id_socio, string $label, string $class 
                 <td><a href="<?= u('/soci/view.php?id=' . (int)$r['id_socio']) ?>"><?= h($nome) ?></a></td>
                 <td><?= h(date('d/m H:i', strtotime($r['created_at']))) ?></td>
                 <td class="td-actions"><?php if ($puo_assegnare): ?>
-                    <?= $action('promuovi', (int)$r['id_socio'], 'Sposta tra i presenti', '', [], count($presenti) >= $capienza ? 'La sala è piena: confermare comunque ' . $nome . ' oltre la capienza?' : '') ?>
+                    <?= $action('promuovi', (int)$r['id_socio'], 'Sposta tra i presenti', '', [], count($presenti) >= $capienza ? 'Le sedie sono finite: confermare comunque ' . $nome . ' oltre la capienza?' : '') ?>
                     <?= $action('annulla', (int)$r['id_socio'], 'Togli dalla lista', 'btn-danger') ?>
                 <?php endif; ?></td>
             </tr>

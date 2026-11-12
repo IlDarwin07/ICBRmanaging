@@ -59,7 +59,7 @@ soci_header('Le partite in sede', $socio);
             <p class="sa-status sa-status-off">Partita annullata dal direttivo.</p>
         <?php elseif ($mia === 'presente'): ?>
             <?php if ($p['mio_posto'] !== null): ?>
-                <div class="sa-seat" aria-label="La tua sedia"><small>LA TUA SEDIA</small><b><?= (int)$p['mio_posto'] ?></b></div>
+                <div class="sa-seat" aria-label="La tua sedia"><small>LA TUA SEDIA</small><b><?= (int)$p['mio_posto'] ?></b><?php $sn_mio = partita_nome_sala_posto($p['settori'], (int)$p['mio_posto']); if ($sn_mio !== ''): ?><small><?= h($sn_mio) ?></small><?php endif; ?></div>
             <?php endif; ?>
             <?php if (!empty($mio_extra['da_nome'])): ?><p class="sa-small">Prenotato per te da <?= h($mio_extra['da_nome']) ?>.</p><?php endif; ?>
             <?php if (!empty($sostenitori[(int)$socio['id_socio']])): ?><p class="sa-small">Socio sostenitore: in sede sono € <?= h($quota_testo) ?> per questa partita.</p><?php endif; ?>
@@ -67,7 +67,7 @@ soci_header('Le partite in sede', $socio);
             <p class="sa-status sa-status-wait">Sei in lista d'attesa: se si libera un posto passi tra i presenti automaticamente.</p>
             <?php if (!empty($mio_extra['da_nome'])): ?><p class="sa-small">Prenotato per te da <?= h($mio_extra['da_nome']) ?>.</p><?php endif; ?>
         <?php elseif ($aperta): ?>
-            <p class="sa-status"><?= $liberi > 0 ? $liberi . ($liberi === 1 ? ' posto libero' : ' posti liberi') : 'Sala piena: puoi metterti in lista d\'attesa' ?> · prenotazioni fino a <?= h(date('d/m H:i', strtotime($p['prenotazioni_chiudono']))) ?></p>
+            <p class="sa-status"><?= $liberi > 0 ? $liberi . ($liberi === 1 ? ' posto libero' : ' posti liberi') : 'Posti esauriti: puoi metterti in lista d\'attesa' ?> · prenotazioni fino a <?= h(date('d/m H:i', strtotime($p['prenotazioni_chiudono']))) ?></p>
         <?php else: ?>
             <p class="sa-status sa-status-off">Prenotazioni chiuse.</p>
         <?php endif; ?>
@@ -102,7 +102,8 @@ soci_header('Le partite in sede', $socio);
             <input type="hidden" name="id_socio_per" value="<?= $fid ?>">
             <span><?= h($f['nome'] . ' ' . $f['cognome']) ?><?php if (!empty($sostenitori[$fid])): ?> <small>(sostenitore, € <?= h($quota_testo) ?>)</small><?php endif; ?></span>
             <?php if ($fstato === 'presente'): ?>
-                <span class="sa-status sa-status-ok">✓ Prenotato<?= $fx['numero_posto'] !== null ? ' · sedia ' . (int)$fx['numero_posto'] : '' ?></span>
+                <?php $sn_f = $fx['numero_posto'] !== null ? partita_nome_sala_posto($p['settori'], (int)$fx['numero_posto']) : ''; ?>
+                <span class="sa-status sa-status-ok">✓ Prenotato<?= $fx['numero_posto'] !== null ? ' · sedia ' . (int)$fx['numero_posto'] . ($sn_f !== '' ? ' (' . h($sn_f) . ')' : '') : '' ?></span>
                 <?php if ($aperta): ?><button type="submit" name="azione" value="annulla" class="sa-btn sa-btn-ghost">Annulla</button><?php endif; ?>
             <?php elseif ($fstato === 'attesa'): ?>
                 <span class="sa-status sa-status-wait">In lista d'attesa</span>

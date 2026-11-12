@@ -17,6 +17,8 @@ if (!$partita) render_error_page('Partita non trovata', 'Torna all\'elenco delle
 
 $righe = array_values(array_filter(prenotazioni_partita($id), fn($r) => $r['stato'] !== 'annullata'));
 $base = 'presenze-' . date('Y-m-d', strtotime($partita['data_ora'])) . '-' . trim(preg_replace('/[^a-z0-9]+/', '-', strtolower($partita['titolo'])), '-');
+$settori = $partita['settori'];
+$salaDi = fn($r) => $r['numero_posto'] !== null ? partita_nome_sala_posto($settori, (int)$r['numero_posto']) : '';
 
 if (($_GET['formato'] ?? '') === 'csv') {
     audit_event('partite', 'esportazione', 'partite', (string)$id);
@@ -29,9 +31,9 @@ if (($_GET['formato'] ?? '') === 'csv') {
     $out = fopen('php://output', 'w');
     fwrite($out, "\xEF\xBB\xBF");
     fputcsv($out, [$partita['titolo'], partita_data_label($partita['data_ora']), $partita['sala_nome']], ';');
-    fputcsv($out, ['Sedia', 'Cognome', 'Nome', 'Telefono', 'Stato', 'Prenotato il'], ';');
+    fputcsv($out, ['Sedia', 'Sala', 'Cognome', 'Nome', 'Telefono', 'Stato', 'Prenotato il'], ';');
     foreach ($righe as $r) {
-        fputcsv($out, array_map($cell, [$r['numero_posto'] ?? '', $r['cognome'], $r['nome'], $r['telefono'] ?? '',
+        fputcsv($out, array_map($cell, [$r['numero_posto'] ?? '', $salaDi($r), $r['cognome'], $r['nome'], $r['telefono'] ?? '',
             prenotazione_stato_label($r['stato']), date('d/m/Y H:i', strtotime($r['created_at']))]), ';');
     }
     fclose($out);
@@ -49,7 +51,7 @@ usort($presenti, function ($a, $b) {
 $attesa = array_values(array_filter($righe, fn($r) => $r['stato'] === 'attesa'));
 $capienza = (int)$partita['capienza'];
 
-$colonne = [['Sedia', 40], ['Socio', 85], ['Telefono', 290], ['Prenotato il', 385], ['Presente', 500]];
+$colonne = [['Sedia', 40], ['Sala', 72], ['Socio', 150], ['Telefono', 330], ['Prenotato il', 410], ['Presente', 510]];
 $pdf = new SimplePdf();
 
 $nuovaPagina = function () use ($pdf, $partita, $presenti, $attesa, $capienza, $colonne): float {
@@ -57,7 +59,7 @@ $nuovaPagina = function () use ($pdf, $partita, $presenti, $attesa, $capienza, $
     $pdf->text(40, 50, 'Inter Club Javier Zanetti Brindisi', 11, true);
     $pdf->text(40, 72, 'Elenco presenze', 16, true);
     $pdf->text(40, 92, $pdf->fit($partita['titolo'] . ($partita['competizione'] ? ' - ' . $partita['competizione'] : ''), 515, 11), 11);
-    $pdf->text(40, 108, partita_data_label($partita['data_ora']) . ' - ' . $partita['sala_nome'], 10);
+    $pdf->text(40, 108, $pdf->fit(partita_data_label($partita['data_ora']) . ' - ' . $partita['sala_nome'], 515, 10), 10);
     $pdf->text(40, 124, 'Presenti: ' . count($presenti) . ' su ' . $capienza . ' posti - In lista d\'attesa: ' . count($attesa), 10);
     $y = 152.0;
     $pdf->fillRect(40, $y - 13, 515, 19, 0.9);
@@ -80,10 +82,11 @@ foreach ([['Presenti', $presenti], ['Lista d\'attesa', $attesa]] as [$etichetta,
             $y = $nuovaPagina();
         }
         $pdf->text(40, $y, $r['numero_posto'] !== null ? (string)(int)$r['numero_posto'] : '-', 9);
-        $pdf->text(85, $y, $pdf->fit($r['cognome'] . ' ' . $r['nome'], 195, 9), 9);
-        $pdf->text(290, $y, $pdf->fit((string)($r['telefono'] ?? ''), 90, 9), 9);
-        $pdf->text(385, $y, date('d/m/Y H:i', strtotime($r['created_at'])), 9);
-        $pdf->rect(510, $y - 9, 11, 11);
+        $pdf->text(72, $y, $pdf->fit($salaDi($r), 74, 9), 9);
+        $pdf->text(150, $y, $pdf->fit($r['cognome'] . ' ' . $r['nome'], 172, 9), 9);
+        $pdf->text(330, $y, $pdf->fit((string)($r['telefono'] ?? ''), 74, 9), 9);
+        $pdf->text(410, $y, date('d/m/Y H:i', strtotime($r['created_at'])), 9);
+        $pdf->rect(515, $y - 9, 11, 11);
         $pdf->line(40, $y + 6, 555, $y + 6, 0.25);
         $y += 20;
     }
