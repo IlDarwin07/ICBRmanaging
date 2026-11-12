@@ -1,5 +1,5 @@
 <?php
-/** Email di sistema: indirizzo mittente, modificabile solo dall'amministratore. */
+/** Email di sistema: indirizzo mittente e URL pubblico, modificabili solo dall'amministratore. */
 require_once __DIR__ . '/../../includes/auth.php';
 require_once __DIR__ . '/../../includes/functions.php';
 require_once __DIR__ . '/../../includes/mailer.php';
@@ -33,6 +33,34 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             audit_event('impostazioni', 'mail_mittente_modificata', 'impostazioni', 'mail_mittente', ['da' => $vecchia, 'a' => $nuova]);
             redirect_with_message('/impostazioni/mail.php', 'Indirizzo mittente aggiornato.');
         }
+    } elseif ($azione === 'url') {
+        $grezzo = trim((string)($_POST['url_pubblica'] ?? ''));
+        $vecchio = mail_config()['public_url'];
+        $utente = current_user();
+        if (!$pronto) {
+            $errors[] = 'Applica prima la migrazione database/migrations/015_impostazioni.sql.';
+        } elseif ($grezzo === '') {
+            // Campo vuoto: si torna al valore di ICBR_PUBLIC_URL (o all'host della richiesta).
+            $pdo->prepare('DELETE FROM impostazioni WHERE chiave = ?')->execute(['url_pubblica']);
+            audit_event('impostazioni', 'url_pubblica_rimosso', 'impostazioni', 'url_pubblica', ['da' => $vecchio]);
+            redirect_with_message('/impostazioni/mail.php', 'URL pubblico rimosso: si usa la configurazione di Apache.');
+        } else {
+            $p = parse_url($grezzo);
+            $schema = strtolower((string)($p['scheme'] ?? ''));
+            $host = strtolower((string)($p['host'] ?? ''));
+            if (!$p || !in_array($schema, ['http', 'https'], true) || $host === '' || !preg_match('/^[a-z0-9.\-]+$/', $host)) {
+                $errors[] = 'URL non valido: usa il formato https://dominio.it (anche con porta).';
+            } else {
+                // Si conserva solo schema, host e porta: eventuali percorsi (es. /dashboard) vengono scartati.
+                $nuovo = $schema . '://' . $host . (isset($p['port']) ? ':' . (int)$p['port'] : '');
+                $pdo->prepare(
+                    'INSERT INTO impostazioni (chiave, valore, aggiornata_da) VALUES (?, ?, ?)
+                     ON DUPLICATE KEY UPDATE valore = VALUES(valore), aggiornata_da = VALUES(aggiornata_da)'
+                )->execute(['url_pubblica', $nuovo, $utente ? (int)$utente['id_utente'] : null]);
+                audit_event('impostazioni', 'url_pubblica_modificato', 'impostazioni', 'url_pubblica', ['da' => $vecchio, 'a' => $nuovo]);
+                redirect_with_message('/impostazioni/mail.php', 'URL pubblico aggiornato: ' . $nuovo);
+            }
+        }
     } elseif ($azione === 'prova') {
         $dest = mb_strtolower(clean_email($_POST['destinatario'] ?? '') ?? '');
         if (!filter_var($dest, FILTER_VALIDATE_EMAIL)) {
@@ -48,6 +76,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 
 $config = mail_config();
+$urlSalvato = $pronto ? (mail_setting('url_pubblica') ?? '') : '';
 $csrf = generate_csrf_token();
 $page_title = 'Email di sistema';
 require __DIR__ . '/../../includes/layout_header.php';
@@ -81,6 +110,21 @@ require __DIR__ . '/../../includes/layout_header.php';
     </form>
     <p class="note">Stato invio: <strong><?= mail_enabled() ? 'attivo' : 'disattivato (manca ICBR_SMTP_HOST in Apache)' ?></strong>. Server: <?= h($config['host'] ?: 'non configurato') ?>, account di accesso: <?= h($config['user'] ?: 'non configurato') ?>.</p>
     <p class="note">La password per le app di Gmail non si imposta qui: resta nella configurazione di Apache. Con Gmail il mittente deve coincidere con l'account di accesso (ICBR_SMTP_USER), altrimenti Gmail lo sostituisce con quello.</p>
+</section>
+
+<section class="admin-panel">
+    <h2>URL pubblico del sito</h2>
+    <p>È l'indirizzo che compare nei link delle email (attivazione account, recupero password). Finché il sito è su un tunnel temporaneo, aggiornalo qui ogni volta che l'indirizzo cambia. Basta incollare l'URL: percorsi come <code>/dashboard</code> vengono scartati.</p>
+    <form method="post" class="form-card">
+        <input type="hidden" name="csrf_token" value="<?= h($csrf) ?>">
+        <input type="hidden" name="azione" value="url">
+        <div class="form-group">
+            <label>URL pubblico</label>
+            <input type="url" name="url_pubblica" value="<?= h($urlSalvato) ?>" maxlength="200" placeholder="https://esempio.trycloudflare.com">
+        </div>
+        <div class="form-actions"><button type="submit" class="btn" <?= $pronto ? '' : 'disabled' ?>>Salva</button></div>
+    </form>
+    <p class="note">In uso adesso: <strong><?= h($config['public_url'] !== '' ? $config['public_url'] : 'host della richiesta corrente') ?></strong>. Lasciando il campo vuoto si torna a ICBR_PUBLIC_URL di Apache. I link già inviati con il vecchio indirizzo non si aggiornano.</p>
 </section>
 
 <section class="admin-panel">

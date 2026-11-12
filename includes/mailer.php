@@ -19,7 +19,8 @@ function mail_setting(string $chiave): ?string
 
 /**
  * Configurazione email. Host, porta e credenziali arrivano da Apache (config/mail.php);
- * l'indirizzo mittente, se impostato dall'admin nel portale, ha la precedenza.
+ * l'indirizzo mittente e l'URL pubblico, se impostati dall'admin nel portale,
+ * hanno la precedenza.
  */
 function mail_config(): array
 {
@@ -29,6 +30,10 @@ function mail_config(): array
         $mittente = mail_setting('mail_mittente');
         if ($mittente !== null && filter_var($mittente, FILTER_VALIDATE_EMAIL) !== false) {
             $config['from'] = $mittente;
+        }
+        $url = mail_setting('url_pubblica');
+        if ($url !== null && preg_match('#^https?://[A-Za-z0-9.\-]+(:\d{1,5})?$#', $url)) {
+            $config['public_url'] = $url;
         }
     }
     return $config;
@@ -41,9 +46,9 @@ function mail_enabled(): bool
 }
 
 /**
- * URL assoluto per i link nelle email. Usa ICBR_PUBLIC_URL se configurato,
- * altrimenti l'host della richiesta corrente.
- * Se ICBR_PUBLIC_URL termina gia' con il percorso base (es. /ICBRmanaging/public
+ * URL assoluto per i link nelle email. Usa l'URL pubblico (impostato dall'admin o
+ * ICBR_PUBLIC_URL) se presente, altrimenti l'host della richiesta corrente.
+ * Se l'URL pubblico termina gia' con il percorso base (es. /ICBRmanaging/public
  * in XAMPP) questo non viene aggiunto una seconda volta.
  */
 function absolute_url(string $path): string
