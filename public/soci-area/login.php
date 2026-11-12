@@ -3,7 +3,16 @@ require_once __DIR__ . '/../../includes/auth_soci.php';
 require_once __DIR__ . '/../../includes/soci_layout.php';
 start_soci_session();
 if (!soci_ready()) soci_message_page('Area soci in arrivo', 'L\'area soci non è ancora attiva. Riprova più tardi.', 503);
-if (current_socio()) { header('Location: ' . base_path('/soci-area/index.php')); exit; }
+
+/** Dove mandare il socio dopo l'accesso: la partita del link ricevuto su WhatsApp, se c'era. */
+function soci_dopo_login_url(): string
+{
+    $id = (int)($_SESSION['socio_dopo_login'] ?? 0);
+    unset($_SESSION['socio_dopo_login']);
+    return base_path('/soci-area/index.php') . ($id > 0 ? '?partita=' . $id . '#partita-' . $id : '');
+}
+
+if (current_socio()) { header('Location: ' . soci_dopo_login_url()); exit; }
 
 $errore = isset($_GET['revocato']) ? 'Il tuo accesso non è più attivo. Contatta il direttivo.' : null;
 $email = '';
@@ -15,7 +24,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $errore = 'Inserisci email e password.';
     } else {
         $esito = socio_attempt_login($email, $password);
-        if ($esito === true) { header('Location: ' . base_path('/soci-area/index.php')); exit; }
+        if ($esito === true) { header('Location: ' . soci_dopo_login_url()); exit; }
         $errore = is_string($esito) ? $esito : 'Email o password non corretti.';
     }
 }
