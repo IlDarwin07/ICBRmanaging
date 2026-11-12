@@ -60,7 +60,7 @@ $action = function (string $azione, int $id_socio, string $label, string $class 
     <div class="quick-links">
         <a class="btn btn-secondary" href="<?= u('/partite/list.php') ?>">← Partite</a>
         <?php if (can('partite.write') && $partita['stato'] !== 'conclusa'): ?><a class="btn btn-secondary" href="<?= u('/partite/edit.php?id=' . $id) ?>">Modifica</a><?php endif; ?>
-        <?php if (can('partite.export')): ?><a class="btn btn-secondary" href="<?= u('/partite/export.php?id=' . $id) ?>">Esporta CSV</a><?php endif; ?>
+        <?php if (can('partite.export')): ?><a class="btn btn-secondary" href="<?= u('/partite/export.php?id=' . $id) ?>" target="_blank" rel="noopener">Esporta PDF</a><?php endif; ?>
     </div>
 </div>
 
