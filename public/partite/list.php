@@ -44,6 +44,7 @@ require __DIR__ . '/../../includes/layout_header.php';
                 <td><?= (int)$p['assegnati'] ?> / <?= (int)$p['presenti'] ?></td>
                 <td class="td-actions">
                     <a class="btn btn-sm" href="<?= u('/partite/view.php?id=' . (int)$p['id_partita']) ?>">Presenze e sedie</a>
+                    <a class="btn btn-secondary btn-sm" href="<?= u('/partite/sostenitori.php?id=' . (int)$p['id_partita']) ?>">Sostenitori</a>
                     <?php if (can('partite.write') && !in_array($p['stato'], ['conclusa'], true)): ?><a class="btn btn-secondary btn-sm" href="<?= u('/partite/edit.php?id=' . (int)$p['id_partita']) ?>">Modifica</a><?php endif; ?>
                 </td>
             </tr>
