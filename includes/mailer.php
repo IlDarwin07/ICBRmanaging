@@ -4,10 +4,34 @@
  * Usato solo per le email transazionali dell'area soci.
  */
 
+/** Valore di una impostazione salvata nel database, o null se manca (o la tabella non esiste). */
+function mail_setting(string $chiave): ?string
+{
+    try {
+        $stmt = get_db_connection()->prepare('SELECT valore FROM impostazioni WHERE chiave = ?');
+        $stmt->execute([$chiave]);
+        $valore = $stmt->fetchColumn();
+        return $valore === false ? null : (string)$valore;
+    } catch (Throwable $e) {
+        return null;
+    }
+}
+
+/**
+ * Configurazione email. Host, porta e credenziali arrivano da Apache (config/mail.php);
+ * l'indirizzo mittente, se impostato dall'admin nel portale, ha la precedenza.
+ */
 function mail_config(): array
 {
     static $config = null;
-    return $config ??= require __DIR__ . '/../config/mail.php';
+    if ($config === null) {
+        $config = require __DIR__ . '/../config/mail.php';
+        $mittente = mail_setting('mail_mittente');
+        if ($mittente !== null && filter_var($mittente, FILTER_VALIDATE_EMAIL) !== false) {
+            $config['from'] = $mittente;
+        }
+    }
+    return $config;
 }
 
 function mail_enabled(): bool
