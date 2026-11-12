@@ -53,8 +53,6 @@ soci_header('Le partite in sede', $socio);
         <?php elseif ($mia === 'presente'): ?>
             <?php if ($p['mio_posto'] !== null): ?>
                 <div class="sa-seat" aria-label="La tua sedia"><small>LA TUA SEDIA</small><b><?= (int)$p['mio_posto'] ?></b></div>
-            <?php else: ?>
-                <p class="sa-status sa-status-ok">✓ Presenza confermata. La sedia te la assegna il direttivo: ricontrolla più avanti.</p>
             <?php endif; ?>
             <?php if (!empty($mio_extra['da_nome'])): ?><p class="sa-small">Prenotato per te da <?= h($mio_extra['da_nome']) ?>.</p><?php endif; ?>
             <?php if (!empty($sostenitori[(int)$socio['id_socio']])): ?><p class="sa-small">Socio sostenitore: in sede sono € <?= h($quota_testo) ?> per questa partita.</p><?php endif; ?>
