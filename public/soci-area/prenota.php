@@ -35,9 +35,16 @@ try {
                 ? 'Presenza confermata per ' . $nome_per . '.'
                 : 'La sala e piena: ' . $nome_per . ' e in lista d\'attesa.');
         }
-        redirect_with_message('/soci-area/index.php', $stato === 'presente'
-            ? 'Presenza confermata! Il direttivo ti assegnerà la sedia.'
-            : 'La sala è piena: sei in lista d\'attesa. Se si libera un posto passi tra i presenti.');
+        if ($stato === 'presente') {
+            // Nessun messaggio di conferma: solo ai soci sostenitori compare il promemoria della quota.
+            $sostenitori = soci_sostenitori([$target]);
+            if (!empty($sostenitori[$target])) {
+                redirect_with_message('/soci-area/index.php', 'Promemoria: in sede sono € ' . number_format(PARTITA_QUOTA_SOSTENITORE, 2, ',', '.') . ' per questa partita.');
+            }
+            header('Location: ' . base_path('/soci-area/index.php'));
+            exit;
+        }
+        redirect_with_message('/soci-area/index.php', 'La sala è piena: sei in lista d\'attesa. Se si libera un posto passi tra i presenti.');
     }
     if ($azione === 'annulla') {
         $promosso = prenotazione_annulla($id_partita, $target);
