@@ -38,7 +38,7 @@ function dash_pie_svg(array $slices, int $total): string
     }
     $circ = 2 * M_PI * 40;
     $offset = 0.0;
-    $svg = '<svg viewBox="0 0 120 120" class="dash-pie" role="img" aria-label="Distribuzione dei soci per comune">';
+    $svg = '<svg viewBox="0 0 120 120" class="dash-pie" role="img" aria-label="Distribuzione dei soci attivi per comune">';
     foreach ($slices as $s) {
         $len = $circ * $s['value'] / $total;
         $svg .= sprintf(
@@ -48,7 +48,7 @@ function dash_pie_svg(array $slices, int $total): string
         $offset += $len;
     }
     $svg .= '<text x="60" y="60" text-anchor="middle" class="dash-pie-total">' . $total . '</text>';
-    $svg .= '<text x="60" y="74" text-anchor="middle" class="dash-pie-label">soci</text></svg>';
+    $svg .= '<text x="60" y="74" text-anchor="middle" class="dash-pie-label">soci attivi</text></svg>';
     return $svg;
 }
 
@@ -177,10 +177,18 @@ if ($mostra('partita')) {
 }
 
 if ($mostra('comuni')) {
-    $tutti_comuni = $pdo->query(
-        "SELECT COALESCE(NULLIF(TRIM(comune), ''), 'Non specificato') AS comune, COUNT(*) AS totale
-         FROM soci WHERE attivo_record = 1 GROUP BY 1 ORDER BY totale DESC, comune ASC"
-    )->fetchAll();
+    // Solo i soci attivi (attivo_portale = 1) nella stagione corrente: stesso criterio della card "Attivi".
+    $tutti_comuni = [];
+    if ($stagione_attiva) {
+        $stmt_com = $pdo->prepare(
+            "SELECT COALESCE(NULLIF(TRIM(s.comune), ''), 'Non specificato') AS comune, COUNT(DISTINCT s.id_socio) AS totale
+             FROM soci s JOIN tesseramenti t ON t.id_socio = s.id_socio
+             WHERE s.attivo_record = 1 AND t.id_stagione = :id AND t.attivo_portale = 1
+             GROUP BY 1 ORDER BY totale DESC, comune ASC"
+        );
+        $stmt_com->execute(['id' => $stagione_attiva['id_stagione']]);
+        $tutti_comuni = $stmt_com->fetchAll();
+    }
 
     $totale_comuni = 0;
     foreach ($tutti_comuni as $r) {
@@ -363,14 +371,14 @@ require __DIR__ . '/../includes/layout_header.php';
 
 <?php if ($mostra('comuni')): ?>
     <section class="dash-panel is-wide" aria-labelledby="dash-comuni">
-        <h2 id="dash-comuni">Soci per comune</h2>
+        <h2 id="dash-comuni">Soci attivi per comune<?= $codice ? ' &middot; ' . $codice : '' ?></h2>
         <?php if (empty($righe_comuni)): ?>
-            <p class="note">Nessun dato disponibile.</p>
+            <p class="note">Nessun socio attivo nella stagione corrente.</p>
         <?php else: ?>
             <div class="dash-comuni">
                 <div class="dash-list">
                     <table class="dash-table">
-                        <thead><tr><th>Comune</th><th class="num">Soci</th><th class="num">%</th></tr></thead>
+                        <thead><tr><th>Comune</th><th class="num">Soci attivi</th><th class="num">%</th></tr></thead>
                         <tbody>
                         <?php foreach ($righe_comuni as $riga): ?>
                             <tr>
