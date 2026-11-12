@@ -1,6 +1,6 @@
 <?php
 /**
- * Client SMTP minimo (STARTTLS/SSL + AUTH LOGIN), senza dipendenze esterne.
+ * Client SMTP minimo (STARTTLS/SSL + AUTH LOGIN/PLAIN), senza dipendenze esterne.
  * Usato solo per le email transazionali dell'area soci.
  */
 
@@ -87,30 +87,44 @@ function send_mail(string $to, string $subject, string $body): bool
         }
         return [(int)substr($text, 0, 3), trim($text)];
     };
-    $cmd = function (string $line, array $expect, string $label = '') use ($fp, $read): void {
+    $cmd = function (string $line, array $expect, string $label = '') use ($fp, $read): string {
         fwrite($fp, $line . "\r\n");
         [$code, $text] = $read();
         if (!in_array($code, $expect, true)) {
             throw new RuntimeException('SMTP ' . ($label !== '' ? $label : $line) . " -> $text");
         }
+        return $text;
     };
 
+    $sent = false;
     try {
         [$code, $text] = $read();
         if ($code !== 220) throw new RuntimeException("SMTP saluto: $text");
         $ehlo = 'EHLO ' . (preg_replace('/[^A-Za-z0-9.\-]/', '', (string)($_SERVER['SERVER_NAME'] ?? '')) ?: 'localhost');
-        $cmd($ehlo, [250]);
+        $caps = $cmd($ehlo, [250]);
         if ($c['secure'] === 'tls') {
+            if (stripos($caps, 'STARTTLS') === false) {
+                throw new RuntimeException('SMTP: il server non offre STARTTLS');
+            }
             $cmd('STARTTLS', [220]);
             if (!stream_socket_enable_crypto($fp, true, STREAM_CRYPTO_METHOD_TLSv1_2_CLIENT | STREAM_CRYPTO_METHOD_TLSv1_3_CLIENT)) {
                 throw new RuntimeException('SMTP: negoziazione TLS non riuscita');
             }
-            $cmd($ehlo, [250]);
+            $caps = $cmd($ehlo, [250]);
         }
         if ($c['user'] !== '') {
-            $cmd('AUTH LOGIN', [334]);
-            $cmd(base64_encode($c['user']), [334], 'AUTH utente');
-            $cmd(base64_encode($c['pass']), [235], 'AUTH password');
+            if ($c['secure'] !== 'ssl' && $c['secure'] !== 'tls') {
+                throw new RuntimeException('SMTP: AUTH rifiutata senza connessione cifrata (imposta secure=ssl o tls)');
+            }
+            $plain = (bool)preg_match('/AUTH[ =][^\r\n]*\bPLAIN\b/i', $caps);
+            $login = (bool)preg_match('/AUTH[ =][^\r\n]*\bLOGIN\b/i', $caps);
+            if ($plain && !$login) {
+                $cmd('AUTH PLAIN ' . base64_encode("\0" . $c['user'] . "\0" . $c['pass']), [235], 'AUTH PLAIN');
+            } else {
+                $cmd('AUTH LOGIN', [334]);
+                $cmd(base64_encode($c['user']), [334], 'AUTH utente');
+                $cmd(base64_encode($c['pass']), [235], 'AUTH password');
+            }
         }
         $cmd('MAIL FROM:<' . $c['from'] . '>', [250]);
         $cmd('RCPT TO:<' . $to . '>', [250, 251]);
@@ -132,12 +146,15 @@ function send_mail(string $to, string $subject, string $body): bool
             . rtrim(chunk_split(base64_encode(str_replace(["\r\n", "\r"], "\n", $body)), 76, "\r\n"));
         // base64 non produce mai righe che iniziano con ".", niente dot-stuffing.
         $cmd($payload . "\r\n.", [250], 'DATA corpo');
-        $cmd('QUIT', [221]);
-        fclose($fp);
-        return true;
+        $sent = true;
     } catch (Throwable $e) {
         error_log('ICBR mail: ' . $e->getMessage());
-        @fclose($fp);
-        return false;
     }
+
+    // Il messaggio è già stato accettato: un QUIT fallito non deve trasformare l'invio in errore.
+    if ($sent) {
+        @fwrite($fp, "QUIT\r\n");
+    }
+    @fclose($fp);
+    return $sent;
 }
