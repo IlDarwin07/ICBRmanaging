@@ -6,6 +6,7 @@
 require_once __DIR__ . '/../../includes/auth_soci.php';
 require_once __DIR__ . '/../../includes/soci_layout.php';
 require_once __DIR__ . '/../../includes/famiglia.php';
+require_once __DIR__ . '/../../includes/socio_anagrafica.php';
 
 // Link diretto a una partita (?partita=ID): se il socio non e' ancora entrato, lo si ricorda per dopo il login.
 $partita_link = isset($_GET['partita']) && ctype_digit((string)$_GET['partita']) ? (int)$_GET['partita'] : 0;
@@ -19,6 +20,9 @@ $partite = partite_per_socio($socio['id_socio']);
 $tesserato = socio_tesserato($socio['id_socio']);
 $stagione = stagione_corrente();
 $codice_stagione = $stagione['codice_stagione'] ?? 'in corso';
+
+$anagrafica = socio_anagrafica((int)$socio['id_socio']);
+$ultima_tessera = socio_ultima_tessera((int)$socio['id_socio']);
 
 $familiari = famiglia_familiari($socio['id_socio']);
 $ids_soci = array_merge([(int)$socio['id_socio']], array_map(fn($f) => (int)$f['id_socio'], $familiari));
@@ -207,14 +211,15 @@ soci_header('Il mio profilo', $socio);
     <div class="sa-account">
         <div class="sa-card">
             <h3>I tuoi dati</h3>
+            <?php render_socio_anagrafica($anagrafica ?: ['nome' => $socio['nome'], 'cognome' => $socio['cognome'], 'email' => $socio['email']], $ultima_tessera); ?>
             <dl class="sa-dl">
-                <div><dt>Nome</dt><dd><?= h($socio['nome'] . ' ' . $socio['cognome']) ?></dd></div>
                 <div><dt>Email di accesso</dt><dd><?= h($socio['email']) ?></dd></div>
                 <div><dt>Tessera <?= h($codice_stagione) ?></dt><dd><?= $tesserato ? 'Registrata' : 'Non ancora registrata' ?></dd></div>
                 <?php if ($familiari): ?><div><dt>Familiari collegati</dt><dd><?= h(implode(', ', array_map(fn($f) => $f['nome'] . ' ' . $f['cognome'], $familiari))) ?></dd></div><?php endif; ?>
             </dl>
             <p class="sa-small">Qualcosa non torna, o vuoi cambiare email? Dillo al direttivo e lo sistemiamo noi.</p>
         </div>
+        <?php render_invito_interista($ultima_tessera); ?>
         <div class="sa-card">
             <h3>Cambia password</h3>
             <form method="post" class="sa-form" action="<?= u('/soci-area/profilo.php') ?>">
