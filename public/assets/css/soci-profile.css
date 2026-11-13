@@ -1,0 +1,26 @@
+/* Scoped profile refresh; existing forms and authentication remain unchanged. */
+.sa-main-in #account .sa-account{grid-template-columns:minmax(0,2fr) minmax(260px,1fr);gap:24px;align-items:start}
+.sa-main-in #account .sa-card{min-width:0;border:1px solid #dce3ef;border-radius:20px;padding:clamp(20px,3vw,30px);box-shadow:0 8px 28px rgba(15,35,80,.06)}
+.sa-main-in #account .sa-card h3{color:#10265c;margin:0 0 20px;padding-bottom:14px;border-bottom:1px solid #e4eaf5;font-size:1.65rem}
+.sa-main-in #account .sa-card:first-child{background:linear-gradient(135deg,#edf3ff 0,#fff 40%);border-top:4px solid #1645d8}
+.sa-main-in #account .sa-dl{grid-template-columns:repeat(2,minmax(0,1fr));gap:0 20px;margin:0}
+.sa-main-in #account .sa-dl>div{min-width:0;padding:12px 0;border-bottom:1px solid #e7ecf5}
+.sa-main-in #account .sa-dl dt{font-size:.68rem;letter-spacing:.07em;color:#52627c;margin-bottom:5px}
+.sa-main-in #account .sa-dl dd{font-size:.95rem;line-height:1.45;color:#15223b}
+.sa-main-in #account .sa-card:first-child>.sa-small{margin:20px 0 0;padding:12px 14px;background:#edf3ff;color:#334b79;border-radius:10px;line-height:1.6}
+.sa-main-in #account .sa-card:last-child{grid-column:2;grid-row:1;background:#f8faff}
+.sa-main-in #account .sa-form{margin:0;gap:8px}
+.sa-main-in #account .sa-form input{width:100%;min-width:0;box-sizing:border-box;border-radius:10px;border-color:#c9d4e6}
+.sa-main-in #account .sa-btn{border-radius:10px;box-sizing:border-box}
+.sa-main-in #account .sa-btn:focus-visible{outline:3px solid #568aff;outline-offset:4px}
+.sa-main-in #account .sa-card.sa-loyalty{grid-column:1/-1;grid-row:2;display:grid;grid-template-columns:minmax(0,1fr) minmax(200px,.55fr);gap:10px 32px;background:linear-gradient(120deg,#07122e,#1035a9);border:0;color:#fff;box-shadow:0 14px 32px rgba(12,40,112,.18)}
+.sa-main-in #account .sa-loyalty h3{grid-column:1/-1;color:#fff;border:0;padding:0;margin:0 0 4px}
+.sa-main-in #account .sa-loyalty p{margin:0;line-height:1.7}
+.sa-main-in #account .sa-loyalty>.sa-small{grid-column:1;color:#dce7ff}
+.sa-main-in #account .sa-loyalty>p:not([class]){grid-column:1}
+.sa-main-in #account .sa-loyalty>p:has(>.sa-btn){grid-column:2;grid-row:2/4;align-self:center}
+.sa-main-in #account .sa-loyalty .sa-btn{background:#fff;color:#12339b;border-color:#fff;margin:0;min-height:54px}
+.sa-main-in #account .sa-loyalty .sa-btn:hover{background:#e5edff;border-color:#e5edff}
+.sa-main-in .sa-facts li{border-radius:12px;box-shadow:0 4px 16px rgba(15,35,80,.04)}
+@media(max-width:850px){.sa-main-in #account .sa-account{grid-template-columns:1fr}.sa-main-in #account .sa-card:last-child{grid-column:1;grid-row:2}.sa-main-in #account .sa-card.sa-loyalty{grid-column:1;grid-row:3;grid-template-columns:1fr}.sa-main-in #account .sa-loyalty>p:has(>.sa-btn){grid-column:1;grid-row:auto;margin-top:10px}}
+@media(max-width:420px){.sa-main-in #account .sa-dl{grid-template-columns:1fr}.sa-main-in #account .sa-card{padding:20px 16px;border-radius:14px}}
