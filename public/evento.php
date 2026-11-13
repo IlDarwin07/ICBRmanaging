@@ -29,7 +29,7 @@ $schema = [
 if ($cover !== '' && site_image_valid($cover)) {
     $schema['image'] = site_absolute_url('/assets/images/' . $cover);
 }
-public_header($article['titolo'] . ' | Inter Club Javier Zanetti Brindisi', $article['sommario'], $path, [$schema]);
+public_header($article['titolo'] . ' | Inter Club Brindisi', $article['sommario'], $path, [$schema], ['active' => 'eventi']);
 ?>
 <main id="contenuto" class="section events-page">
     <article class="event-article">

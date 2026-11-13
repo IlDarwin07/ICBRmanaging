@@ -51,6 +51,19 @@ function site_upgrade_content(array $content): array
         'tessera_2_dettagli' => 'Sostenitore è una delle formule di adesione ICBR per entrare nel gruppo e contribuire alla vita del club. Ti aiutiamo a capire se è quella adatta a te, spiegandoti attività e servizi previsti prima dell’iscrizione.',
         'tessera_6_dettagli' => 'La Quota Plus si aggiunge a un tesseramento Senior: non sostituisce la quota della tessera scelta. Se ti interessa, chiedici come abbinarla alla tua iscrizione e quali condizioni sono previste.',
     ];
+    // Testi standard di ottobre 2026, sostituiti dalla revisione di novembre 2026.
+    $previous['hero_titolo'] = array_merge((array)($previous['hero_titolo'] ?? []), ["Da soli si tifa.\nInsieme si vive."]);
+    $previous['hero_testo'] = array_merge((array)($previous['hero_testo'] ?? []), ['Partite in sede, trasferte e amicizie nerazzurre nel centro di Brindisi. Dal 2003 il punto di ritrovo dei tifosi dell’Inter.']);
+    $previous['hero_pulsante'] = array_merge((array)($previous['hero_pulsante'] ?? []), ['Tesserati ora']);
+    $previous['club_testo'] = array_merge((array)($previous['club_testo'] ?? []), ['Siamo l’Inter Club Javier Zanetti di Brindisi. Dal 2003 viviamo insieme ogni partita: serate in sede, trasferte a San Siro e amicizie che restano dopo il fischio finale.']);
+    $previous['tesseramento_titolo'] = array_merge((array)($previous['tesseramento_titolo'] ?? []), ["La passione è la stessa.\nScegli come viverla con noi."]);
+    $previous['tessera_1_testo'] = array_merge((array)($previous['tessera_1_testo'] ?? []), ['Vivi tutta la stagione da protagonista, con il tuo posto al club.']);
+    $previous['tessera_1_dettagli'] = array_merge((array)($previous['tessera_1_dettagli'] ?? []), ['La formula completa per vivere da vicino la vita del club durante tutta la stagione. Ti confermiamo accesso alla sede, attività e servizi inclusi.']);
+    $previous['tessera_2_testo'] = array_merge((array)($previous['tessera_2_testo'] ?? []), ['Entra nel gruppo e sostieni il club.']);
+    $previous['tessera_2_dettagli'] = array_merge((array)($previous['tessera_2_dettagli'] ?? []), ['La formula per entrare nel gruppo e sostenere le attività del club. Ti spieghiamo attività e servizi previsti.']);
+    $previous['tessera_quote_nota'] = array_merge((array)($previous['tessera_quote_nota'] ?? []), ['Quote 2026/27 per nuovi soci. Adesione e pagamento si completano con il direttivo.']);
+    $previous['sede_testo'] = array_merge((array)($previous['sede_testo'] ?? []), ['Nel centro di Brindisi. Scrivici prima di passare: concordiamo insieme l’apertura.']);
+    $previous['contatti_testo'] = array_merge((array)($previous['contatti_testo'] ?? []), ['Tesseramento, rinnovo o visita in sede: scrivici e ti risponde il direttivo.']);
     foreach ($previous as $key => $values) {
         $current = $content[$key] ?? null;
         if (is_string($current) && in_array(str_replace(["\r\n", "\r"], "\n", $current), (array) $values, true)) {

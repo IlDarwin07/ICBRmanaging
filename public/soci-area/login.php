@@ -29,21 +29,35 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
-soci_header('Accesso');
+soci_header('Accedi');
 ?>
-<section class="sa-card sa-narrow">
-    <span class="sa-kicker">AREA SOCI</span>
-    <h1>Le partite in sede, dal tuo telefono.</h1>
-    <p>Conferma la tua presenza e scopri la tua sedia. L'accesso te lo attiva il direttivo via email.</p>
-    <?php if ($errore): ?><div class="sa-flash sa-flash-error" role="alert"><?= h($errore) ?></div><?php endif; ?>
-    <form method="post" class="sa-form">
-        <input type="hidden" name="csrf_token" value="<?= h(csrf_token()) ?>">
-        <label for="email">Email</label>
-        <input type="email" id="email" name="email" autocomplete="username" value="<?= h($email) ?>" required>
-        <label for="password">Password</label>
-        <input type="password" id="password" name="password" autocomplete="current-password" required>
-        <button type="submit" class="sa-btn">Entra</button>
-    </form>
-    <p class="sa-small"><a href="<?= u('/soci-area/recupero.php') ?>">Password dimenticata?</a></p>
-</section>
+<div class="sa-login">
+    <section class="sa-login-intro" aria-labelledby="sa-login-title">
+        <span class="sa-kicker">AREA SOCI</span>
+        <h1 id="sa-login-title">Il tuo posto in sede, prenotato dal telefono.</h1>
+        <p>Entra con l’email che hai lasciato al club e tieni tutto sotto controllo in un’unica pagina.</p>
+        <ul class="sa-perks">
+            <li><strong>Prenoti la partita</strong> con un tocco, e se cambi idea la annulli.</li>
+            <li><strong>Scopri la tua sedia</strong> appena il direttivo la assegna.</li>
+            <li><strong>Prenoti per la famiglia</strong>, se il direttivo ha collegato i vostri profili.</li>
+        </ul>
+    </section>
+    <section class="sa-card sa-login-card" aria-labelledby="sa-form-title">
+        <h2 id="sa-form-title">Accedi</h2>
+        <?php if ($errore): ?><div class="sa-flash sa-flash-error" role="alert"><?= h($errore) ?></div><?php endif; ?>
+        <form method="post" class="sa-form" action="<?= u('/soci-area/login.php') ?>">
+            <input type="hidden" name="csrf_token" value="<?= h(csrf_token()) ?>">
+            <label for="email">Email</label>
+            <input type="email" id="email" name="email" autocomplete="username" inputmode="email" value="<?= h($email) ?>" required autofocus>
+            <label for="password">Password</label>
+            <input type="password" id="password" name="password" autocomplete="current-password" required>
+            <button type="submit" class="sa-btn">Entra</button>
+        </form>
+        <p class="sa-small"><a href="<?= u('/soci-area/recupero.php') ?>">Hai dimenticato la password?</a></p>
+        <div class="sa-login-help">
+            <strong>Prima volta qui?</strong>
+            <p>L’accesso non si crea da soli: lo attiva il direttivo e ti arriva un’email con il link per scegliere la password. Se sei socio e non l’hai ricevuta, <a href="<?= u('/index.php') ?>#contatti">scrivici</a>.</p>
+        </div>
+    </section>
+</div>
 <?php soci_footer(); ?>

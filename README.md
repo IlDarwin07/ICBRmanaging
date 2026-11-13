@@ -24,7 +24,7 @@ vedi [vetrina, fonti e installazione](docs/vetrina-fonti-e-installazione.md).
 | **WhatsApp** | Centro messaggi: template, filtri soci, risposte singole alle richieste, coda e storico manuale |
 | **Richieste sito** | Inbox della vetrina, stato richieste, risposta email/WhatsApp e cancellazione |
 | **Sede → Partite** | Partite in sede, presenze dei soci, lista d'attesa, assegnazione sedie per sala, export CSV. Vedi [area soci e prenotazioni](docs/area-soci-prenotazioni.md) |
-| **Area soci** (`/soci-area/`) | Accesso separato per i soci: conferma/annulla presenza e numero di sedia |
+| **Area soci** (`/soci-area/`) | Parte del sito pubblico (stesso menu e piè di pagina): accesso dei soci e profilo con prenotazioni, partite da prenotare, familiari e cambio password |
 | **Importa** | Caricamento file XLSX/XLS del portale Inter Club con mappatura colonne |
 | **Configurazione** | Stagioni sportive, Tipologie tessera |
 

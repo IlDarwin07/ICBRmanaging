@@ -12,8 +12,8 @@ foreach ($faq['groups'] as $group) foreach ($group['items'] as $item) {
     $faqSchema['mainEntity'][] = ['@type' => 'Question', 'name' => $item['question'], 'acceptedAnswer' => ['@type' => 'Answer', 'text' => $item['answer']]];
 }
 public_header(
-    'Inter Club Brindisi · Tesseramento ' . $site['stagione'] . ' | Inter Club Javier Zanetti',
-    'Inter Club Javier Zanetti Brindisi: partite dell’Inter in sede, trasferte e tesseramento ' . $site['stagione'] . ' da ' . $site['tessera_5_quota'] . '. Vieni a trovarci in ' . $site['indirizzo'] . '.',
+    'Inter Club Brindisi · Partite dell’Inter in sede e tesseramento ' . $site['stagione'],
+    'Inter Club Javier Zanetti di Brindisi, dal 2003: guarda le partite dell’Inter in sede con altri tifosi, prenota il posto dall’area soci e tesserati per la stagione ' . $site['stagione'] . ' da ' . $site['tessera_5_quota'] . '.',
     '/',
     [$faqSchema]
 );
@@ -82,19 +82,37 @@ public_header(
 
     <section class="venue-section" id="sede" aria-labelledby="venue-title">
         <figure class="venue-photo"><?= site_picture($site['sede_foto'], 'Sede dell’Inter Club Javier Zanetti in ' . $site['indirizzo'] . ', Brindisi', 1024, 576) ?></figure>
-        <div class="venue-copy"><span class="eyebrow">DOVE TROVARCI</span><h2 id="venue-title"><?= nl2br(h($site['sede_titolo'])) ?></h2><address><?= h($site['indirizzo']) ?><br><?= h($site['citta']) ?></address><p><?= nl2br(h($site['sede_testo'])) ?></p><a class="public-button button-blue" href="<?= h($site['mappe']) ?>" target="_blank" rel="noopener noreferrer">Portami al club <span aria-hidden="true">↗</span></a></div>
+        <div class="venue-copy"><span class="eyebrow">DOVE TROVARCI</span><h2 id="venue-title"><?= nl2br(h($site['sede_titolo'])) ?></h2><address><?= h($site['indirizzo']) ?><br><?= h($site['citta']) ?></address><p><?= nl2br(h($site['sede_testo'])) ?></p><a class="public-button button-blue" href="<?= h($site['mappe']) ?>" target="_blank" rel="noopener noreferrer">Portami al club <span aria-hidden="true">↗</span></a><p><a class="text-link" href="#contatti" data-topic="Visita alla sede" data-message="Ciao! Vorrei passare in sede a conoscervi: quando posso venire?">Contatta il direttivo per una visita <span aria-hidden="true">↗</span></a></p></div>
+    </section>
+
+
+    <section class="section members-band" id="area-soci" aria-labelledby="members-title">
+        <div>
+            <span class="eyebrow">AREA SOCI</span>
+            <h2 id="members-title">Sei socio?<br>Prenota il posto<br>dal telefono.</h2>
+            <p>Nelle sere di partita la sala si riempie in fretta. Dall’area soci confermi se ci sei, vedi la sedia che ti ha assegnato il direttivo e, se serve, prenoti anche per i tuoi familiari.</p>
+            <div class="members-actions">
+                <a class="public-button button-white" href="<?= u(public_socio_hint() ? '/soci-area/index.php' : '/soci-area/login.php') ?>" rel="nofollow"><?= public_socio_hint() ? 'Vai al tuo profilo' : 'Entra nell’area soci' ?> <span aria-hidden="true">↗</span></a>
+                <a class="text-link" href="#contatti" data-topic="Altre informazioni" data-message="Ciao! Sono socio e vorrei l’accesso all’area soci per prenotare le partite.">Non hai l’accesso? Contatta il direttivo <span aria-hidden="true">↗</span></a>
+            </div>
+        </div>
+        <ol class="members-steps">
+            <li><div><strong>Ricevi l’invito</strong><span>Il direttivo ti manda un’email con il link per scegliere la password.</span></div></li>
+            <li><div><strong>Premi “Ci sarò”</strong><span>Se la sala è piena entri in lista d’attesa e, appena si libera un posto, passi tra i presenti.</span></div></li>
+            <li><div><strong>Trova la tua sedia</strong><span>Il numero compare nel tuo profilo prima della partita. Arrivi e ti siedi.</span></div></li>
+        </ol>
     </section>
 
     <section class="section contact-section" id="contatti" aria-labelledby="contact-title">
         <div class="contact-copy"><span class="eyebrow">CONTATTI</span><h2 id="contact-title"><?= nl2br(h($site['contatti_titolo'])) ?></h2><p><?= nl2br(h($site['contatti_testo'])) ?></p></div>
         <div class="contact-form-panel">
-            <?php if ($sent): ?><div class="contact-success" role="status"><span class="eyebrow">MESSAGGGIO RICEVUTO</span><h3>CI SIAMO. GRAZIE!</h3><p>Il direttivo ti risponderà al recapito indicato.</p><a href="#tesseramento" class="text-link">Torna al tesseramento ↑</a></div><?php endif; ?>
+            <?php if ($sent): ?><div class="contact-success" role="status"><span class="eyebrow">MESSAGGIO RICEVUTO</span><h3>RICEVUTO, GRAZIE!</h3><p>Ti scriviamo noi al recapito che hai lasciato, di solito entro un paio di giorni.</p><a href="#tesseramento" class="text-link">Torna al tesseramento ↑</a></div><?php endif; ?>
             <?php if ($errors): ?><div class="contact-error" role="alert"><strong>Controlla la richiesta.</strong><ul><?php foreach ($errors as $error): ?><li><?= h($error) ?></li><?php endforeach; ?></ul></div><?php endif; ?>
             <form method="post" action="<?= u('/contatti.php') ?>" class="public-form">
                 <input type="hidden" name="csrf_token" value="<?= h(csrf_token()) ?>">
                 <div class="form-duo"><div><label for="contact-name">Nome e cognome *</label><input id="contact-name" name="nome" autocomplete="name" required maxlength="100" value="<?= h($old['nome'] ?? '') ?>"></div><div><label for="contact-email">Email *</label><input id="contact-email" type="email" name="email" autocomplete="email" required maxlength="190" value="<?= h($old['email'] ?? '') ?>"></div></div>
                 <div class="form-duo"><div><label for="contact-phone">Telefono <span>(facoltativo)</span></label><input id="contact-phone" type="tel" name="telefono" autocomplete="tel" maxlength="30" value="<?= h($old['telefono'] ?? '') ?>"></div><div><label for="contact-topic">Di cosa parliamo? *</label><select id="contact-topic" name="oggetto" required><?php foreach (['Tesseramento','Rinnovo','Visita alla sede','Altre informazioni'] as $topic): ?><option <?= ($old['oggetto'] ?? '') === $topic ? 'selected' : '' ?>><?= h($topic) ?></option><?php endforeach; ?></select></div></div>
-                <label for="contact-message">Il tuo messaggio *</label><textarea id="contact-message" name="messaggio" rows="4" required minlength="10" maxlength="3000" placeholder="Ciao, vorrei entrare a far parte del club…"><?= h($old['messaggio'] ?? '') ?></textarea>
+                <label for="contact-message">Il tuo messaggio *</label><textarea id="contact-message" name="messaggio" rows="4" required minlength="10" maxlength="3000" placeholder="Ciao, vorrei tesserarmi e capire come funzionano le serate in sede…"><?= h($old['messaggio'] ?? '') ?></textarea>
                 <div class="honeypot" aria-hidden="true"><label for="contact-website">Lascia questo campo vuoto</label><input id="contact-website" name="website" tabindex="-1" autocomplete="off"></div>
                 <label class="privacy-check"><input type="checkbox" name="privacy" value="1" required><span>Ho letto l’<a href="<?= u('/privacy.php') ?>" target="_blank" rel="noopener">informativa privacy</a> e chiedo di essere ricontattato per questa richiesta. *</span></label>
                 <button class="public-button button-blue" type="submit">Invia al direttivo <span aria-hidden="true">↗</span></button>
@@ -103,7 +121,7 @@ public_header(
         </div>
     </section>
     <section class="section faq-section" id="faq" aria-labelledby="faq-title">
-        <div class="faq-heading"><div><span class="eyebrow">FAQ INTER CLUB</span><h2 id="faq-title">Domande frequenti<br>sul tesseramento.</h2></div></div>
+        <div class="faq-heading"><div><span class="eyebrow">FAQ INTER CLUB</span><h2 id="faq-title">Domande frequenti<br>su tessera e club.</h2></div></div>
         <div class="faq-groups"><?php foreach ($faq['groups'] as $group): ?>
             <section class="faq-group" id="<?= h($group['id']) ?>" aria-labelledby="<?= h($group['id']) ?>-title">
                 <header class="faq-group-heading"><h3 id="<?= h($group['id']) ?>-title"><?= h($group['title']) ?></h3></header>
@@ -111,7 +129,7 @@ public_header(
                 <details id="<?= h($item['id']) ?>"><summary><?= h($item['question']) ?></summary><div class="faq-answer">
                     <span class="faq-kind"><?= $item['kind'] === 'official' ? 'FONTE UFFICIALE INTER' : 'INTER CLUB BRINDISI' ?></span>
                     <p><?= h($item['answer']) ?><?php foreach ($item['sources'] as $source): ?> <a class="faq-source" href="<?= h($source['url']) ?>" target="_blank" rel="noopener noreferrer"><?= h($source['label']) ?><span aria-hidden="true"> ↗</span></a><?php endforeach; ?></p>
-                    <?php if ($item['kind'] === 'local'): ?><a class="faq-contact" href="#contatti" data-topic="<?= $item['id'] === 'faq-visita' ? 'Visita alla sede' : 'Tesseramento' ?>">Chiedi al direttivo <span aria-hidden="true">↗</span></a><?php endif; ?>
+                    <?php if ($item['id'] === 'faq-prenota'): ?><a class="faq-contact" href="<?= u('/soci-area/login.php') ?>" rel="nofollow">Vai all’area soci <span aria-hidden="true">↗</span></a><?php elseif ($item['kind'] === 'local'): ?><a class="faq-contact" href="#contatti" data-topic="<?= $item['id'] === 'faq-visita' ? 'Visita alla sede' : 'Tesseramento' ?>">Chiedi al direttivo <span aria-hidden="true">↗</span></a><?php endif; ?>
                 </div></details>
                 <?php endforeach; ?>
             </section>
