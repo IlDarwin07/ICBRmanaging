@@ -31,7 +31,7 @@ soci_header('Scegli la password');
 <section class="sa-card sa-narrow">
     <span class="sa-kicker">AREA SOCI</span>
     <h1>Ciao <?= h($account['nome']) ?>, scegli la tua password.</h1>
-    <p>Accederai con <strong><?= h($account['email']) ?></strong> e questa password.</p>
+    <p>Da ora entrerai con <strong><?= h($account['email']) ?></strong> e la password che scegli qui. Un consiglio: una frase breve che ricordi è più sicura di una parola complicata.</p>
     <?php if ($errors): ?><div class="sa-flash sa-flash-error" role="alert"><?= implode('<br>', array_map('h', $errors)) ?></div><?php endif; ?>
     <form method="post" class="sa-form" action="<?= u('/soci-area/attiva.php') ?>">
         <input type="hidden" name="csrf_token" value="<?= h(csrf_token()) ?>">

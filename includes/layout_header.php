@@ -7,28 +7,40 @@ $asset_version = function (string $relative): string {
     $file = __DIR__ . '/../public/assets/' . $relative;
     return is_file($file) ? '?v=' . filemtime($file) : '';
 };
+// Le voci usate ogni settimana stanno in vista; il resto è raggruppato per scopo.
+$top = [
+    ['Soci','/soci/list.php','soci.view','/soci/'],
+    ['Tesseramenti','/tesseramenti/list.php','tesseramenti.view','/tesseramenti/'],
+    ['Partite','/partite/list.php','partite.view','/partite/'],
+    ['Prima nota','/prima_nota/list.php','prima_nota.view','/prima_nota/'],
+];
 $groups = [
-    'Sede' => [
-        ['Partite e presenze','/partite/list.php','partite.view','/partite/'],
-        ['Sale e capienze','/partite/sale.php','partite.write','/partite/sale.php'],
-    ],
-    'Contabilità' => [['Prima nota','/prima_nota/list.php','prima_nota.view','/prima_nota/']],
     'Comunicazioni' => [
         ['WhatsApp','/messaggi/index.php','whatsapp.view','/messaggi/'],
         ['Richieste dal sito','/richieste/list.php','richieste.view','/richieste/'],
         ['Articoli ed eventi','/articoli/list.php','articoli.view','/articoli/'],
+        ['Sito vetrina','/sito/edit.php','sito.write','/sito/'],
     ],
-    'Gestione' => [
+    'Impostazioni' => [
         ['Importa soci','/importazioni/upload.php','importazioni.write','/importazioni/'],
         ['Famiglie','/soci/famiglia.php','area_soci.write','/soci/famiglia.php'],
-        ['Sito vetrina','/sito/edit.php','sito.write','/sito/'],
-        ['Direttivo','/utenti/list.php','utenti.manage','/utenti/'],
-        ['Email di sistema','/impostazioni/mail.php','utenti.manage','/impostazioni/'],
-        ['Registro attività','/attivita/list.php','attivita.view','/attivita/'],
+        ['Sale e capienze','/partite/sale.php','partite.write','/partite/sale.php'],
         ['Stagioni','/stagioni/list.php','configurazione.view','/stagioni/'],
         ['Tipologie tessera','/tipologie/list.php','configurazione.view','/tipologie/'],
+        ['Direttivo e permessi','/utenti/list.php','utenti.manage','/utenti/'],
+        ['Email di sistema','/impostazioni/mail.php','utenti.manage','/impostazioni/'],
+        ['Registro attività','/attivita/list.php','attivita.view','/attivita/'],
     ],
 ];
+// Una pagina "di impostazione" (es. sale, famiglie) non accende anche la voce principale.
+$is_active = function (string $prefix) use ($current_path, $groups): bool {
+    if (!str_contains($current_path, $prefix)) return false;
+    foreach ($groups as $items) foreach ($items as $item) {
+        if ($item[3] !== $prefix && str_starts_with($item[3], $prefix) && str_contains($current_path, $item[3])) return false;
+    }
+    return true;
+};
+?>
 ?>
 <!DOCTYPE html>
 <html lang="it">
@@ -55,25 +67,25 @@ $groups = [
     <a href="<?= u('/dashboard.php') ?>" class="topbar-brand"><img class="club-logo" src="<?= u('/assets/images/logo-inter-club-brindisi.jpg') ?>" alt="" width="48" height="48"><span class="admin-brand-copy"><strong>INTER CLUB <span>BRINDISI</span></strong><small>AREA RISERVATA</small></span></a>
     <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="admin-navigation">Menu <span aria-hidden="true">☰</span></button>
     <nav class="topbar-nav" id="admin-navigation" aria-label="Gestionale">
-        <a href="<?= u('/dashboard.php') ?>" <?= str_ends_with($current_path, '/dashboard.php') ? 'class="active" aria-current="page"' : '' ?>>Home</a>
-        <?php foreach ([['Soci','/soci/list.php','soci.view','/soci/'],['Tesseramenti','/tesseramenti/list.php','tesseramenti.view','/tesseramenti/']] as [$label,$path,$permission,$prefix]): ?>
-        <?php if (can($permission)): ?><a href="<?= u($path) ?>" <?= str_contains($current_path,$prefix) ? 'class="active" aria-current="location"' : '' ?>><?= h($label) ?></a><?php endif; ?>
+        <a href="<?= u('/dashboard.php') ?>" <?= str_ends_with($current_path, '/dashboard.php') ? 'class="active" aria-current="page"' : '' ?>>Dashboard</a>
+        <?php foreach ($top as [$label,$path,$permission,$prefix]): ?>
+        <?php if (can($permission)): ?><a href="<?= u($path) ?>" <?= $is_active($prefix) ? 'class="active" aria-current="location"' : '' ?>><?= h($label) ?></a><?php endif; ?>
         <?php endforeach; ?>
         <?php foreach ($groups as $group => $items): ?>
         <?php $visible = array_values(array_filter($items, fn($item) => can($item[2]))); if (!$visible) continue;
-        $active = false; foreach ($visible as $item) { if (str_contains($current_path,$item[3])) $active = true; } ?>
+        $active = false; foreach ($visible as $item) { if ($is_active($item[3])) $active = true; } ?>
         <details class="workspace-menu <?= $active ? 'active' : '' ?>">
             <summary><?= h($group) ?><span aria-hidden="true">⌄</span></summary>
             <div class="workspace-menu-items">
                 <?php foreach ($visible as [$label,$path,$permission,$prefix]): ?>
-                <a href="<?= u($path) ?>" <?= str_contains($current_path,$prefix) ? 'class="active" aria-current="location"' : '' ?>><?= h($label) ?></a>
+                <a href="<?= u($path) ?>" <?= $is_active($prefix) ? 'class="active" aria-current="location"' : '' ?>><?= h($label) ?></a>
                 <?php endforeach; ?>
             </div>
         </details>
         <?php endforeach; ?>
     </nav>
     <div class="topbar-user">
-        <a href="<?= u('/index.php') ?>">Vedi sito ↗</a>
+        <a href="<?= u('/index.php') ?>" target="_blank" rel="noopener">Vedi il sito ↗</a>
         <?php if ($utente): ?>
         <span title="<?= h($utente['etichetta_ruolo'] ?? $utente['ruolo']) ?>"><?= h($utente['nome'] . ' ' . $utente['cognome']) ?></span>
         <a href="<?= u('/logout.php') ?>">Esci</a>

@@ -8,6 +8,7 @@ require __DIR__ . '/layout_header.php';
 <?php foreach ([
     ['soci.view','Soci','Consulta l’anagrafica del club.','/soci/list.php'],
     ['tesseramenti.view','Tesseramenti','Consulta adesioni e quote.','/tesseramenti/list.php'],
+    ['partite.view','Partite in sede','Apri le prenotazioni, controlla i presenti e assegna le sedie.','/partite/list.php'],
     ['prima_nota.view','Prima nota','Consulta i movimenti economici.','/prima_nota/list.php'],
     ['whatsapp.view','WhatsApp','Prepara le comunicazioni del club.','/messaggi/index.php'],
     ['richieste.view','Richieste dal sito','Leggi i contatti arrivati dalla vetrina.','/richieste/list.php'],

@@ -41,7 +41,7 @@ Con Gmail serve una *password per le app* (verifica in due passaggi attiva).
 | Direttivo | Scheda socio → *Accesso all'area soci* | Invia l'accesso: email con link valido 48 ore, monouso |
 | Socio | `/soci-area/attiva.php` | Sceglie la password (min. 10 caratteri) |
 | Direttivo | Sede → Partite e presenze → *Nuova partita* | Partita, data, sala, chiusura prenotazioni, solo tesserati sì/no |
-| Socio | `/soci-area/` | *Ci sarò* / *Non vengo più* fino alla chiusura |
+| Socio | `/soci-area/` (Il mio profilo) | *Ci sarò* / *Non vengo più* fino alla chiusura; in cima al profilo il riepilogo *Le mie prenotazioni* (anche dei familiari) |
 | Direttivo | Scheda partita | Vede presenti e lista d'attesa, assegna le sedie (clic sul socio, poi sulla sedia, oppure *Assegna in automatico*), esporta CSV, WhatsApp con la sedia |
 | Socio | `/soci-area/` | Vede il numero della sua sedia |
 
@@ -58,6 +58,12 @@ Regole:
 - Area soci separata dal gestionale: cookie `ICBR_SOCI` limitato a `/soci-area/`,
   sessione `$_SESSION['socio']`, tabella `soci_account`. Un socio non può aprire
   pagine del gestionale.
+- Le pagine dell'area soci usano il layout del sito pubblico (`public_header()` con
+  `noindex`), ma il sito pubblico non legge mai la sessione dei soci: per mostrare
+  *Il mio profilo* nel menu usa solo il cookie tecnico `ICBR_SOCI_IN` (valore `1`,
+  nessun dato personale), impostato all'accesso e cancellato all'uscita.
+- `/soci-area/profilo.php` accetta solo il POST del cambio password; il profilo è
+  `/soci-area/index.php` (sezioni `#prenotazioni`, `#partite`, `#account`).
 - Token salvati solo come hash SHA-256; recupero password con risposta identica
   per email esistenti e non, al massimo un link ogni 5 minuti.
 - Blocco di 15 minuti dopo 5 password errate.

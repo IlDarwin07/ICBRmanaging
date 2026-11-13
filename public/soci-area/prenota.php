@@ -33,16 +33,15 @@ try {
         if ($da !== null) {
             redirect_with_message('/soci-area/index.php', $stato === 'presente'
                 ? 'Presenza confermata per ' . $nome_per . '.'
-                : 'La sala e piena: ' . $nome_per . ' e in lista d\'attesa.');
+                : 'La sala è piena: ' . $nome_per . ' è in lista d\'attesa.');
         }
         if ($stato === 'presente') {
-            // Nessun messaggio di conferma: solo ai soci sostenitori compare il promemoria della quota.
+            // Ai soci sostenitori la conferma ricorda anche la quota della serata.
             $sostenitori = soci_sostenitori([$target]);
             if (!empty($sostenitori[$target])) {
-                redirect_with_message('/soci-area/index.php', 'Promemoria: in sede sono € ' . number_format(PARTITA_QUOTA_SOSTENITORE, 2, ',', '.') . ' per questa partita.');
+                redirect_with_message('/soci-area/index.php', 'Fatto, sei tra i presenti. Promemoria: da socio sostenitore porta € ' . number_format(PARTITA_QUOTA_SOSTENITORE, 2, ',', '.') . ' per questa partita.');
             }
-            header('Location: ' . base_path('/soci-area/index.php'));
-            exit;
+            redirect_with_message('/soci-area/index.php', 'Fatto, sei tra i presenti. Ti aspettiamo in sede!');
         }
         redirect_with_message('/soci-area/index.php', 'La sala è piena: sei in lista d\'attesa. Se si libera un posto passi tra i presenti.');
     }
@@ -51,7 +50,7 @@ try {
         if ($promosso) partita_notifica_promozione($id_partita, $promosso);
         redirect_with_message('/soci-area/index.php', $da !== null
             ? 'Prenotazione di ' . $nome_per . ' annullata.'
-            : 'Prenotazione annullata. Grazie per averlo segnalato!');
+            : 'Prenotazione annullata. Grazie per averci avvisato: il posto passa a chi aspetta.');
     }
     redirect_with_message('/soci-area/index.php', 'Operazione non valida.', 'error');
 } catch (DomainException $e) {

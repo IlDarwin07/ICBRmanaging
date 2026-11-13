@@ -18,11 +18,11 @@ soci_header('Password dimenticata');
     <span class="sa-kicker">AREA SOCI</span>
     <h1>Password dimenticata</h1>
     <?php if ($inviato): ?>
-        <p>Se l'indirizzo è registrato, tra poco riceverai un'email con il link per scegliere una nuova password. Controlla anche lo spam.</p>
-        <p>Non arriva nulla? Chiedi al direttivo di inviarti un nuovo accesso.</p>
+        <p>Se l'indirizzo è tra quelli dei soci, entro qualche minuto ti arriva un'email con il link per scegliere una nuova password. Dai un'occhiata anche nella cartella spam.</p>
+        <p>Ancora niente? Scrivi al direttivo: ti mandiamo un nuovo accesso.</p>
         <a class="sa-btn" href="<?= u('/soci-area/login.php') ?>">Torna all'accesso</a>
     <?php else: ?>
-        <p>Inserisci l'email con cui accedi all'area soci.</p>
+        <p>Capita a tutti. Scrivi l'email con cui entri nell'area soci e ti mandiamo un link per sceglierne una nuova.</p>
         <form method="post" class="sa-form">
             <input type="hidden" name="csrf_token" value="<?= h(csrf_token()) ?>">
             <label for="email">Email</label>

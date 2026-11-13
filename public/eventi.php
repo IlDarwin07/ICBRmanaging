@@ -4,19 +4,21 @@ require_once __DIR__ . '/../includes/articoli.php';
 
 $articles = articoli_public_list(60);
 public_header(
-    'Eventi e racconti del club | Inter Club Javier Zanetti Brindisi',
-    'Serate in sede, trasferte e momenti vissuti insieme: gli eventi organizzati dall’Inter Club Javier Zanetti Brindisi.',
-    '/eventi.php'
+    'Eventi, trasferte e serate in sede | Inter Club Brindisi',
+    'Trasferte a San Siro, serate in sede e feste tra soci: i racconti e le foto dell’Inter Club Javier Zanetti di Brindisi.',
+    '/eventi.php',
+    [],
+    ['active' => 'eventi']
 );
 ?>
 <main id="contenuto" class="section events-page">
     <header class="events-heading">
         <span class="eyebrow">EVENTI E RACCONTI</span>
         <h1>Quello che<br>viviamo insieme.</h1>
-        <p>Serate in sede, trasferte, feste: i momenti del club raccontati da chi c’era.</p>
+        <p>Trasferte, serate in sede, feste: quello che succede al club, raccontato da chi c’era.</p>
     </header>
     <?php if (!$articles): ?>
-        <p class="events-empty">Stiamo preparando i primi racconti. Intanto <a class="text-link" href="<?= u('/index.php') ?>#contatti">scrivici</a> o passa a trovarci in sede.</p>
+        <p class="events-empty">I primi racconti arrivano presto. Intanto <a class="text-link" href="<?= u('/index.php') ?>#contatti">scrivici</a> o passa a trovarci in sede.</p>
     <?php else: ?>
     <div class="events-grid">
         <?php foreach ($articles as $a): ?>

@@ -3,7 +3,7 @@ require_once __DIR__ . '/../includes/public_layout.php';
 public_header('Privacy e cookie | Inter Club Javier Zanetti Brindisi', 'Informativa privacy e cookie del sito dell’Inter Club Javier Zanetti Brindisi: dati del modulo contatti, conservazione e diritti.', '/privacy.php');
 ?>
 <main id="contenuto" class="section privacy-page">
-    <span class="eyebrow">INFORMATIVA · VERSIONE OTTOBRE 2026</span>
+    <span class="eyebrow">INFORMATIVA · VERSIONE NOVEMBRE 2026</span>
     <h1>PRIVACY E COOKIE.</h1>
     <p>Questa pagina descrive il funzionamento del modulo contatti del sito dell’Inter Club Javier Zanetti Brindisi. Il modulo serve soltanto per richieste di informazioni, non per completare il tesseramento o trasmettere documenti.</p>
     <h2>CHI RICEVE LA RICHIESTA</h2>
@@ -19,7 +19,7 @@ public_header('Privacy e cookie | Inter Club Javier Zanetti Brindisi', 'Informat
     <h2>I TUOI DIRITTI</h2>
     <p>Puoi chiedere accesso, rettifica, cancellazione, limitazione, portabilità ove applicabile e opporti al trattamento nei casi previsti dagli artt. 15–22 GDPR. Puoi inoltre proporre reclamo al Garante per la protezione dei dati personali. Per richieste sui tuoi dati usa i recapiti del club indicati sopra.</p>
     <h2>COOKIE E SERVIZI ESTERNI</h2>
-    <p>Il sito utilizza un cookie tecnico di sessione PHP per proteggere il modulo con un token anti-CSRF e per l’autenticazione dell’area riservata; l’area soci usa un cookie tecnico di sessione distinto, valido solo per le sue pagine. Non include strumenti analitici, pubblicità, mappe incorporate o font remoti. Immagini e font sono serviti localmente.</p>
+    <p>Il sito utilizza un cookie tecnico di sessione PHP per proteggere il modulo con un token anti-CSRF e per l’autenticazione dell’area riservata; l’area soci usa un cookie tecnico di sessione distinto, valido solo per le sue pagine, più un cookie tecnico (ICBR_SOCI_IN) che contiene solo il valore “1” e serve a mostrare nel menu “Il mio profilo” invece di “Area soci”. Nessuno dei due contiene dati personali. Non include strumenti analitici, pubblicità, mappe incorporate o font remoti. Immagini e font sono serviti localmente.</p>
     <p>I collegamenti a Google Maps, inter.it e ai social del club aprono siti terzi, soggetti alle rispettive informative. WhatsApp viene aperto solo dagli operatori quando scelgono di rispondere con quel servizio; l’invio avviene manualmente e non è automatico.</p>
     <a class="text-link" href="<?= u('/index.php') ?>">Torna al sito ←</a>
 </main>

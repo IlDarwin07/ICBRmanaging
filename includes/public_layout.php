@@ -28,8 +28,22 @@ function site_absolute_url(string $path = '/'): string
  * Intestazione pubblica con metadati SEO e social.
  * $title è il titolo completo della pagina; $jsonLd sono i dati strutturati aggiuntivi.
  */
-function public_header(string $title, string $description, string $path = '/', array $jsonLd = []): void
+/** true se nel browser c'è un socio collegato all'area soci (solo per il testo del menu). */
+function public_socio_hint(): bool
 {
+    return ($_COOKIE['ICBR_SOCI_IN'] ?? '') === '1';
+}
+
+/**
+ * Opzioni: noindex (pagine private), active (voce di menu corrente: club, tesseramento,
+ * sede, eventi, contatti, faq, soci), styles (fogli CSS aggiuntivi in /assets/css/).
+ */
+function public_header(string $title, string $description, string $path = '/', array $jsonLd = [], array $opt = []): void
+{
+    $noindex = !empty($opt['noindex']);
+    $active = (string)($opt['active'] ?? '');
+    $current = fn(string $key): string => $active === $key ? ' aria-current="page"' : '';
+    $socioIn = public_socio_hint();
     $home = base_path('/index.php');
     $content = $GLOBALS['site'] ?? site_content();
     $canonical = site_absolute_url($path);
@@ -41,7 +55,8 @@ function public_header(string $title, string $description, string $path = '/', a
         '@type' => 'SportsClub',
         'name' => $content['nome'] ?? 'Inter Club Javier Zanetti Brindisi',
         'alternateName' => 'Inter Club Brindisi',
-        'description' => 'Inter Club di Brindisi dal 2003: tifosi dell’Inter, partite in sede e tesseramento Inter Club.',
+        'description' => 'Inter Club di Brindisi dal 2003: partite dell’Inter in sede, trasferte a San Siro e tesseramento Inter Club.',
+        'areaServed' => 'Brindisi',
         'sport' => 'Calcio',
         'foundingDate' => $content['fondazione'] ?? '2003',
         'address' => [
@@ -56,7 +71,7 @@ function public_header(string $title, string $description, string $path = '/', a
     ];
     if ($canonical !== '') { $club['url'] = site_absolute_url('/'); $club['logo'] = $logo; $club['image'] = $image; }
     if ($sameAs) $club['sameAs'] = $sameAs;
-    $schemas = array_merge([$club], $jsonLd);
+    $schemas = $noindex ? [] : array_merge([$club], $jsonLd);
     ?>
 <!DOCTYPE html>
 <html lang="it">
@@ -65,9 +80,9 @@ function public_header(string $title, string $description, string $path = '/', a
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title><?= h($title) ?></title>
     <meta name="description" content="<?= h($description) ?>">
-    <meta name="robots" content="index,follow,max-image-preview:large">
+    <meta name="robots" content="<?= $noindex ? 'noindex,nofollow' : 'index,follow,max-image-preview:large' ?>">
     <meta name="theme-color" content="#011ea0">
-<?php if ($canonical !== ''): ?>
+<?php if ($canonical !== '' && !$noindex): ?>
     <link rel="canonical" href="<?= h($canonical) ?>">
     <meta property="og:url" content="<?= h($canonical) ?>">
     <meta property="og:image" content="<?= h($image) ?>">
@@ -91,6 +106,10 @@ function public_header(string $title, string $description, string $path = '/', a
     <link rel="stylesheet" href="<?= asset_url('/assets/css/membership.css') ?>">
     <link rel="stylesheet" href="<?= asset_url('/assets/css/faq.css') ?>">
     <link rel="stylesheet" href="<?= asset_url('/assets/css/articoli.css') ?>">
+    <link rel="stylesheet" href="<?= asset_url('/assets/css/site-ux.css') ?>">
+<?php foreach ((array)($opt['styles'] ?? []) as $sheet): if (!preg_match('/\A[a-z0-9-]+\z/', (string)$sheet)) continue; ?>
+    <link rel="stylesheet" href="<?= asset_url('/assets/css/' . $sheet . '.css') ?>">
+<?php endforeach; ?>
     <link rel="icon" type="image/jpeg" href="<?= u('/assets/images/logo-inter-club-brindisi.jpg') ?>">
     <link rel="apple-touch-icon" href="<?= u('/assets/images/logo-inter-club-brindisi.jpg') ?>">
 <?php foreach ($schemas as $schema): ?>
@@ -115,14 +134,17 @@ function public_header(string $title, string $description, string $path = '/', a
         <span>Menu</span><span class="menu-lines" aria-hidden="true"></span>
     </button>
     <nav id="public-navigation" class="public-nav" aria-label="Navigazione principale">
-        <a href="<?= h($home) ?>#club">Il club</a>
-        <a href="<?= h($home) ?>#tesseramento">Tesseramento</a>
-        <a href="<?= h($home) ?>#sede">La sede</a>
-        <a href="<?= u('/eventi.php') ?>">Eventi</a>
-        <a href="<?= h($home) ?>#contatti">Contatti</a>
-        <a href="<?= h($home) ?>#faq">FAQ</a>
-        <a href="<?= u('/soci-area/login.php') ?>" rel="nofollow">Area soci</a>
-        <a class="nav-lock" href="<?= u('/login.php') ?>" rel="nofollow" title="Area riservata" aria-label="Area riservata del direttivo"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></a>
+        <a href="<?= h($home) ?>#club"<?= $current('club') ?>>Il club</a>
+        <a href="<?= h($home) ?>#tesseramento"<?= $current('tesseramento') ?>>Tesseramento</a>
+        <a href="<?= h($home) ?>#sede"<?= $current('sede') ?>>La sede</a>
+        <a href="<?= u('/eventi.php') ?>"<?= $current('eventi') ?>>Eventi</a>
+        <a href="<?= h($home) ?>#faq"<?= $current('faq') ?>>FAQ</a>
+        <a href="<?= h($home) ?>#contatti"<?= $current('contatti') ?>>Contatti</a>
+        <a class="nav-soci<?= $socioIn ? ' is-in' : '' ?>" href="<?= u($socioIn ? '/soci-area/index.php' : '/soci-area/login.php') ?>" rel="nofollow"<?= $current('soci') ?>>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg>
+            <span><?= $socioIn ? 'Il mio profilo' : 'Area soci' ?></span>
+        </a>
+        <a class="nav-lock" href="<?= u('/login.php') ?>" rel="nofollow" title="Area riservata del direttivo" aria-label="Area riservata del direttivo"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></a>
     </nav>
 </header>
 <?php
@@ -138,16 +160,16 @@ function public_footer(): void
     <nav class="footer-socials" aria-label="I social del club"><?php foreach ($socials as $key=>$url): if (!site_social_valid($key,$url)) continue; ?><a href="<?= h($url) ?>" target="_blank" rel="noopener noreferrer"><span class="social-monogram" aria-hidden="true"><?= h(['instagram'=>'IG','facebook'=>'FB','youtube'=>'YT','tiktok'=>'TT'][$key]) ?></span><span><?= h(['instagram'=>'Instagram','facebook'=>'Facebook','youtube'=>'YouTube','tiktok'=>'TikTok'][$key]) ?></span><span aria-hidden="true">↗</span></a><?php endforeach; ?></nav>
     <?php endif; ?>
     <div class="footer-grid">
-        <div><img class="footer-club-logo" src="<?= u('/assets/images/logo-inter-club-brindisi.jpg') ?>" alt="Logo Inter Club Javier Zanetti Brindisi" width="100" height="100" loading="lazy"><strong>Inter Club Javier Zanetti Brindisi</strong><p>Associazione culturale</p><address><?= h($content['indirizzo']) ?>, <?= h($content['citta']) ?></address></div>
-        <div><a href="<?= u('/index.php') ?>#tesseramento">Tesseramento <?= h($content['stagione']) ?></a><a href="<?= u('/eventi.php') ?>">Eventi e racconti</a><a href="<?= u('/index.php') ?>#contatti">Contatti</a><a href="<?= u('/soci-area/login.php') ?>" rel="nofollow">Area soci: prenota la partita</a></div>
-        <div><a href="<?= u('/privacy.php') ?>">Privacy e cookie</a></div>
+        <div><img class="footer-club-logo" src="<?= u('/assets/images/logo-inter-club-brindisi.jpg') ?>" alt="Logo Inter Club Javier Zanetti Brindisi" width="100" height="100" loading="lazy"><strong>Inter Club Javier Zanetti Brindisi</strong><p>Associazione culturale nerazzurra, nel centro di Brindisi dal 2003.</p><address><?= h($content['indirizzo']) ?>, <?= h($content['citta']) ?></address></div>
+        <div><a href="<?= u('/index.php') ?>#tesseramento">Tesseramento <?= h($content['stagione']) ?></a><a href="<?= u('/eventi.php') ?>">Eventi e racconti</a><a href="<?= u('/index.php') ?>#contatti">Contatti</a><a href="<?= u(public_socio_hint() ? '/soci-area/index.php' : '/soci-area/login.php') ?>" rel="nofollow">Area soci: prenota la partita</a></div>
+        <div><a href="<?= h($content['mappe']) ?>" target="_blank" rel="noopener noreferrer">Come arrivare ↗</a><a href="<?= u('/privacy.php') ?>">Privacy e cookie</a></div>
     </div>
     <div class="footer-bottom"><span>© <?= date('Y') ?> Inter Club Javier Zanetti Brindisi · Associazione culturale</span><a class="footer-lock" href="<?= u('/login.php') ?>" rel="nofollow" title="Area riservata" aria-label="Area riservata del direttivo"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></a></div>
 </footer>
 <style>
 .public-footer .footer-lock{display:inline-flex;align-items:center;justify-content:center;width:44px;height:44px;margin:-10px -12px -10px 0;color:inherit;opacity:.22;transition:opacity .2s}
 .public-footer .footer-lock:hover,.public-footer .footer-lock:focus-visible{opacity:1}
-.public-nav .nav-lock{display:inline-flex;align-items:center;justify-content:center;min-width:44px;min-height:44px;margin-left:auto;padding:0;opacity:.75;transition:opacity .2s}
+.public-nav .nav-lock{display:inline-flex;align-items:center;justify-content:center;min-width:44px;min-height:44px;padding:0;opacity:.6;transition:opacity .2s}
 .public-nav .nav-lock:hover,.public-nav .nav-lock:focus-visible{opacity:1}
 .public-nav .nav-lock::after{display:none}
 @media(max-width:1050px){.public-nav .nav-lock{margin-left:0;justify-content:flex-start;margin-top:10px;border-top:1px solid var(--line);padding-top:6px}}

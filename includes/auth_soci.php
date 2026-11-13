@@ -7,6 +7,9 @@
  * - chiave di sessione $_SESSION['socio'] (mai $_SESSION['user']);
  * - tabella soci_account (mai utenti_admin).
  * Un socio autenticato non può quindi superare require_login() del gestionale.
+ *
+ * Il sito pubblico non legge mai la sessione dei soci: per mostrare "Il mio profilo"
+ * nel menu usa solo il cookie tecnico ICBR_SOCI_IN (valore "1", nessun dato personale).
  */
 
 require_once __DIR__ . '/auth.php';       // csrf_token(), csrf_verify(), DB, audit
@@ -15,6 +18,7 @@ require_once __DIR__ . '/mailer.php';
 require_once __DIR__ . '/partite.php';
 
 const SOCI_SESSION_NAME = 'ICBR_SOCI';
+const SOCI_HINT_COOKIE = 'ICBR_SOCI_IN';
 const SOCI_TOKEN_ORE = 48;
 const SOCI_MAX_TENTATIVI = 5;
 const SOCI_BLOCCO_MINUTI = 15;
@@ -44,6 +48,19 @@ function start_soci_session(): void
     header('Referrer-Policy: no-referrer'); // i token nei link non escono dalla pagina
 }
 
+/** Segnale per il menu del sito pubblico: dice solo "c'è un socio collegato", non chi. */
+function soci_hint_cookie(bool $on): void
+{
+    if (headers_sent()) return;
+    setcookie(SOCI_HINT_COOKIE, $on ? '1' : '', [
+        'expires' => $on ? 0 : time() - 42000,
+        'path' => (base_url() ?: '') . '/',
+        'secure' => !empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off',
+        'httponly' => true,
+        'samesite' => 'Lax',
+    ]);
+}
+
 function soci_ready(): bool
 {
     return partite_ready();
@@ -69,6 +86,7 @@ function require_socio_login(): array
         $row = $stmt->fetch();
         if ($row && (int)$row['attivo'] === 1) {
             $_SESSION['socio'] = soci_session_payload($row);
+            if (($_COOKIE[SOCI_HINT_COOKIE] ?? '') !== '1') soci_hint_cookie(true);
             return $_SESSION['socio'];
         }
         socio_logout();
@@ -141,6 +159,7 @@ function socio_open_session(array $row): void
     start_soci_session();
     session_regenerate_id(true);
     $_SESSION['socio'] = soci_session_payload($row);
+    soci_hint_cookie(true);
     audit_event('area_soci', 'login', 'soci_account', (string)$row['id_account']);
 }
 
@@ -151,6 +170,7 @@ function socio_logout(): void
     $p = session_get_cookie_params();
     setcookie(session_name(), '', ['expires' => time() - 42000, 'path' => $p['path'], 'domain' => $p['domain'], 'secure' => $p['secure'], 'httponly' => true, 'samesite' => 'Lax']);
     session_destroy();
+    soci_hint_cookie(false);
 }
 
 function socio_password_errors(string $password, string $confirm): array
