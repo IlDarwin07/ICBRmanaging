@@ -46,6 +46,9 @@ require __DIR__ . '/../../includes/layout_header.php';
                     <a class="btn btn-sm" href="<?= u('/partite/view.php?id=' . (int)$p['id_partita']) ?>">Presenze e sedie</a>
                     <a class="btn btn-secondary btn-sm" href="<?= u('/partite/sostenitori.php?id=' . (int)$p['id_partita']) ?>">Sostenitori</a>
                     <?php if (can('partite.write') && !in_array($p['stato'], ['conclusa'], true)): ?><a class="btn btn-secondary btn-sm" href="<?= u('/partite/edit.php?id=' . (int)$p['id_partita']) ?>">Modifica</a><?php endif; ?>
+                    <?php if ((current_user()['ruolo'] ?? '') === 'admin' && $p['stato'] === 'annullata'): ?>
+                    <a class="btn btn-sm" style="background:#b42318;border-color:#b42318;color:#fff" href="<?= u('/partite/delete.php?id=' . (int)$p['id_partita']) ?>">Elimina definitivamente</a>
+                    <?php endif; ?>
                 </td>
             </tr>
         <?php endforeach; ?>
