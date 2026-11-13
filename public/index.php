@@ -86,23 +86,6 @@ public_header(
     </section>
 
 
-    <section class="section members-band" id="area-soci" aria-labelledby="members-title">
-        <div>
-            <span class="eyebrow">AREA SOCI</span>
-            <h2 id="members-title">Sei socio?<br>Prenota il posto<br>dal telefono.</h2>
-            <p>Nelle sere di partita la sala si riempie in fretta. Dall’area soci confermi se ci sei, vedi la sedia che ti ha assegnato il direttivo e, se serve, prenoti anche per i tuoi familiari.</p>
-            <div class="members-actions">
-                <a class="public-button button-white" href="<?= u(public_socio_hint() ? '/soci-area/index.php' : '/soci-area/login.php') ?>" rel="nofollow"><?= public_socio_hint() ? 'Vai al tuo profilo' : 'Entra nell’area soci' ?> <span aria-hidden="true">↗</span></a>
-                <a class="text-link" href="#contatti" data-topic="Altre informazioni" data-message="Ciao! Sono socio e vorrei l’accesso all’area soci per prenotare le partite.">Non hai l’accesso? Contatta il direttivo <span aria-hidden="true">↗</span></a>
-            </div>
-        </div>
-        <ol class="members-steps">
-            <li><div><strong>Ricevi l’invito</strong><span>Il direttivo ti manda un’email con il link per scegliere la password.</span></div></li>
-            <li><div><strong>Premi “Ci sarò”</strong><span>Se la sala è piena entri in lista d’attesa e, appena si libera un posto, passi tra i presenti.</span></div></li>
-            <li><div><strong>Trova la tua sedia</strong><span>Il numero compare nel tuo profilo prima della partita. Arrivi e ti siedi.</span></div></li>
-        </ol>
-    </section>
-
     <section class="section contact-section" id="contatti" aria-labelledby="contact-title">
         <div class="contact-copy"><span class="eyebrow">CONTATTI</span><h2 id="contact-title"><?= nl2br(h($site['contatti_titolo'])) ?></h2><p><?= nl2br(h($site['contatti_testo'])) ?></p></div>
         <div class="contact-form-panel">
@@ -129,7 +112,7 @@ public_header(
                 <details id="<?= h($item['id']) ?>"><summary><?= h($item['question']) ?></summary><div class="faq-answer">
                     <span class="faq-kind"><?= $item['kind'] === 'official' ? 'FONTE UFFICIALE INTER' : 'INTER CLUB BRINDISI' ?></span>
                     <p><?= h($item['answer']) ?><?php foreach ($item['sources'] as $source): ?> <a class="faq-source" href="<?= h($source['url']) ?>" target="_blank" rel="noopener noreferrer"><?= h($source['label']) ?><span aria-hidden="true"> ↗</span></a><?php endforeach; ?></p>
-                    <?php if ($item['id'] === 'faq-prenota'): ?><a class="faq-contact" href="<?= u('/soci-area/login.php') ?>" rel="nofollow">Vai all’area soci <span aria-hidden="true">↗</span></a><?php elseif ($item['kind'] === 'local'): ?><a class="faq-contact" href="#contatti" data-topic="<?= $item['id'] === 'faq-visita' ? 'Visita alla sede' : 'Tesseramento' ?>">Chiedi al direttivo <span aria-hidden="true">↗</span></a><?php endif; ?>
+                    <?php if ($item['id'] === 'faq-prenota'): ?><a class="faq-contact" href="<?= u('/soci-area/login.php') ?>" rel="nofollow">Vai all’area soci <span aria-hidden="true">↗</span></a><?php elseif ($item['kind'] === 'local'): ?><a class="faq-contact" href="#contatti" data-topic="<?= $item['id'] === 'faq-visita' ? 'Visita alla sede' : 'Tesseramento' ?>">Contatta il direttivo <span aria-hidden="true">↗</span></a><?php endif; ?>
                 </div></details>
                 <?php endforeach; ?>
             </section>
