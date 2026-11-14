@@ -39,12 +39,15 @@ jobs:
       - name: Syntax check
         run: |
           find includes public/impostazioni tests -name '*whatsapp*.php' -print0 | xargs -0 -n1 php -l
+          php -l public/messaggi/index.php
       - name: Unit tests (no network or database)
         run: |
           php tests/whatsapp_payload_test.php
           php tests/whatsapp_config_test.php
           php tests/whatsapp_transport_test.php
-      - name: Database integration tests (temporary MySQL service only)
+      - name: Database and simulated dispatch tests (temporary MySQL only)
         env:
           ICBR_WA_DB_TEST: '1'
-        run: php tests/whatsapp_database_test.php
+        run: |
+          php tests/whatsapp_database_test.php
+          php tests/whatsapp_dispatch_test.php
