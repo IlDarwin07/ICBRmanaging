@@ -1,8 +1,8 @@
-name: WhatsApp payload tests
+name: WhatsApp tests
 
 on:
   push:
-    branches: [feature/whatsapp-invio-manuale]
+    branches: [main, feature/whatsapp-invio-manuale, feature/whatsapp-admin-invio]
   pull_request:
     branches: [main]
 
@@ -29,6 +29,11 @@ jobs:
       - name: Syntax check
         run: |
           php -l includes/whatsapp_payload.php
+          php -l includes/whatsapp_config.php
+          php -l public/impostazioni/whatsapp.php
           php -l tests/whatsapp_payload_test.php
-      - name: Test payload validation (no network or database)
-        run: php tests/whatsapp_payload_test.php
+          php -l tests/whatsapp_config_test.php
+      - name: Unit tests (no network or database)
+        run: |
+          php tests/whatsapp_payload_test.php
+          php tests/whatsapp_config_test.php
