@@ -30,10 +30,13 @@ jobs:
         run: |
           php -l includes/whatsapp_payload.php
           php -l includes/whatsapp_config.php
+          php -l includes/whatsapp_transport.php
           php -l public/impostazioni/whatsapp.php
           php -l tests/whatsapp_payload_test.php
           php -l tests/whatsapp_config_test.php
+          php -l tests/whatsapp_transport_test.php
       - name: Unit tests (no network or database)
         run: |
           php tests/whatsapp_payload_test.php
           php tests/whatsapp_config_test.php
+          php tests/whatsapp_transport_test.php
